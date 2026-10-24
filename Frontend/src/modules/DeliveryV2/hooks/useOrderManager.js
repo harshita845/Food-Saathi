@@ -191,25 +191,28 @@ export const useOrderManager = () => {
     }
     try {
       const isAlreadyVerified = currentTarget?.deliveryVerification?.dropOtp?.verified;
-      const isBypassed = !otp || otp === 'BYPASS' || otp === 'SKIP';
-      
-      // 1. Verify OTP only if provided and not bypassed
-      if (!isAlreadyVerified && !isBypassed) {
-        const verifyRes = await deliveryAPI.verifyDropOtp(orderId, otp);
+      const otpValue = String(otp || '').trim();
+
+      // 1. The customer's handover OTP is mandatory unless the server already verified it.
+      if (!isAlreadyVerified) {
+        if (!otpValue) {
+          toast.error('Enter the OTP shown in the customer app.');
+          throw new Error('Missing OTP');
+        }
+        const verifyRes = await deliveryAPI.verifyDropOtp(orderId, otpValue);
         if (!verifyRes?.data?.success) {
           toast.error('Invalid OTP. Please check with customer.');
           throw new Error('Invalid OTP');
         }
       }
-      
-      const otpToUse = otp || currentTarget?.deliveryVerification?.dropOtp?.code || 'BYPASS';
+
+      const otpToUse = otpValue;
       
       // 2. Proceed to mark as complete
       let finalOrder = currentTarget;
       try {
         const completeRes = await deliveryAPI.completeDelivery(orderId, { 
           otp: otpToUse, 
-          rating: 5,
           paymentOverride,
           paymentMethod: paymentOverride,
         });

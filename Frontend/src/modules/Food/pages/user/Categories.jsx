@@ -8,6 +8,7 @@ import OptimizedImage from "@food/components/OptimizedImage";
 import { useAppLocation } from "@food/hooks/useAppLocation"
 import useAppBackNavigation from "@food/hooks/useAppBackNavigation";
 import { API_BASE_URL } from "@food/api/config";
+import { slugify } from "@food/utils/common";
 
 export default function Categories() {
   const navigate = useNavigate();
@@ -51,7 +52,7 @@ export default function Categories() {
           const transformed = list.map((cat, idx) => ({
             id: String(cat?.id || cat?._id || cat?.slug || idx),
             name: cat?.name || "",
-            slug: cat?.slug || String(cat?.name || "").toLowerCase().replace(/\s+/g, "-"),
+            slug: cat?.slug || slugify(cat?.name || ""),
             image: normalizeImageUrl(cat?.image || cat?.imageUrl) || foodImages[idx % foodImages.length],
             type: cat?.type || "",
           }));

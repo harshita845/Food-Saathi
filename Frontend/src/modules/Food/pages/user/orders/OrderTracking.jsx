@@ -1117,7 +1117,8 @@ export default function OrderTracking() {
       if (pollRef.current) pollRef.current(false);
     };
     
-    const pollInterval = (isSocketConnected || window.orderSocketConnected) ? 75000 : 12000;
+    // Socket pushes status changes; polling is the safety net, so keep it reasonably short.
+    const pollInterval = (isSocketConnected || window.orderSocketConnected) ? 30000 : 12000;
     const interval = setInterval(tick, pollInterval);
 
     return () => clearInterval(interval);

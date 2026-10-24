@@ -8,6 +8,7 @@ import {
     validateVerifyPaymentDto,
     validateCancelOrderDto,
     validateOrderStatusDto,
+    validateAdminOrderStatusDto,
     validateAssignDeliveryDto,
     validateDispatchSettingsDto,
     validateOrderRatingsDto
@@ -300,8 +301,7 @@ export async function updateOrderStatusDeliveryController(req, res, next) {
     try {
         const deliveryPartnerId = req.user?.userId;
         const orderId = req.params.orderId;
-        const dto = validateOrderStatusDto(req.body);
-        const order = await orderService.updateOrderStatusDelivery(orderId, deliveryPartnerId, dto.orderStatus);
+        const order = await orderService.updateOrderStatusDelivery(orderId, deliveryPartnerId, req.body?.orderStatus);
         return sendResponse(res, 200, 'Order status updated', { order });
     } catch (err) {
         next(err);
@@ -412,7 +412,7 @@ export async function updateOrderStatusAdminController(req, res, next) {
     try {
         const adminId = req.user?.userId;
         const orderId = req.params.orderId;
-        const { orderStatus, note } = req.body;
+        const { orderStatus, note } = validateAdminOrderStatusDto(req.body);
         const order = await orderService.updateOrderStatusAdmin(orderId, adminId, orderStatus, note);
         return sendResponse(res, 200, 'Order status updated successfully', { order });
     } catch (err) {

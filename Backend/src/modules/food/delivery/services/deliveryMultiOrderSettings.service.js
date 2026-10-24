@@ -9,6 +9,7 @@ export const ACTIVE_DELIVERY_ORDER_STATUSES = [
   'confirmed',
   'preparing',
   'ready_for_pickup',
+  'reached_pickup',
   'picked_up',
   'reached_drop',
 ];

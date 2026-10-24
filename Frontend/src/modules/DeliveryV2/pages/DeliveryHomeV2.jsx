@@ -189,6 +189,39 @@ function BottomPopup({ isOpen, onClose, title, children }) {
  * DeliveryHomeV2 - Premium 1:1 Match with Original App UI.
  * Featuring logical tab switching for Feed, Pocket, History, and Profile.
  */
+/** Ids the server needs to route a rider location update for one order. */
+function getOrderTrackingMeta(order) {
+  if (!order) return null;
+  const orderId = getOrderMongoId(order) || getOrderAcceptId(order);
+  if (!orderId) return null;
+  return {
+    orderId,
+    userId:
+      order.userId?._id?.toString?.() ||
+      order.userId?.toString?.() ||
+      order.user?._id?.toString?.() ||
+      order.user?.id ||
+      order.userId,
+    restaurantId:
+      order.restaurantId?._id?.toString?.() ||
+      order.restaurantId?.toString?.() ||
+      order.restaurantId,
+  };
+}
+
+/** Every order the rider is carrying right now (multi-order), active one first, no duplicates. */
+function getOrdersOnTrip(activeOrder, acceptedOrders) {
+  const seen = new Set();
+  const out = [];
+  for (const order of [activeOrder, ...(Array.isArray(acceptedOrders) ? acceptedOrders : [])]) {
+    const meta = getOrderTrackingMeta(order);
+    if (!meta || seen.has(String(meta.orderId))) continue;
+    seen.add(String(meta.orderId));
+    out.push({ order, meta });
+  }
+  return out;
+}
+
 export default function DeliveryHomeV2({ tab = 'feed' }) {
   const navigate = useNavigate();
   const { isOnline, toggleOnline, setOnline, riderLocation, activeOrder, acceptedOrders, orderCapacity, tripStatus, setRiderLocation, setActiveOrder, setAcceptedOrders, removeAcceptedOrder, setOrderCapacity, updateTripStatus, clearActiveOrder } = useDeliveryStore();
@@ -265,7 +298,6 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
   }, [tab]);
 
   const [showVerification, setShowVerification] = useState(false);
-  const [bypassOtp, setBypassOtp] = useState(false);
   const [showEmergencyPopup, setShowEmergencyPopup] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
   const [emergencyNumbers, setEmergencyNumbers] = useState({
@@ -296,22 +328,22 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
   const mapRef = useRef(null);
   const simInitializedRef = useRef(false);
 
-  const resolveActiveOrderMeta = useCallback(() => {
-    if (!activeOrder) return null;
-    return {
-      orderId: getOrderMongoId(activeOrder) || getOrderAcceptId(activeOrder),
-      userId:
-        activeOrder.userId?._id?.toString?.() ||
-        activeOrder.userId?.toString?.() ||
-        activeOrder.user?._id?.toString?.() ||
-        activeOrder.user?.id ||
-        activeOrder.userId,
-      restaurantId:
-        activeOrder.restaurantId?._id?.toString?.() ||
-        activeOrder.restaurantId?.toString?.() ||
-        activeOrder.restaurantId,
-    };
-  }, [activeOrder]);
+  const resolveActiveOrderMeta = useCallback(() => getOrderTrackingMeta(activeOrder), [activeOrder]);
+
+  // The GPS watcher is created once per online session, so it reads the current trip from this ref
+  // instead of the values captured when it started (otherwise it never sees a newly accepted order).
+  const liveTripRef = useRef({});
+  liveTripRef.current = {
+    activeOrder,
+    acceptedOrders,
+    tripStatus,
+    distanceToTarget,
+    activePolyline,
+    eta,
+    emitLocation,
+    reachPickup,
+    reachDrop,
+  };
 
   const pushRoutePolylineToCustomer = useCallback((polyline) => {
     const encoded = typeof polyline === 'string' ? polyline : polyline?.points || '';
@@ -707,19 +739,22 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
         ? rollingSpeedRef.current.reduce((a, b) => a + b, 0) / rollingSpeedRef.current.length 
         : speed || 0;
 
+      const live = liveTripRef.current;
+      const { tripStatus: liveTripStatus, distanceToTarget: liveDistance } = live;
+
       // Phase 11: Geo-fencing Auto-arrival (within 100m) - Disabled in DEV so UI steps can be tested manually
-      if (!isSimMode && !import.meta.env.DEV && distanceToTarget && distanceToTarget <= 100 && !lastAutoArrivalRef.current[tripStatus]) {
-        if (tripStatus === 'PICKING_UP') {
-          lastAutoArrivalRef.current[tripStatus] = true;
-          reachPickup().catch(() => { lastAutoArrivalRef.current[tripStatus] = false; });
-        } else if (tripStatus === 'PICKED_UP') {
-          lastAutoArrivalRef.current[tripStatus] = true;
-          reachDrop().catch(() => { lastAutoArrivalRef.current[tripStatus] = false; });
+      if (!isSimMode && !import.meta.env.DEV && liveDistance && liveDistance <= 100 && !lastAutoArrivalRef.current[liveTripStatus]) {
+        if (liveTripStatus === 'PICKING_UP') {
+          lastAutoArrivalRef.current[liveTripStatus] = true;
+          live.reachPickup().catch(() => { lastAutoArrivalRef.current[liveTripStatus] = false; });
+        } else if (liveTripStatus === 'PICKED_UP') {
+          lastAutoArrivalRef.current[liveTripStatus] = true;
+          live.reachDrop().catch(() => { lastAutoArrivalRef.current[liveTripStatus] = false; });
         }
       }
 
-      if (distanceToTarget > 200) {
-        lastAutoArrivalRef.current[tripStatus] = false;
+      if (liveDistance > 200) {
+        lastAutoArrivalRef.current[liveTripStatus] = false;
       }
 
       // Check threshold for Socket Sync (distance-based or 10s time-based)
@@ -733,22 +768,31 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
         lastLocationSentAt.current = now;
         lastCoordRef.current = { lat, lng };
         
-        const payload = { 
-          lat, 
-          lng, 
-          heading: resolvedHeading,
-          speed: speed || 0,
-          accuracy: pos.coords.accuracy,
-          ...(resolveActiveOrderMeta() || {}),
-          status: 'on_the_way',
-          polyline:
-            typeof activePolyline === 'string'
-              ? activePolyline
-              : activePolyline?.points || activePolyline || null,
-          eta,
-        };
-
-        if (payload.orderId) emitLocation(payload);
+        // Send the position for every order on this trip (multi-order); route/ETA belong to the active one.
+        const ordersOnTrip = getOrdersOnTrip(live.activeOrder, live.acceptedOrders);
+        const activeMetaId = getOrderTrackingMeta(live.activeOrder)?.orderId;
+        const livePolyline = live.activePolyline;
+        for (const { meta } of ordersOnTrip) {
+          const isActive = String(meta.orderId) === String(activeMetaId);
+          live.emitLocation({
+            lat,
+            lng,
+            heading: resolvedHeading,
+            speed: speed || 0,
+            accuracy: pos.coords.accuracy,
+            ...meta,
+            status: 'on_the_way',
+            ...(isActive
+              ? {
+                  polyline:
+                    typeof livePolyline === 'string'
+                      ? livePolyline
+                      : livePolyline?.points || livePolyline || null,
+                  eta: live.eta,
+                }
+              : {}),
+          });
+        }
 
         const partnerId = getDeliveryPartnerId();
         if (partnerId) {
@@ -761,7 +805,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
             accuracy: pos.coords.accuracy,
             isOnline: true,
             status: "online",
-            activeOrderId: payload.orderId || null,
+            activeOrderId: activeMetaId || null,
           }).catch(() => {});
         }
       }
@@ -1287,9 +1331,12 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
       return;
     }
     const normalized = normalizeDeliveryActiveOrder(target);
+    if (!['PICKED_UP', 'REACHED_DROP'].includes(getTripStatusForOrder(normalized))) {
+      toast.error('Pick up this order from the restaurant before delivering it.');
+      return;
+    }
     setActiveOrder(normalized);
     setIsModalMinimized(false);
-    setBypassOtp(true);
     setShowVerification(true);
   }, [activeOrder, setActiveOrder]);
 
@@ -1908,7 +1955,6 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
                     ) : (
                       <button 
                         onClick={() => {
-                          setBypassOtp(false);
                           setShowVerification(true);
                         }} 
                         className="w-full text-white rounded-2xl py-4 sm:py-5 px-4 font-bold text-xs sm:text-sm tracking-[0.14em] transform transition-all active:scale-95 flex items-center justify-center gap-2.5 sm:gap-3 border border-white/20"
@@ -1934,16 +1980,13 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
       {showVerification && tripStatus !== 'COMPLETED' && activeOrder && (
         <DeliveryVerificationModal 
           order={activeOrder} 
-          skipOtp={bypassOtp}
           onComplete={async (otp, paymentOverride) => {
             const res = await completeDelivery(otp, paymentOverride, activeOrder);
             setShowVerification(false);
-            setBypassOtp(false);
             return res;
           }}
           onClose={() => {
             setShowVerification(false);
-            setBypassOtp(false);
           }}
         />
       )}

@@ -21,6 +21,8 @@ const feeSettingsUpsertSchema = z.object({
     deliveryBonusAmount: z.number().min(0).nullable().optional(),
     dispatchRadiusExpansionEnabled: z.boolean().optional(),
     dispatchRadiusTiers: z.array(z.number().min(0)).optional(),
+    dispatchOfferTimeoutSeconds: z.number().min(15).max(600).optional(),
+    scheduledDispatchLeadMinutes: z.number().min(0).max(240).optional(),
     isActive: z.boolean().optional()
 });
 
@@ -68,6 +70,10 @@ export const validateFeeSettingsUpsertDto = (body) => {
         dispatchRadiusExpansionEnabled:
             body?.dispatchRadiusExpansionEnabled !== undefined ? Boolean(body.dispatchRadiusExpansionEnabled) : undefined,
         dispatchRadiusTiers: Array.isArray(body?.dispatchRadiusTiers) ? body.dispatchRadiusTiers.map(Number) : undefined,
+        dispatchOfferTimeoutSeconds:
+            body?.dispatchOfferTimeoutSeconds != null && body.dispatchOfferTimeoutSeconds !== '' ? Number(body.dispatchOfferTimeoutSeconds) : undefined,
+        scheduledDispatchLeadMinutes:
+            body?.scheduledDispatchLeadMinutes != null && body.scheduledDispatchLeadMinutes !== '' ? Number(body.scheduledDispatchLeadMinutes) : undefined,
         isActive: body?.isActive !== undefined ? Boolean(body.isActive) : undefined
     };
 

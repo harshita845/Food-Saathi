@@ -886,7 +886,11 @@ export async function registerWebPushForCurrentModule(pathname = window.location
     registrationInFlight = (async () => {
       const firebasePublicEnv = await getFirebasePublicEnv();
       if (!firebasePublicEnv?.vapidKey) {
-        throw new Error("Firebase Web Push VAPID key is missing on the server.");
+        // VAPID key not configured — push notifications disabled.
+        // Set VITE_FIREBASE_VAPID_KEY in Frontend/.env from:
+        // Firebase Console → Project Settings → Cloud Messaging → Web configuration → Generate key pair
+        registrationInFlight = null;
+        return false;
       }
 
       const app = getMessagingFirebaseApp(firebasePublicEnv);
@@ -967,8 +971,9 @@ export async function registerWebPushForCurrentModule(pathname = window.location
       return token;
     })()
     .catch((e) => {
-      console.error("FCM web registration failed:", e);
+      // Only log as error for unexpected failures; config issues (VAPID missing) are handled above.
       if (options?.throwOnError === true) throw e;
+      pushDebugWarn(PUSH_DEBUG_PREFIX, "FCM web registration skipped:", e?.message || e);
     })
     .finally(() => {
       registrationInFlight = null;

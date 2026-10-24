@@ -13,14 +13,16 @@ const toGeoPoint = ({ latitude, longitude }) => {
 const resolveAddressLocation = async (address, dto) => {
     let loc = toGeoPoint(dto);
 
-    // Safeguard: if location is missing, OR if location is set to default Indore (22.7196, 75.8577) while city is not Indore
-    const isIndoreDefault = loc?.coordinates &&
-        Math.abs(loc.coordinates[1] - 22.7196) < 0.05 &&
-        Math.abs(loc.coordinates[0] - 75.8577) < 0.05 &&
-        address.city &&
-        !String(address.city).toLowerCase().includes('indore');
+    // Safeguard: if location is missing, or still sits on the app's default map centre
+    // (DEFAULT_MAP_LAT/LNG, the pin shown before GPS resolves), geocode the typed address instead.
+    const defaultLat = Number(process.env.DEFAULT_MAP_LAT ?? 22.7196);
+    const defaultLng = Number(process.env.DEFAULT_MAP_LNG ?? 75.8577);
+    const isMapDefault = loc?.coordinates &&
+        Math.abs(loc.coordinates[1] - defaultLat) < 0.05 &&
+        Math.abs(loc.coordinates[0] - defaultLng) < 0.05 &&
+        address.city;
 
-    if (!loc || isIndoreDefault) {
+    if (!loc || isMapDefault) {
         try {
             const query = [address.street, address.additionalDetails, address.city, address.state, address.zipCode].filter(Boolean).join(', ');
             if (query) {

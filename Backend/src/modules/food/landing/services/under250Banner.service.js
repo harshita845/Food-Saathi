@@ -2,7 +2,11 @@ import { FoodUnder250Banner } from '../models/under250Banner.model.js';
 import { uploadBannerImage } from '../../../../services/upload.service.js';
 
 export const listUnder250Banners = async () => {
-    return FoodUnder250Banner.find().sort({ sortOrder: 1, createdAt: 1 }).lean();
+    const docs = await FoodUnder250Banner.find().sort({ sortOrder: 1, createdAt: 1 }).lean();
+    return docs.map(b => ({
+        ...b,
+        order: b.sortOrder ?? 0
+    }));
 };
 
 export const createUnder250BannersFromFiles = async (files, meta = {}) => {
@@ -27,7 +31,8 @@ export const createUnder250BannersFromFiles = async (files, meta = {}) => {
                 isActive: true,
             });
 
-            results.push({ success: true, banner: banner.toObject() });
+            const obj = banner.toObject();
+            results.push({ success: true, banner: { ...obj, order: obj.sortOrder ?? 0 } });
         } catch (error) {
             results.push({ success: false, error: error.message });
         }
@@ -56,7 +61,7 @@ export const updateUnder250BannerOrder = async (id, sortOrder) => {
         { sortOrder },
         { new: true }
     ).lean();
-    return updated;
+    return updated ? { ...updated, order: updated.sortOrder ?? 0 } : null;
 };
 
 export const toggleUnder250BannerStatus = async (id, isActive) => {
@@ -65,6 +70,6 @@ export const toggleUnder250BannerStatus = async (id, isActive) => {
         { isActive },
         { new: true }
     ).lean();
-    return updated;
+    return updated ? { ...updated, order: updated.sortOrder ?? 0 } : null;
 };
 

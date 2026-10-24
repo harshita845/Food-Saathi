@@ -31,6 +31,67 @@ function maskToken(token) {
     return `${trimmed.slice(0, 12)}...${trimmed.slice(-6)}`;
 }
 
+const RIDER_ASSIGNMENT_TTL_MS = 60 * 1000;
+const DIRECT_LOCATION_PERSIST_MS = 30 * 1000;
+const riderAssignmentCache = new Map();
+const lastDirectPersistAt = new Map();
+
+/** Confirms the rider has accepted this (still active) order; cached briefly per rider+order. */
+async function resolveRiderAssignment(partnerId, orderRef) {
+    const key = `${partnerId}:${orderRef}`;
+    const cached = riderAssignmentCache.get(key);
+    if (cached && Date.now() - cached.at < RIDER_ASSIGNMENT_TTL_MS) return cached.value;
+
+    let value = null;
+    try {
+        const mongoose = (await import('mongoose')).default;
+        const { FoodOrder } = await import('../modules/food/orders/models/order.model.js');
+        const identity = mongoose.isValidObjectId(orderRef)
+            ? { _id: new mongoose.Types.ObjectId(orderRef) }
+            : { $or: [{ order_id: orderRef }, { orderId: orderRef }] };
+        const order = await FoodOrder.findOne({
+            ...identity,
+            'dispatch.deliveryPartnerId': new mongoose.Types.ObjectId(partnerId),
+            'dispatch.status': 'accepted',
+            orderStatus: { $nin: ['delivered', 'cancelled_by_user', 'cancelled_by_restaurant', 'cancelled_by_admin', 'dead'] },
+        })
+            .select('_id order_id userId restaurantId')
+            .lean();
+        if (order) {
+            value = {
+                orderMongoId: String(order._id),
+                displayOrderId: order.order_id ? String(order.order_id) : '',
+                userId: String(order.userId),
+                restaurantId: String(order.restaurantId),
+            };
+        }
+    } catch (err) {
+        logger.warn(`[DeliverySocket] assignment check failed for ${key}: ${err.message}`);
+    }
+    riderAssignmentCache.set(key, { at: Date.now(), value });
+    return value;
+}
+
+async function persistRiderLocationDirect(partnerId, orderMongoId, lat, lng, now) {
+    const last = lastDirectPersistAt.get(orderMongoId) || 0;
+    if (now - last < DIRECT_LOCATION_PERSIST_MS) return;
+    lastDirectPersistAt.set(orderMongoId, now);
+    try {
+        const { FoodOrder } = await import('../modules/food/orders/models/order.model.js');
+        const { FoodDeliveryPartner } = await import('../modules/food/delivery/models/deliveryPartner.model.js');
+        const point = { type: 'Point', coordinates: [lng, lat] };
+        await Promise.all([
+            FoodOrder.updateOne({ _id: orderMongoId }, { $set: { lastRiderLocation: point } }),
+            FoodDeliveryPartner.updateOne(
+                { _id: partnerId },
+                { $set: { lastLat: lat, lastLng: lng, lastLocation: point, lastLocationAt: new Date(now) } },
+            ),
+        ]);
+    } catch (err) {
+        logger.warn(`[DeliverySocket] direct location persist failed for order ${orderMongoId}: ${err.message}`);
+    }
+}
+
 const roomNames = {
     restaurant: (id) => `restaurant:${String(id)}`,
     user: (id) => `user:${String(id)}`,
@@ -211,6 +272,16 @@ export const initSocket = async (server) => {
             if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
             if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
 
+            // Only the rider assigned to the order may publish its location; rooms come from the DB.
+            const assignment = await resolveRiderAssignment(String(userId), String(data.orderId));
+            if (!assignment) return;
+            data = {
+                ...data,
+                orderId: assignment.orderMongoId,
+                userId: assignment.userId,
+                restaurantId: assignment.restaurantId,
+            };
+
             const heading = Number.isFinite(Number(data.heading)) ? Number(data.heading) : 0;
             const speed = Number.isFinite(Number(data.speed)) ? Number(data.speed) : 0;
             const accuracy = Number.isFinite(Number(data.accuracy)) ? Number(data.accuracy) : null;
@@ -253,9 +324,12 @@ export const initSocket = async (server) => {
                 status: data.status || 'on_the_way',
             });
 
-            // Broadcast to tracking room (all users watching this order)
+            // Broadcast to tracking rooms (all users watching this order, by Mongo id and display id)
             const trackingRoom = roomNames.tracking(data.orderId);
             socket.to(trackingRoom).emit('location-update', trackingPayload);
+            if (assignment.displayOrderId && assignment.displayOrderId !== data.orderId) {
+                socket.to(roomNames.tracking(assignment.displayOrderId)).emit('location-update', trackingPayload);
+            }
 
             // Also emit to the specific user room if userId is provided
             if (data.userId) {
@@ -286,10 +360,13 @@ export const initSocket = async (server) => {
                     // jobId debulks updates: if a job is already waiting, BullMQ ignores the new add()
                     // Delay (30s) ensures we don't spam MongoDB while the rider is moving fast
                     const syncJobId = `sync:loc:${data.orderId}`;
-                    trackingQueue.add('sync-hot-locations', 
-                        { userId, orderId: data.orderId }, 
+                    trackingQueue.add('sync-hot-locations',
+                        { userId, orderId: data.orderId },
                         { jobId: syncJobId, delay: 30000, removeOnComplete: true }
                     ).catch(e => logger.error(`BullMQ sync schedule failed: ${e.message}`));
+                } else {
+                    // No Redis/BullMQ: write straight to MongoDB, throttled per order.
+                    await persistRiderLocationDirect(String(userId), data.orderId, lat, lng, now);
                 }
             } catch (err) {
                 logger.error(`Real-time persistence layer error: ${err.message}`);
@@ -357,6 +434,9 @@ export const initSocket = async (server) => {
             }
             const { resyncState } = await import('../modules/food/orders/services/order.service.js');
             const state = await resyncState(userId, role);
+            if (role === 'DELIVERY_PARTNER' && Array.isArray(state.activeOrders)) {
+              socket.emit('active_orders', { orders: state.activeOrders, count: state.activeOrders.length });
+            }
             if (state.activeOrder) {
               const eventName = role === 'USER' ? 'order_state' : 'active_order';
               socket.emit(eventName, state.activeOrder);
@@ -443,23 +523,76 @@ export const initRedisEmitter = (redisClient) => {
     logger.info('[SocketInit] Redis emitter already initialized; reusing existing emitter');
 };
 
+export const getInternalEmitSecret = () => config.socketInternalSecret || config.jwtAccessSecret || '';
+
+const getSocketInternalUrl = () =>
+    (config.socketInternalUrl || `http://127.0.0.1:${config.socketPort || 5001}`).replace(/\/+$/, '');
+
+// Without Redis, the API process has no Socket.IO server of its own: events are
+// batched and forwarded to socket-server.js over its internal HTTP endpoint.
+let relayQueue = [];
+let relayFlushScheduled = false;
+
+async function flushRelayQueue() {
+    relayFlushScheduled = false;
+    const events = relayQueue;
+    relayQueue = [];
+    if (!events.length) return;
+    try {
+        const res = await fetch(`${getSocketInternalUrl()}/internal/emit`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-internal-secret': getInternalEmitSecret(),
+            },
+            body: JSON.stringify({ events }),
+            signal: AbortSignal.timeout(5000),
+        });
+        if (!res.ok) {
+            logger.warn(`[SocketRelay] socket server rejected ${events.length} event(s): HTTP ${res.status}`);
+        }
+    } catch (err) {
+        logger.warn(`[SocketRelay] could not reach socket server for ${events.length} event(s): ${err.message}`);
+    }
+}
+
+function enqueueRelayEvent(targetRooms, event, payload) {
+    let safePayload;
+    try {
+        safePayload = payload === undefined ? null : JSON.parse(JSON.stringify(payload));
+    } catch (err) {
+        logger.warn(`[SocketRelay] dropped unserializable payload for ${event}: ${err.message}`);
+        return;
+    }
+    relayQueue.push({ rooms: targetRooms, event, payload: safePayload });
+    if (!relayFlushScheduled) {
+        relayFlushScheduled = true;
+        setImmediate(flushRelayQueue);
+    }
+}
+
+function createRelayBroadcast(targetRooms = []) {
+    return {
+        to: (room) => createRelayBroadcast([...targetRooms, String(room)]),
+        in: (room) => createRelayBroadcast([...targetRooms, String(room)]),
+        emit: (event, payload) => {
+            enqueueRelayEvent(targetRooms, event, payload);
+            return true;
+        },
+    };
+}
+
+const relayEmitter = createRelayBroadcast();
+
 /**
- * Returns the initialized Socket.IO instance or Redis Emitter.
- * @returns {Server | Emitter | null}
+ * Returns the local Socket.IO server, the Redis emitter, or (when Redis is off)
+ * a relay that forwards emits to the dedicated socket server.
+ * @returns {Server | Emitter | ReturnType<typeof createRelayBroadcast>}
  */
 export const getIO = () => {
     if (io) return io;
     if (redisEmitter) return redisEmitter;
-    
-    logger.warn(
-        `[SocketInit] Socket.IO not initialized (No local Server or Redis Emitter). redisEnabled=${config.redisEnabled} redisUrlPresent=${Boolean(config.redisUrl)} pid=${process.pid}`
-    );
-    
-    // Return a mock object to prevent crashes if called when disabled
-    return {
-        to: () => ({ emit: () => {} }),
-        emit: () => {}
-    };
+    return relayEmitter;
 };
 
 export const rooms = roomNames;

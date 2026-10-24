@@ -498,15 +498,12 @@ const OtpModal = ({ order, onVerified, onClose }) => {
         );
 };
 
-        export const DeliveryVerificationModal = ({order, onComplete, onClose, skipOtp = false}) => {
+        export const DeliveryVerificationModal = ({order, onComplete, onClose}) => {
   const alreadyVerified = !!order?.deliveryVerification?.dropOtp?.verified;
 
-        // If skipOtp is true (clicked "Mark as Delivered") or already verified, bypass OTP step
-        const shouldSkipOtp = Boolean(skipOtp || alreadyVerified);
-        const [step, setStep] = useState(shouldSkipOtp ? 'payment' : 'otp');
-        const [verifiedOtp, setVerifiedOtp] = useState(
-        order?.deliveryVerification?.dropOtp?.code || (shouldSkipOtp ? 'BYPASS' : '')
-        );
+        // The customer's handover OTP is always required; only skip the step once the server has verified it.
+        const [step, setStep] = useState(alreadyVerified ? 'payment' : 'otp');
+        const [verifiedOtp, setVerifiedOtp] = useState('');
 
   const handleOtpVerified = (otpValue) => {
           setVerifiedOtp(otpValue);
@@ -528,7 +525,7 @@ const OtpModal = ({ order, onVerified, onClose }) => {
             <PaymentModal
               key="payment-modal"
               order={order}
-              otpString={verifiedOtp || 'BYPASS'}
+              otpString={verifiedOtp}
               onComplete={onComplete}
               onClose={onClose || (() => { })}
             />

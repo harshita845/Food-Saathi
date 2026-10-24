@@ -14,6 +14,7 @@ import { Loader } from '@googlemaps/js-api-loader'
 import AnimatedPage from "@food/components/user/AnimatedPage"
 import useAppBackNavigation from "@food/hooks/useAppBackNavigation"
 import { clearStoredUserLocation, notifyLocationUpdated, persistDeliveryAddressMode, persistUserLocation, readStoredUserLocation } from "@food/utils/locationPersistence"
+import { DEFAULT_MAP_LAT, DEFAULT_MAP_LNG } from "@food/constants/mapDefaults"
 
 const debugLog = (...args) => { }
 const debugWarn = (...args) => { }
@@ -59,7 +60,7 @@ export default function AddressSelectorPage() {
     if (stored?.latitude && stored?.longitude && Number.isFinite(Number(stored.latitude)) && Number.isFinite(Number(stored.longitude))) {
       return [Number(stored.latitude), Number(stored.longitude)]
     }
-    return [22.7196, 75.8577] // Fallback coordinates
+    return [DEFAULT_MAP_LAT, DEFAULT_MAP_LNG] // Fallback coordinates
   })
   const [addressFormData, setAddressFormData] = useState({
     street: "",
@@ -173,8 +174,8 @@ export default function AddressSelectorPage() {
     const t = setTimeout(async () => {
       try {
         setIsKeywordSearching(true)
-        const refLat = location?.latitude ?? 22.7196
-        const refLng = location?.longitude ?? 75.8577
+        const refLat = location?.latitude ?? DEFAULT_MAP_LAT
+        const refLng = location?.longitude ?? DEFAULT_MAP_LNG
         const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=10&q=${encodeURIComponent(q)}`
         const res = await fetch(url, { headers: { Accept: "application/json" } })
         const json = await res.json()
@@ -312,7 +313,7 @@ export default function AddressSelectorPage() {
       phone: addr.phone || "",
     })
 
-    let lat = 22.7196, lng = 75.8577
+    let lat = DEFAULT_MAP_LAT, lng = DEFAULT_MAP_LNG
     if (addr.location?.coordinates) {
       lng = addr.location.coordinates[0]
       lat = addr.location.coordinates[1]
@@ -616,8 +617,8 @@ export default function AddressSelectorPage() {
         addressFormData.zipCode
       ].filter(Boolean).join(", ")
 
-      const distFromIndore = calculateDistance(finalLat, finalLng, 22.7196, 75.8577)
-      const isDefaultIndore = distFromIndore < 2000
+      const distFromDefault = calculateDistance(finalLat, finalLng, DEFAULT_MAP_LAT, DEFAULT_MAP_LNG)
+      const isDefaultIndore = distFromDefault < 2000
 
       // Forward-geocode to verify and correct coordinates if needed
       if (typedQuery) {

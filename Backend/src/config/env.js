@@ -25,6 +25,10 @@ export const config = {
     // Basic server config
     port: process.env.PORT || 5000,
     socketPort: process.env.SOCKET_PORT || 5001,
+    /** Where the API server forwards socket events when Redis is off (socket-server internal endpoint). */
+    socketInternalUrl: process.env.SOCKET_INTERNAL_URL || '',
+    /** Shared secret for that internal endpoint; falls back to the JWT access secret. */
+    socketInternalSecret: process.env.SOCKET_INTERNAL_SECRET || '',
     host: process.env.HOST || '0.0.0.0',
     nodeEnv: process.env.NODE_ENV || 'development',
 
@@ -46,6 +50,9 @@ export const config = {
     otpRateLimit: Number(process.env.OTP_RATE_LIMIT || 3),
     otpRateWindow: Number(process.env.OTP_RATE_WINDOW || 600),
     useDefaultOtp: process.env.USE_DEFAULT_OTP === 'true',
+    /** Comma-separated phone numbers (e.g. app-store review accounts) that always get the default OTP, without SMS. */
+    defaultOtpTestPhones: process.env.DEFAULT_OTP_TEST_PHONES || '',
+    defaultOtpCode: process.env.DEFAULT_OTP_CODE || '123456',
 
     // SMSWala India
     smsWalaApiUrl: process.env.SMSWALA_API_URL || 'https://sms.smswala.in/app/smsapi/index.php',
@@ -139,6 +146,8 @@ export const config = {
 export const updateConfig = () => {
     config.port = process.env.PORT || config.port;
     config.socketPort = process.env.SOCKET_PORT || config.socketPort;
+    config.socketInternalUrl = process.env.SOCKET_INTERNAL_URL || config.socketInternalUrl;
+    config.socketInternalSecret = process.env.SOCKET_INTERNAL_SECRET || config.socketInternalSecret;
     config.host = process.env.HOST || config.host;
     config.nodeEnv = process.env.NODE_ENV || config.nodeEnv;
     config.mongoEnv = (process.env.MONGO_ENV || config.mongoEnv || 'local').toLowerCase().trim();
@@ -154,6 +163,8 @@ export const updateConfig = () => {
     config.otpRateLimit = Number(process.env.OTP_RATE_LIMIT || config.otpRateLimit);
     config.otpRateWindow = Number(process.env.OTP_RATE_WINDOW || config.otpRateWindow);
     config.useDefaultOtp = process.env.USE_DEFAULT_OTP === 'true';
+    config.defaultOtpTestPhones = process.env.DEFAULT_OTP_TEST_PHONES || config.defaultOtpTestPhones;
+    config.defaultOtpCode = process.env.DEFAULT_OTP_CODE || config.defaultOtpCode;
     config.smsWalaApiUrl = process.env.SMSWALA_API_URL || config.smsWalaApiUrl;
     config.smsWalaApiKey = process.env.SMSWALA_API_KEY || config.smsWalaApiKey;
     config.smsWalaCampaignId = process.env.SMSWALA_CAMPAIGN_ID || config.smsWalaCampaignId;

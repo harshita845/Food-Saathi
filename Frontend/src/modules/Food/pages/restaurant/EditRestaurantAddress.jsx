@@ -5,6 +5,7 @@ import Lenis from "lenis"
 import { ArrowLeft, ChevronDown } from "lucide-react"
 import BottomPopup from "@delivery/components/BottomPopup"
 import { restaurantAPI } from "@food/api"
+import { DEFAULT_MAP_LAT, DEFAULT_MAP_LNG } from "@food/constants/mapDefaults"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -13,8 +14,8 @@ const debugError = (...args) => {}
 const ADDRESS_STORAGE_KEY = "restaurant_address"
 
 // Default coordinates for Indore (can be updated based on actual location)
-const DEFAULT_LAT = 22.7196
-const DEFAULT_LNG = 75.8577
+const DEFAULT_LAT = DEFAULT_MAP_LAT
+const DEFAULT_LNG = DEFAULT_MAP_LNG
 
 export default function EditRestaurantAddress() {
   const navigate = useNavigate()

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { getNotificationLogoUrl } from '../../../../utils/brandAssets.js';
 import { FoodOrder } from '../../orders/models/order.model.js';
 import { FoodTransaction } from '../../orders/models/foodTransaction.model.js';
 import { FoodRestaurantWithdrawal } from '../../restaurant/models/foodRestaurantWithdrawal.model.js';
@@ -406,7 +407,7 @@ export async function markPayoutAsPaid({ restaurantId, amount, transactionId, ad
             {
                 title: 'Payout Settled 💰',
                 body: `₹${numericAmount} has been settled to your account by admin.`,
-                image: 'https://res.cloudinary.com/dxuuamva/image/upload/foodsaathi/brand/foodsaathi-logo.png',
+                image: (await getNotificationLogoUrl()),
                 data: {
                     type: 'payout_settled',
                     amount: String(numericAmount),

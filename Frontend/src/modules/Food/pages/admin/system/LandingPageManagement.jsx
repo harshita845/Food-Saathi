@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react"
-import { Upload, Trash2, Image as ImageIcon, Loader2, AlertCircle, CheckCircle2, ArrowUp, ArrowDown, Layout, Tag, UtensilsCrossed, ChefHat, Megaphone, Search } from "lucide-react"
+import { Upload, Trash2, Image as ImageIcon, Loader2, AlertCircle, CheckCircle2, ArrowUp, ArrowDown, Layout, Tag, UtensilsCrossed, ChefHat, Megaphone, Search, X } from "lucide-react"
 import api from "@food/api"
 import { adminAPI } from "@food/api"
 import { getMediaUrl, getPlaceholderImage } from "@/shared/utils/media"
@@ -948,14 +948,15 @@ export default function LandingPageManagement() {
   const handleUnder250BannerOrderChange = async (id, direction) => {
     const banner = under250Banners.find(b => b._id === id)
     if (!banner) return
-    const newOrder = direction === 'up' ? banner.order - 1 : banner.order + 1
-    const otherBanner = under250Banners.find(b => b.order === newOrder && b._id !== id)
+    const currentOrder = banner.order ?? banner.sortOrder ?? 0
+    const newOrder = direction === 'up' ? currentOrder - 1 : currentOrder + 1
+    const otherBanner = under250Banners.find(b => (b.order ?? b.sortOrder ?? 0) === newOrder && b._id !== id)
     if (!otherBanner && newOrder < 0) return
     try {
       setError(null)
       await api.patch(`/food/hero-banners/under-250/${id}/order`, { order: newOrder }, getAuthConfig())
       if (otherBanner) {
-        await api.patch(`/food/hero-banners/under-250/${otherBanner._id}/order`, { order: banner.order }, getAuthConfig())
+        await api.patch(`/food/hero-banners/under-250/${otherBanner._id}/order`, { order: currentOrder }, getAuthConfig())
       }
       await fetchUnder250Banners()
     } catch (err) {
@@ -1126,14 +1127,11 @@ export default function LandingPageManagement() {
         })
       }
     } catch (err) {
-      // Silently handle 401/404 errors - endpoints may not exist yet, use default settings
+      // Silently handle 401/404 or fallback to default settings without blocking banner management
       if (err.response?.status === 401 || err.response?.status === 404) {
-        // Do not override with empty defaults on error, let the initial state persist
-        setError(null) // Clear any previous error
+        setError(null)
       } else {
-        // Filter out token-related errors
-        const errorMessage = err.response?.data?.message || 'Failed to load settings'
-        setErrorSafely(errorMessage)
+        debugWarn('[LandingPageManagement] Failed to load landing settings, using defaults:', err.message)
       }
     } finally {
       setSettingsLoading(false)
@@ -1427,7 +1425,10 @@ export default function LandingPageManagement() {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    setActiveTab(tab.id)
+                    setError(null)
+                  }}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === tab.id
                     ? 'bg-blue-500 text-white'
                     : 'text-slate-600 hover:bg-slate-100'
@@ -1443,16 +1444,34 @@ export default function LandingPageManagement() {
 
         {/* Success/Error Messages */}
         {success && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5" />
-            <span>{success}</span>
+          <div className="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 shrink-0" />
+              <span>{success}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSuccess(null)}
+              className="p-1 rounded hover:bg-green-100 text-green-700 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         )}
 
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-center gap-2">
-            <AlertCircle className="w-5 h-5" />
-            <span>{error}</span>
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <span>{error}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setError(null)}
+              className="p-1 rounded hover:bg-red-100 text-red-600 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         )}
 
@@ -1682,14 +1701,14 @@ export default function LandingPageManagement() {
                   {under250Banners.map((banner, index) => (
                     <div key={banner._id} className="border border-slate-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
                       <div className="relative aspect-video bg-slate-100">
-                        <img src={banner.imageUrl} alt={`Under 250 Banner ${index + 1}`} className="w-full h-full object-cover" />
+                        <img src={getMediaUrl(banner.imageUrl)} alt={`Under 250 Banner ${index + 1}`} className="w-full h-full object-cover" />
                         <div className="absolute top-2 right-2">
                           <span className={`px-2 py-1 rounded text-xs font-medium ${banner.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                             {banner.isActive ? 'Active' : 'Inactive'}
                           </span>
                         </div>
                         <div className="absolute top-2 left-2">
-                          <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">Order: {banner.order}</span>
+                          <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">Order: {banner.order ?? banner.sortOrder ?? index}</span>
                         </div>
                       </div>
                       <div className="p-4 bg-white">

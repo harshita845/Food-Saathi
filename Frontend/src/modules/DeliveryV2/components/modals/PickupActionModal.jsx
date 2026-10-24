@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChefHat, MapPin, Phone, 
   ChevronDown, ChevronUp, Package, 
-  Navigation, CheckCircle2, Camera, Loader2, Image as ImageIcon, FastForward
+  Navigation, CheckCircle2, Camera, Loader2, Image as ImageIcon
 } from 'lucide-react';
 import { ActionSlider } from '@/modules/DeliveryV2/components/ui/ActionSlider';
 import { toast } from 'sonner';
@@ -28,7 +28,6 @@ export const PickupActionModal = ({
   const [showItems, setShowItems] = useState(false);
   const [pickupOtp, setPickupOtp] = useState('');
   const [otpRequested, setOtpRequested] = useState(false);
-  const [isSkippedOtp, setIsSkippedOtp] = useState(false);
   const [isRequestingOtp, setIsRequestingOtp] = useState(false);
 
   if (!order) return null;
@@ -142,29 +141,17 @@ export const PickupActionModal = ({
                 onConfirm={onReachedPickup}
                 color="bg-green-600"
               />
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={() => onMarkDelivered?.(order)}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs uppercase tracking-wider active:scale-95 transition-all shadow-xs"
-                >
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>Mark as Delivered</span>
-                </button>
-              </div>
             </div>
           ) : (
             <div className="space-y-4">
               <div>
                 <p className="text-center text-[10px] font-bold uppercase tracking-widest mb-3 text-green-600">
-                  {isSkippedOtp
-                    ? "OTP Bypassed — Swipe to pick up"
-                    : otpRequested
+                  {otpRequested
                     ? "Enter OTP & Swipe to pick up"
-                    : "Request OTP from restaurant or Skip"}
+                    : "Request the pickup OTP from the restaurant"}
                 </p>
 
-                {/* Step 1: Request OTP or Skip OTP buttons */}
+                {/* Step 1: Request OTP from the restaurant */}
                 <div className="flex gap-2.5 mb-3">
                   <button
                     onClick={async () => {
@@ -175,7 +162,6 @@ export const PickupActionModal = ({
                         const { deliveryAPI } = await import('@food/api');
                         await deliveryAPI.requestPickupOtp(orderId);
                         setOtpRequested(true);
-                        setIsSkippedOtp(false);
                         toast.success('OTP sent to restaurant! Ask them for the code.');
                       } catch (err) {
                         toast.error(err?.response?.data?.error || 'Failed to send OTP to restaurant');
@@ -193,25 +179,10 @@ export const PickupActionModal = ({
                     )}
                   </button>
 
-                  <button
-                    onClick={() => {
-                      setIsSkippedOtp(true);
-                      setPickupOtp('');
-                      toast.info('OTP Step Bypassed! Slide to Pick Up');
-                    }}
-                    className={`px-4 py-3.5 rounded-2xl border-2 font-black text-xs uppercase tracking-widest flex items-center gap-1.5 active:scale-95 transition-all ${
-                      isSkippedOtp
-                        ? 'bg-amber-500 border-amber-500 text-white shadow-lg'
-                        : 'bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    <FastForward className="w-4 h-4" />
-                    <span>{isSkippedOtp ? 'Skipped ✓' : 'Skip OTP'}</span>
-                  </button>
                 </div>
 
                 {/* Step 2: OTP input + Slider — visible when OTP requested and not skipped */}
-                {otpRequested && !isSkippedOtp && (
+                {otpRequested && (
                   <>
                     <div className="mb-4 px-2">
                       <input
@@ -233,28 +204,6 @@ export const PickupActionModal = ({
                   </>
                 )}
 
-                {/* Step 2 (Skipped): Direct Pickup Slider if OTP is skipped */}
-                {isSkippedOtp && (
-                  <ActionSlider
-                    key="action-pickup-skipped"
-                    label="Slide to Pick Up (Bypass OTP)"
-                    successLabel="Picked Up!"
-                    disabled={false}
-                    onConfirm={() => onPickedUp(null, 'SKIP')}
-                    color="bg-amber-600"
-                  />
-                )}
-
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    onClick={() => onMarkDelivered?.(order)}
-                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs uppercase tracking-wider active:scale-95 transition-all shadow-xs"
-                  >
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>Mark as Delivered</span>
-                  </button>
-                </div>
               </div>
             </div>
           )}

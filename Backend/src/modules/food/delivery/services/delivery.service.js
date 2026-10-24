@@ -5,6 +5,7 @@ import { DeliveryBonusTransaction } from '../../admin/models/deliveryBonusTransa
 import { getRiderBalances } from '../../../../core/payments/payoutBalances.service.js';
 import { FoodEarningAddon } from '../../admin/models/earningAddon.model.js';
 import { FoodOrder } from '../../orders/models/order.model.js';
+import { ACTIVE_DELIVERY_ORDER_STATUSES } from './deliveryMultiOrderSettings.service.js';
 import { uploadDeliveryImage } from '../../../../services/upload.service.js';
 import { ValidationError } from '../../../../core/auth/errors.js';
 import { getDeliveryCashLimitSettings } from '../../admin/services/admin.service.js';
@@ -362,6 +363,18 @@ export const updateDeliveryAvailability = async (userId, payload) => {
         partner.lastLocationAt = new Date();
     }
     await partner.save();
+
+    // Keep every order this rider is carrying in step, so tracking pages that poll still see movement.
+    if (typeof latitude === 'number' && typeof longitude === 'number') {
+        await FoodOrder.updateMany(
+            {
+                'dispatch.deliveryPartnerId': partner._id,
+                'dispatch.status': 'accepted',
+                orderStatus: { $in: ACTIVE_DELIVERY_ORDER_STATUSES },
+            },
+            { $set: { lastRiderLocation: { type: 'Point', coordinates: [longitude, latitude] } } },
+        ).catch((err) => console.error('Failed to sync rider location to active orders:', err?.message || err));
+    }
     return { availabilityStatus: partner.availabilityStatus };
 };
 

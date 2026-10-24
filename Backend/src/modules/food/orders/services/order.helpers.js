@@ -497,8 +497,9 @@ export function isStatusAdvance(current, next) {
   // Delivered (80) cannot transition to anything (except maybe cancellation if allowed, but here we say no)
   if (currentPrio === 80) return false;
 
-  // Special case: Cancellation is almost always an advance unless already delivered
-  if (nextPrio === 100 && currentPrio < 80) return true;
+  // Cancellation is only possible until the rider has picked the food up
+  // (admins use their own override path and do not go through this check).
+  if (nextPrio === 100) return currentPrio < STATUS_PRIORITY.picked_up;
 
   return nextPrio > currentPrio;
 }

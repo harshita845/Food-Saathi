@@ -122,6 +122,8 @@ export default function Cart() {
   const [showCoupons, setShowCoupons] = useState(false)
   const [appliedCoupon, setAppliedCoupon] = useState(null)
   const [couponCode, setCouponCode] = useState("")
+  // Bumped when the server reports changed prices at checkout, to re-fetch the server quote
+  const [pricingRefreshKey, setPricingRefreshKey] = useState(0)
   const [manualCouponCode, setManualCouponCode] = useState("")
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("cash")
   const [showPaymentSheet, setShowPaymentSheet] = useState(false)
@@ -633,6 +635,16 @@ export default function Cart() {
             return
           }
         } catch (error) {
+          // If 404/410 — restaurant deleted from DB, clear stale cart immediately
+          const httpStatus = error?.response?.status
+          if (httpStatus === 404 || httpStatus === 410) {
+            const staleName = cart[0]?.restaurant || 'the restaurant'
+            toast.error(`"${staleName}" is no longer available. Your cart has been cleared.`, { duration: 5000 })
+            clearCart()
+            setRestaurantData(null)
+            setLoadingRestaurant(false)
+            return
+          }
           debugWarn("?? Failed to fetch by cart restaurantId, trying fallback...", error)
         }
       }
@@ -691,6 +703,10 @@ export default function Cart() {
             if (restaurants.length > 0) {
               debugLog("?? Available restaurant names:", restaurants.map(r => r.name).slice(0, 10))
             }
+            // Restaurant not found by name either — clear stale cart
+            const staleName = cart[0]?.restaurant || 'the restaurant'
+            toast.error(`"${staleName}" is no longer available. Your cart has been cleared.`, { duration: 5000 })
+            clearCart()
           }
         } catch (searchError) {
           debugWarn("?? Error searching restaurants by name:", searchError)
@@ -954,7 +970,7 @@ export default function Cart() {
     }
 
     calculatePricing()
-  }, [cart, defaultAddress, appliedCoupon, couponCode, restaurantId])
+  }, [cart, defaultAddress, appliedCoupon, couponCode, restaurantId, pricingRefreshKey])
 
   // Fetch wallet balance
   useEffect(() => {
@@ -1793,6 +1809,7 @@ export default function Cart() {
         restaurantId: finalRestaurantId,
         restaurantName: finalRestaurantName || undefined,
         pricing: orderPricing,
+        couponCode: appliedCoupon?.code || orderPricing?.couponCode || undefined,
         note: "",
         restaurantNote: restaurantNote || "",
         sendCutlery: sendCutlery !== false,
@@ -2115,6 +2132,10 @@ export default function Cart() {
 
       if (isRiderBusy) {
         toast.error("All riders are busy, kindly try after some time");
+      } else if (error?.response?.data?.code === 'PRICE_CHANGED') {
+        // Server re-priced the cart (menu price, fee or coupon changed): refresh the bill before retrying.
+        setPricingRefreshKey((k) => k + 1)
+        toast.error(errorMessage)
       } else {
         toast.error(errorMessage);
       }

@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import mongoose from 'mongoose';
 
 const orderItemSchema = new mongoose.Schema(
@@ -50,7 +51,8 @@ const pricingSchema = new mongoose.Schema(
         tcs: { type: Number, default: 0, min: 0 },
         discount: { type: Number, default: 0, min: 0 },
         total: { type: Number, required: true, min: 0 },
-        currency: { type: String, default: 'INR' }
+        currency: { type: String, default: 'INR' },
+        couponCode: { type: String, default: '', trim: true }
     },
     { _id: false }
 );
@@ -374,9 +376,10 @@ orderSchema.index({ 'payment.method': 1, createdAt: -1 });
 
 orderSchema.pre('save', async function (next) {
     if (!this.order_id) {
-        const timestamp = Date.now().toString().slice(-4);
-        const random = Math.floor(100 + Math.random() * 900);
-        this.order_id = `FOD-${timestamp}${random}`;
+        // Time-ordered and random: ms timestamp (base 36) + 4 random chars avoids collisions at volume.
+        const timePart = Date.now().toString(36).toUpperCase();
+        const randomPart = crypto.randomBytes(3).toString('hex').slice(0, 4).toUpperCase();
+        this.order_id = `FOD-${timePart}${randomPart}`;
     }
     // Synchronize camelCase alias to satisfy unique index 'orderId_1'
     if (this.order_id) {

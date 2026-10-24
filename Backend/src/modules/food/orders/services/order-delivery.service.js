@@ -3,7 +3,7 @@ import { FoodOrder } from '../models/order.model.js';
 import { FoodRestaurant } from '../../restaurant/models/restaurant.model.js';
 import { FoodTransaction } from '../models/foodTransaction.model.js';
 import { FoodDeliveryPartner } from '../../delivery/models/deliveryPartner.model.js';
-import { FoodDeliveryCashDeposit } from '../../delivery/models/foodDeliveryCashDeposit.model.js';
+import { getRiderBalances } from '../../../../core/payments/payoutBalances.service.js';
 import { FoodDeliveryCashLimit } from '../../admin/models/deliveryCashLimit.model.js';
 import {
   ACTIVE_DELIVERY_ORDER_STATUSES,
@@ -56,7 +56,13 @@ function isOtpMatch(expectedOtp, enteredOtp) {
   return false;
 }
 
-export async function getPartnerCashCapacity(deliveryPartnerId) {
+/**
+ * How much more COD cash a rider may take on. Counts cash already in hand (same formula as
+ * the wallet screens) plus cash still to be collected on COD orders the rider has accepted.
+ * @param {string} deliveryPartnerId
+ * @param {{ excludeOrderId?: string }} [options] - order not to count as already held (the one being accepted)
+ */
+export async function getPartnerCashCapacity(deliveryPartnerId, options = {}) {
   const partnerObjectId = new mongoose.Types.ObjectId(deliveryPartnerId);
   const limitDoc = await FoodDeliveryCashLimit.findOne({ isActive: true })
     .sort({ createdAt: -1 })
@@ -68,66 +74,38 @@ export async function getPartnerCashCapacity(deliveryPartnerId) {
     return {
       totalCashLimit: 0,
       cashInHand: 0,
+      pendingCashToCollect: 0,
       availableCashLimit: Number.MAX_SAFE_INTEGER,
       hasCapacity: true,
     };
   }
 
-  const [cashAgg, depositsAgg] = await Promise.all([
+  const pendingMatch = {
+    'dispatch.deliveryPartnerId': partnerObjectId,
+    'dispatch.status': 'accepted',
+    orderStatus: { $in: ACTIVE_DELIVERY_ORDER_STATUSES },
+    'payment.method': 'cash',
+  };
+  if (options.excludeOrderId && mongoose.isValidObjectId(options.excludeOrderId)) {
+    pendingMatch._id = { $ne: new mongoose.Types.ObjectId(String(options.excludeOrderId)) };
+  }
+
+  const [balances, pendingAgg] = await Promise.all([
+    getRiderBalances(partnerObjectId),
     FoodOrder.aggregate([
-      {
-        $match: {
-          'dispatch.deliveryPartnerId': partnerObjectId,
-          orderStatus: 'delivered',
-        },
-      },
-      {
-        $lookup: {
-          from: 'payment_food_transactions',
-          localField: '_id',
-          foreignField: 'orderId',
-          as: 'tx',
-        },
-      },
-      {
-        $match: {
-          $or: [
-            { 'tx.paymentMethod': 'cash' },
-            { 'tx': { $size: 0 }, 'payment.method': 'cash' }
-          ]
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          grossCashCollected: { $sum: { $ifNull: ['$pricing.total', 0] } },
-        },
-      },
-    ]),
-    FoodDeliveryCashDeposit.aggregate([
-      {
-        $match: {
-          deliveryPartnerId: partnerObjectId,
-          status: 'Completed',
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          depositedCash: { $sum: { $ifNull: ['$amount', 0] } },
-        },
-      },
+      { $match: pendingMatch },
+      { $group: { _id: null, total: { $sum: { $ifNull: ['$pricing.total', 0] } } } },
     ]),
   ]);
 
-  const grossCashCollected = Number(cashAgg?.[0]?.grossCashCollected || 0);
-  const depositedCash = Number(depositsAgg?.[0]?.depositedCash || 0);
-  const cashInHand = Math.max(0, grossCashCollected - depositedCash);
-  const availableCashLimit = Math.max(0, totalCashLimit - cashInHand);
+  const cashInHand = Math.max(0, Number(balances?.cashInHand || 0));
+  const pendingCashToCollect = Math.max(0, Number(pendingAgg?.[0]?.total || 0));
+  const availableCashLimit = Math.max(0, totalCashLimit - cashInHand - pendingCashToCollect);
 
   return {
     totalCashLimit,
     cashInHand,
+    pendingCashToCollect,
     availableCashLimit,
     hasCapacity: availableCashLimit > 0,
   };
@@ -162,7 +140,8 @@ function emitOrderUpdate(order, deliveryPartnerId, options = {}) {
     if (!shouldSendMilestonePush) return;
 
     // Only send push notifications for key delivery milestones
-    const status = order.orderStatus;
+    // (reached_drop is a delivery phase, not an order status, so callers pass it explicitly)
+    const status = options?.milestone || order.orderStatus;
     if (!['picked_up', 'reached_drop', 'delivered'].includes(status)) return;
 
     let userTitle = '';
@@ -318,11 +297,15 @@ export async function getActiveOrdersDelivery(deliveryPartnerId) {
 export async function listOrdersAvailableDelivery(deliveryPartnerId, query) {
   const { page, limit, skip } = buildPaginationOptions(query);
   const partnerCapacity = await getPartnerCashCapacity(deliveryPartnerId);
+  const cashLimitReached = Number(partnerCapacity.totalCashLimit || 0) > 0 && !partnerCapacity.hasCapacity;
   const cashLimit = {
-    blocked: false,
-    message: '',
+    blocked: cashLimitReached,
+    message: cashLimitReached
+      ? 'Cash limit reached. Deposit cash to receive COD orders again.'
+      : '',
     totalCashLimit: Number(partnerCapacity.totalCashLimit || 0),
     cashInHand: Number(partnerCapacity.cashInHand || 0),
+    pendingCashToCollect: Number(partnerCapacity.pendingCashToCollect || 0),
     availableCashLimit: Number(partnerCapacity.availableCashLimit || 0),
   };
 
@@ -385,7 +368,7 @@ export async function listOrdersAvailableDelivery(deliveryPartnerId, query) {
     };
   });
 
-  const popupTtlMs = 60 * 1000;
+  const { offerTimeoutMs: popupTtlMs } = await dispatchService.getDispatchConfig();
   for (const doc of enriched || []) {
     const offers = Array.isArray(doc?.dispatch?.offeredTo) ? doc.dispatch.offeredTo : [];
     const partnerOffers = offers.filter(
@@ -440,15 +423,18 @@ export async function acceptOrderDelivery(orderId, deliveryPartnerId) {
   const paymentMethod = String(existingOrder?.payment?.method || 'cash').toLowerCase();
   const isCashOrder = paymentMethod === 'cash';
   const orderAmount = Math.max(0, Number(existingOrder?.pricing?.total || 0));
-  const offeredEntry = (existingOrder?.dispatch?.offeredTo || []).find(
-    (entry) => String(entry?.partnerId || '') === String(deliveryPartnerId),
-  );
-  const canBypassCashLimit = Boolean(offeredEntry?.allowOverLimit);
-
-  const partnerCapacity = await getPartnerCashCapacity(deliveryPartnerId);
-  const hasAmountCapacity = Number(partnerCapacity.availableCashLimit || 0) >= orderAmount;
-
-  // Cash limit restriction removed. All riders can accept orders.
+  if (isCashOrder) {
+    const partnerCapacity = await getPartnerCashCapacity(deliveryPartnerId, {
+      excludeOrderId: existingOrder._id,
+    });
+    if (Number(partnerCapacity.availableCashLimit || 0) < orderAmount) {
+      const err = new ValidationError(
+        `Cash limit reached. You can take ₹${Math.floor(partnerCapacity.availableCashLimit || 0)} more in COD cash; this order needs ₹${orderAmount}. Deposit cash to accept more COD orders.`,
+      );
+      err.code = 'CASH_LIMIT_EXCEEDED';
+      throw err;
+    }
+  }
 
   const now = new Date();
   const acceptedStatuses = ['confirmed', 'preparing', 'ready_for_pickup', 'picked_up'];
@@ -757,12 +743,17 @@ export async function rejectOrderDelivery(orderId, deliveryPartnerId, reason = '
     throw new ForbiddenError('Not your order');
   }
 
+  if (['picked_up', 'reached_drop', 'delivered'].includes(order.orderStatus)) {
+    throw new ValidationError('You have already picked up this order. Please complete the delivery or contact support.');
+  }
+
   const offer = order.dispatch.offeredTo.find(
-    (item) =>
-      String(item.partnerId) === String(deliveryPartnerId) &&
-      item.action === 'offered',
+    (item) => String(item.partnerId) === String(deliveryPartnerId),
   );
-  if (offer) offer.action = 'rejected';
+  if (offer) {
+    offer.action = 'rejected';
+    offer.at = new Date();
+  }
 
   // If the order is dead, we don't need to put it back in the unassigned pool. 
   // We just want to record the rider's reason.
@@ -791,6 +782,15 @@ export async function rejectOrderDelivery(orderId, deliveryPartnerId, reason = '
     note: `Rejected. Reason: ${reason || 'Not provided'}`,
   });
   await order.save();
+
+  // The order is back in the pool: tell the customer/restaurant and drop this rider's tracking.
+  emitOrderUpdate(order, deliveryPartnerId, { sendMilestonePush: false });
+  try {
+    const db = getFirebaseDB();
+    if (db) await db.ref(`active_orders/${order._id.toString()}`).remove();
+  } catch (error) {
+    logger.warn(`Could not clear tracking node after reject for ${order._id}: ${error?.message || error}`);
+  }
 
   enqueueOrderEvent('delivery_rejected', {
     orderMongoId: order._id?.toString?.(),
@@ -989,25 +989,26 @@ export async function confirmPickupDelivery(orderId, deliveryPartnerId, billImag
       throw new ValidationError(`Order is already at status '${from}'. Cannot re-mark as '${nextStatus}'.`);
   }
 
-  const pickupRequired = order.deliveryVerification?.pickupOtp?.required !== false;
-  const pickupVerified = order.deliveryVerification?.pickupOtp?.verified === true;
+  if (order.dispatch?.status !== 'accepted') {
+    throw new ValidationError('Accept the order before picking it up.');
+  }
+  if (!String(order.pickupOtp || '').trim()) {
+    throw new ValidationError('Confirm that you have reached the restaurant first.');
+  }
 
-  if (pickupRequired && !pickupVerified) {
-    const isSkipped = typeof otp === 'string' && ['SKIP', 'BYPASS', 'NONE', 'skip', 'bypass'].includes(otp.trim().toUpperCase());
-    if (!isSkipped) {
-      if (!otp) {
-        throw new ValidationError("Pickup OTP is required to mark this order as picked up.");
-      }
-      if (!isOtpMatch(order.pickupOtp, otp)) {
-        throw new ValidationError("Invalid Pickup OTP. Please ask the restaurant for the correct OTP.");
-      }
+  // The restaurant's pickup OTP is always required (no skip).
+  const pickupVerified = order.deliveryVerification?.pickupOtp?.verified === true;
+  if (!pickupVerified) {
+    if (!otp) {
+      throw new ValidationError("Pickup OTP is required to mark this order as picked up.");
+    }
+    if (!isOtpMatch(order.pickupOtp, otp)) {
+      throw new ValidationError("Invalid Pickup OTP. Please ask the restaurant for the correct OTP.");
     }
     if (!order.deliveryVerification) order.deliveryVerification = {};
     if (!order.deliveryVerification.pickupOtp) order.deliveryVerification.pickupOtp = {};
+    order.deliveryVerification.pickupOtp.required = true;
     order.deliveryVerification.pickupOtp.verified = true;
-    if (isSkipped) {
-      order.deliveryVerification.pickupOtp.bypassed = true;
-    }
     order.markModified('deliveryVerification');
   }
 
@@ -1051,6 +1052,14 @@ export async function confirmReachedDropDelivery(orderId, deliveryPartnerId) {
     order.dispatch?.deliveryPartnerId?.toString() !== deliveryPartnerId.toString()
   ) {
     throw new ForbiddenError('Not your order');
+  }
+
+  if (order.orderStatus !== 'picked_up') {
+    throw new ValidationError(
+      order.orderStatus === 'delivered'
+        ? 'Order already delivered'
+        : 'Pick up the order from the restaurant before marking arrival at the customer.',
+    );
   }
 
   if (order.deliveryVerification?.dropOtp?.verified) {
@@ -1119,7 +1128,7 @@ export async function confirmReachedDropDelivery(orderId, deliveryPartnerId) {
   await order.save();
 
   emitDeliveryDropOtpToUser(order, String(order.deliveryOtp || '').trim(), { isResend: false });
-  emitOrderUpdate(order, deliveryPartnerId);
+  emitOrderUpdate(order, deliveryPartnerId, { milestone: alreadyAtDrop ? null : 'reached_drop' });
   enqueueOrderEvent('reached_drop', {
     orderMongoId: order._id?.toString?.(),
     orderId: order._id.toString(),
@@ -1195,30 +1204,28 @@ export async function completeDelivery(orderId, deliveryPartnerId, body = {}) {
     throw new ForbiddenError('Not your order');
   }
 
-  const { otp, ratings } = body;
+  const { otp } = body;
 
-  // 1. Handover OTP Verification (Bypassable for direct rider delivery)
-  const isOtpBypassed = !otp || (typeof otp === 'string' && ['BYPASS', 'SKIP', 'NONE', 'bypass', 'skip'].includes(otp.trim()));
+  if (order.orderStatus !== 'picked_up') {
+    throw new ValidationError(
+      order.orderStatus === 'delivered'
+        ? 'Order already delivered'
+        : 'Pick up the order before completing the delivery.',
+    );
+  }
 
+  // The customer's handover OTP is always required (no bypass).
   if (!order.deliveryVerification) order.deliveryVerification = {};
-  if (!order.deliveryVerification.dropOtp) order.deliveryVerification.dropOtp = { required: false, verified: false };
-
-  if (
-    otp &&
-    !isOtpBypassed &&
-    order.deliveryVerification?.dropOtp?.required &&
-    !order.deliveryVerification?.dropOtp?.verified
-  ) {
-    const orderWithSecret = await FoodOrder.findById(order._id).select('+deliveryOtp');
-    if (isOtpMatch(orderWithSecret?.deliveryOtp, otp)) {
-      order.deliveryVerification.dropOtp.verified = true;
-      order.markModified('deliveryVerification.dropOtp.verified');
-    } else {
-      throw new ValidationError('Invalid handover OTP provided.');
+  if (!order.deliveryVerification.dropOtp) order.deliveryVerification.dropOtp = { required: true, verified: false };
+  if (!order.deliveryVerification.dropOtp.verified) {
+    if (!String(order.deliveryOtp || '').trim()) {
+      throw new ValidationError('Mark that you have reached the customer to send them the delivery OTP.');
     }
-  } else if (isOtpBypassed) {
+    if (!otp || !isOtpMatch(order.deliveryOtp, otp)) {
+      throw new ValidationError('Invalid handover OTP. Ask the customer for the code shown in their app.');
+    }
+    order.deliveryVerification.dropOtp.required = true;
     order.deliveryVerification.dropOtp.verified = true;
-    order.deliveryVerification.dropOtp.bypassed = true;
     order.markModified('deliveryVerification.dropOtp');
   }
 
@@ -1287,13 +1294,6 @@ export async function completeDelivery(orderId, deliveryPartnerId, body = {}) {
     deliveredAt: new Date(),
   };
 
-  if (ratings) {
-    order.ratings = {
-      ...(order.ratings?.toObject?.() || order.ratings || {}),
-      ...ratings,
-    };
-  }
-
   pushStatusHistory(order, {
     byRole: 'DELIVERY_PARTNER',
     byId: deliveryPartnerId,
@@ -1322,7 +1322,8 @@ export async function completeDelivery(orderId, deliveryPartnerId, body = {}) {
   }
 
   emitOrderUpdate(order, deliveryPartnerId);
-  
+  await dispatchService.releaseOrderDispatch(order, { reason: 'delivered' });
+
   enqueueOrderEvent('delivery_completed', {
     orderMongoId: order._id?.toString?.(),
     orderId: order.orderId || order._id.toString(),
@@ -1337,39 +1338,9 @@ export async function completeDelivery(orderId, deliveryPartnerId, body = {}) {
 
 
 export async function updateOrderStatusDelivery(orderId, deliveryPartnerId, orderStatus) {
-  const identity = buildOrderIdentityFilter(orderId);
-  if (!identity) throw new ValidationError('Order id required');
-
-  const order = await FoodOrder.findOne(identity).select('+deliveryOtp');
-  if (!order) throw new NotFoundError('Order not found');
-  if (order.dispatch.deliveryPartnerId?.toString() !== deliveryPartnerId.toString()) {
-    throw new ForbiddenError('Not your order');
-  }
-  if (orderStatus === 'delivered') {
-    throw new ValidationError(
-      'Use the delivery completion endpoint so OTP and server-side payment checks are enforced.',
-    );
-  }
-
-  const from = order.orderStatus;
-  if (!isStatusAdvance(from, orderStatus)) {
-      throw new ValidationError(`Current order status '${from}' is further ahead than '${orderStatus}'. Order cannot be moved backwards.`);
-  }
-  order.orderStatus = orderStatus;
-  pushStatusHistory(order, {
-    byRole: 'DELIVERY_PARTNER',
-    byId: deliveryPartnerId,
-    from,
-    to: orderStatus,
-  });
-  await order.save();
-
-  enqueueOrderEvent('delivery_status_updated', {
-    orderMongoId: order._id?.toString?.(),
-    orderId: order._id.toString(),
-    deliveryPartnerId,
-    from,
-    to: orderStatus,
-  });
-  return order.toObject();
+  // Riders move orders forward only through the dedicated steps (reached pickup, pickup OTP,
+  // reached drop, handover OTP + complete) so OTP, cash and payout rules always apply.
+  throw new ValidationError(
+    'Use the delivery steps in the app (reached pickup, pick up, reached drop, complete) to update this order.',
+  );
 }

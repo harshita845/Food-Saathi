@@ -48,7 +48,7 @@ export const OrderSummaryModal = ({ order, onDone }) => {
           </button>
 
           <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mt-8 sm:mt-12 opacity-80">
-            Order Reference: {order?.orderId || order?.displayOrderId || 'FOD-1234'}
+            Order Reference: {order?.orderId || order?.displayOrderId || '—'}
           </p>
         </motion.div>
       </div>

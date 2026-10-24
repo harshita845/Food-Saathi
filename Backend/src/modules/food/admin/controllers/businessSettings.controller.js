@@ -1,6 +1,17 @@
+import mongoose from 'mongoose';
 import { FoodBusinessSettings } from '../models/businessSettings.model.js';
 import { sendResponse } from '../../../../utils/response.js';
 import { uploadGenericImage, uploadFileBuffer } from '../../../../services/upload.service.js';
+
+function normalizeZoneIdList(value) {
+    let list = value;
+    if (typeof list === 'string') {
+        try { list = JSON.parse(list); } catch { list = list.split(','); }
+    }
+    if (!Array.isArray(list)) return [];
+    return [...new Set(list.map((v) => String(v || '').trim()).filter((v) => mongoose.isValidObjectId(v)))];
+}
+
 
 export async function getBusinessSettings(req, res, next) {
     try {
@@ -35,7 +46,7 @@ export async function updateBusinessSettings(req, res, next) {
         const { 
             companyName, email, phoneCountryCode, phoneNumber, address, state, pincode, region,
             supportEmail, supportPhone, supportHours, fssai, gstin, onlinePaymentOnly, maxCodAmount,
-            maintenanceMode, customerRegistration, restaurantRegistration, deliveryRegistration
+            maintenanceMode, maintenanceExemptZoneIds, customerRegistration, restaurantRegistration, deliveryRegistration
         } = data;
 
         // Ensure string inputs for validation to prevent crashes from non-string values
@@ -109,6 +120,9 @@ export async function updateBusinessSettings(req, res, next) {
         if (maintenanceMode !== undefined) {
             settings.maintenanceMode = Boolean(maintenanceMode === 'true' || maintenanceMode === true);
         }
+        if (maintenanceExemptZoneIds !== undefined) {
+            settings.maintenanceExemptZoneIds = normalizeZoneIdList(maintenanceExemptZoneIds);
+        }
         if (customerRegistration !== undefined) {
             settings.customerRegistration = Boolean(customerRegistration === 'true' || customerRegistration === true);
         }
@@ -179,6 +193,7 @@ export async function updateBusinessToggles(req, res, next) {
             onlinePaymentOnly,
             maxCodAmount,
             maintenanceMode,
+            maintenanceExemptZoneIds,
             customerRegistration,
             restaurantRegistration,
             deliveryRegistration,
@@ -200,6 +215,9 @@ export async function updateBusinessToggles(req, res, next) {
         }
         if (maintenanceMode !== undefined) {
             settings.maintenanceMode = Boolean(maintenanceMode);
+        }
+        if (maintenanceExemptZoneIds !== undefined) {
+            settings.maintenanceExemptZoneIds = normalizeZoneIdList(maintenanceExemptZoneIds);
         }
         if (customerRegistration !== undefined) {
             settings.customerRegistration = Boolean(customerRegistration);

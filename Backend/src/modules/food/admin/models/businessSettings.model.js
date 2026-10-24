@@ -44,6 +44,8 @@ const businessSettingsSchema = new mongoose.Schema(
         onlinePaymentOnly: { type: Boolean, default: false },
         maxCodAmount: { type: Number, default: 0 }, // 0 means no limit
         maintenanceMode: { type: Boolean, default: false },
+        /** Zones that keep accepting orders while maintenance mode is on. */
+        maintenanceExemptZoneIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'FoodZone' }],
         customerRegistration: { type: Boolean, default: true },
         restaurantRegistration: { type: Boolean, default: true },
         deliveryRegistration: { type: Boolean, default: true }

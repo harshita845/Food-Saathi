@@ -5,7 +5,9 @@ import { FoodFeeSettings } from '../../admin/models/feeSettings.model.js';
 import { FoodBusinessSettings } from '../../admin/models/businessSettings.model.js';
 import { FoodOffer } from '../../admin/models/offer.model.js';
 import { FoodOfferUsage } from '../../admin/models/offerUsage.model.js';
-import { FoodZone } from '../../admin/models/zone.model.js';
+import { FoodItem } from '../../admin/models/food.model.js';
+import { FoodAddon } from '../../restaurant/models/foodAddon.model.js';
+import { serializeFoodVariants, getFoodDisplayPrice } from '../../admin/services/foodVariant.service.js';
 import { ValidationError } from '../../../../core/auth/errors.js';
 import { haversineKm } from './order.helpers.js';
 import { getDrivingDistances } from '../../../../services/googleMaps.service.js';
@@ -18,48 +20,184 @@ function isOfferEndDateValid(endDate, now = new Date()) {
   return now.getTime() <= end.getTime();
 }
 
+/**
+ * Blocks ordering while maintenance mode is on, except for zones the admin
+ * listed in business settings (maintenanceExemptZoneIds).
+ */
+export async function assertOrderingOpen(restaurant) {
+  const businessSettings = await FoodBusinessSettings.findOne()
+    .select('maintenanceMode maintenanceExemptZoneIds')
+    .lean();
+  if (!businessSettings?.maintenanceMode) return businessSettings;
+
+  const exemptZoneIds = (businessSettings.maintenanceExemptZoneIds || []).map(String);
+  const zoneId = restaurant?.zoneId ? String(restaurant.zoneId) : '';
+  if (!zoneId || !exemptZoneIds.includes(zoneId)) {
+    throw new ValidationError('Ordering is temporarily unavailable due to maintenance. Please try again later.');
+  }
+  return businessSettings;
+}
+
+/** Same discount selection the restaurant page uses when adding an item to the cart. */
+function applyRestaurantItemDiscount(restaurant, itemId, basePrice) {
+  let bestAmount = 0;
+  let bestValue = 0;
+  let bestIsFlat = false;
+
+  const itemDiscount = (restaurant?.itemDiscounts || []).find(
+    (d) => String(d.itemId) === String(itemId),
+  );
+  if (itemDiscount) {
+    const value = Number(itemDiscount.discountValue) || 0;
+    const isFlat = String(itemDiscount.discountType || '').toUpperCase() === 'FLAT';
+    const amount = isFlat ? value : (basePrice * value) / 100;
+    if (amount > bestAmount) {
+      bestAmount = amount;
+      bestValue = value;
+      bestIsFlat = isFlat;
+    }
+  }
+
+  const rule = (restaurant?.discountRules || []).find((r) => {
+    const val = Number(r.conditionValue);
+    if (r.conditionType === 'PRICE_ABOVE' && basePrice > val) return true;
+    if (r.conditionType === 'PRICE_BELOW' && basePrice < val) return true;
+    return false;
+  });
+  if (rule) {
+    const value = Number(rule.discountValue) || 0;
+    const amount = (basePrice * value) / 100;
+    if (amount > bestAmount) {
+      bestAmount = amount;
+      bestValue = value;
+      bestIsFlat = false;
+    }
+  }
+
+  const globalDiscount = Number(restaurant?.discount || 0);
+  if (globalDiscount > 0) {
+    const amount = (basePrice * globalDiscount) / 100;
+    if (amount > bestAmount) {
+      bestValue = globalDiscount;
+      bestIsFlat = false;
+    }
+  }
+
+  if (!(bestValue > 0)) return basePrice;
+  return Math.round(
+    bestIsFlat ? Math.max(0, basePrice - bestValue) : basePrice * (1 - bestValue / 100),
+  );
+}
+
+/**
+ * Re-prices cart lines from the database (menu items, variants, add-ons and
+ * restaurant discounts). Client-sent prices are never trusted.
+ */
+export async function resolveServerOrderItems(restaurant, rawItems = []) {
+  const items = Array.isArray(rawItems) ? rawItems : [];
+  if (!items.length) throw new ValidationError('At least one item required');
+
+  const ids = [...new Set(items.map((it) => String(it?.itemId || '').trim()))];
+  const objectIds = ids.filter((id) => mongoose.isValidObjectId(id)).map((id) => new mongoose.Types.ObjectId(id));
+  const restaurantObjectId = new mongoose.Types.ObjectId(String(restaurant._id));
+
+  const [foods, addons] = await Promise.all([
+    FoodItem.find({ _id: { $in: objectIds }, restaurantId: restaurantObjectId })
+      .select('name price variants image foodType isAvailable approvalStatus')
+      .lean(),
+    FoodAddon.find({ _id: { $in: objectIds }, restaurantId: restaurantObjectId, isDeleted: { $ne: true } })
+      .select('published isAvailable')
+      .lean(),
+  ]);
+  const foodById = new Map(foods.map((f) => [String(f._id), f]));
+  const addonById = new Map(addons.map((a) => [String(a._id), a]));
+
+  return items.map((it) => {
+    const itemId = String(it?.itemId || '').trim();
+    const quantity = Math.max(1, Math.trunc(Number(it?.quantity) || 1));
+    const food = foodById.get(itemId);
+
+    if (food) {
+      if (food.approvalStatus !== 'approved' || food.isAvailable === false) {
+        throw new ValidationError(`${food.name} is currently unavailable. Please remove it from your cart.`);
+      }
+      const variants = serializeFoodVariants(food.variants);
+      let basePrice;
+      let variantId = '';
+      let variantName = '';
+      if (it?.variantId) {
+        const variant = variants.find((v) => v.id === String(it.variantId));
+        if (!variant) {
+          throw new ValidationError(`The selected option for ${food.name} is no longer available.`);
+        }
+        basePrice = variant.price;
+        variantId = variant.id;
+        variantName = variant.name;
+      } else {
+        basePrice = getFoodDisplayPrice(food);
+      }
+      const price = applyRestaurantItemDiscount(restaurant, itemId, basePrice);
+      return {
+        itemId,
+        name: food.name,
+        variantId,
+        variantName,
+        variantPrice: price,
+        price,
+        originalPrice: basePrice,
+        quantity,
+        isVeg: food.foodType === 'Veg',
+        image: it?.image || food.image || '',
+        notes: it?.notes || '',
+      };
+    }
+
+    const addon = addonById.get(itemId);
+    if (addon?.published) {
+      if (addon.isAvailable === false) {
+        throw new ValidationError(`${addon.published.name} is currently unavailable. Please remove it from your cart.`);
+      }
+      const price = Number(addon.published.price) || 0;
+      return {
+        itemId,
+        name: addon.published.name,
+        variantId: '',
+        variantName: '',
+        variantPrice: price,
+        price,
+        originalPrice: price,
+        quantity,
+        isVeg: it?.isVeg !== false,
+        image: it?.image || addon.published.image || '',
+        notes: it?.notes || '',
+      };
+    }
+
+    throw new ValidationError('Some items in your cart are no longer available. Please refresh your cart.');
+  });
+}
+
 export async function calculateOrderPricing(userId, dto) {
   const restaurant = await FoodRestaurant.findById(dto.restaurantId)
-    .select("status location itemDiscounts zoneId")
+    .select("status location itemDiscounts discountRules discount zoneId")
     .lean();
   if (!restaurant) throw new ValidationError("Restaurant not found");
 
-  const businessSettings = await FoodBusinessSettings.findOne().select('maintenanceMode').lean();
-  if (businessSettings?.maintenanceMode) {
-    let isIndore = false;
-    if (restaurant.zoneId) {
-      const zone = await FoodZone.findById(restaurant.zoneId).select('name').lean();
-      if (zone && zone.name && zone.name.toLowerCase() === 'indore') {
-        isIndore = true;
-      }
-    }
-    if (!isIndore) {
-      throw new ValidationError('Ordering is temporarily unavailable due to maintenance. Please try again later.');
-    }
-  }
+  await assertOrderingOpen(restaurant);
 
   if (restaurant.status !== "approved")
     throw new ValidationError("Restaurant not available");
 
-  const items = Array.isArray(dto.items) ? dto.items : [];
+  const items = await resolveServerOrderItems(restaurant, dto.items);
   let itemDiscountTotal = 0;
   let subtotal = 0;
   let eligibleSubtotalForCoupon = 0;
 
   items.forEach((it) => {
-    let price = Number(it.price) || 0;
-    const qty = Number(it.quantity) || 1;
-    let hasItemDiscount = false;
-    
-    // The frontend already sends the discounted price in it.price.
-    // If we need to calculate itemDiscountTotal, we should rely on originalPrice sent by frontend,
-    // but since it's not sent, we skip re-applying the discount to avoid double discounting.
-    // In a future secure update, backend should fetch item prices from DB and apply discounts here.
-    
-    subtotal += price * qty;
-    if (!hasItemDiscount) {
-      eligibleSubtotalForCoupon += price * qty;
-    }
+    const lineTotal = it.price * it.quantity;
+    subtotal += lineTotal;
+    eligibleSubtotalForCoupon += lineTotal;
+    itemDiscountTotal += Math.max(0, (it.originalPrice - it.price) * it.quantity);
   });
   itemDiscountTotal = Math.floor(itemDiscountTotal);
 
@@ -335,6 +473,8 @@ export async function calculateOrderPricing(userId, dto) {
   const total = Math.max(0, totalBeforeDiscount - totalDiscount);
 
   return {
+    items,
+    distanceKm,
     pricing: {
       subtotal,
       tax,

@@ -27,6 +27,25 @@ import {
   clearDeliveryOffersForOrder,
 } from './order-dispatch.firebase.js';
 
+const DEFAULT_RADIUS_TIERS_KM = [2, 4, 6, 8, 15];
+
+/** Admin-configured dispatch behaviour (Fee Settings), with schema defaults as fallback. */
+export async function getDispatchConfig() {
+  const feeSettings = await FoodFeeSettings.findOne({ isActive: true }).sort({ createdAt: -1 }).lean();
+  const tiers = (feeSettings?.dispatchRadiusTiers || [])
+    .map(Number)
+    .filter((km) => Number.isFinite(km) && km > 0)
+    .sort((a, b) => a - b);
+  const timeoutSeconds = Number(feeSettings?.dispatchOfferTimeoutSeconds);
+  const leadMinutes = Number(feeSettings?.scheduledDispatchLeadMinutes);
+  return {
+    radiusTiers: tiers.length ? tiers : DEFAULT_RADIUS_TIERS_KM,
+    expansionEnabled: feeSettings?.dispatchRadiusExpansionEnabled !== false,
+    offerTimeoutMs: (Number.isFinite(timeoutSeconds) && timeoutSeconds >= 15 ? timeoutSeconds : 60) * 1000,
+    scheduledLeadMs: (Number.isFinite(leadMinutes) && leadMinutes >= 0 ? leadMinutes : 30) * 60 * 1000,
+  };
+}
+
 function isPointInPolygon(lat, lng, polygon) {
   if (!Array.isArray(polygon) || polygon.length < 3) return false;
   let inside = false;
@@ -74,17 +93,39 @@ function upsertPartnerOffer(order, entry) {
   order.dispatch.offeredTo.push(entry);
 }
 
+/**
+ * COD orders only go to riders whose cash limit can absorb the order amount.
+ * Prepaid orders (requiredAmount 0) are offered to everyone.
+ */
 async function filterPartnersByCashLimit(partners = [], options = {}) {
-  // Since we are removing cash limit checks, we simply map partners to ensure they have expected shape.
-  // We allow all partners to bypass cash limit.
   if (!Array.isArray(partners) || partners.length === 0) return [];
-  
-  return partners.map((p) => ({
-    ...p,
-    availableCashLimit: Number.MAX_SAFE_INTEGER,
-    allowOverLimit: true,
-    requiredCashForOrder: 0,
-  }));
+  const requiredAmount = Math.max(0, Number(options.requiredAmount || 0));
+  if (requiredAmount <= 0) {
+    return partners.map((p) => ({ ...p, allowOverLimit: false, requiredCashForOrder: 0 }));
+  }
+
+  const { getPartnerCashCapacity } = await import('./order-delivery.service.js');
+  const checked = await Promise.all(
+    partners.map(async (p) => {
+      try {
+        const capacity = await getPartnerCashCapacity(String(p.partnerId));
+        return {
+          ...p,
+          availableCashLimit: Number(capacity.availableCashLimit || 0),
+          allowOverLimit: false,
+          requiredCashForOrder: requiredAmount,
+        };
+      } catch (err) {
+        logger.warn(`[Dispatch] Cash capacity check failed for rider ${p.partnerId}: ${err.message}`);
+        return null;
+      }
+    }),
+  );
+  const eligible = checked.filter((p) => p && p.availableCashLimit >= requiredAmount);
+  if (eligible.length < partners.length) {
+    logger.info(`[Dispatch] Cash limit excluded ${partners.length - eligible.length} rider(s) for a ₹${requiredAmount} COD order`);
+  }
+  return eligible;
 }
 
 async function listNearbyOnlineDeliveryPartners(
@@ -93,7 +134,6 @@ async function listNearbyOnlineDeliveryPartners(
     maxKm = 15,
     limit = null,
     requiredAmount = 0,
-    allowOverLimitFallback = true,
     zoneOnly = true,
   } = {},
 ) {
@@ -195,10 +235,7 @@ async function listNearbyOnlineDeliveryPartners(
     return { partners: [] };
   }
 
-  const cashEligibleFinal = await filterPartnersByCashLimit(picked, {
-    requiredAmount,
-    allowOverLimitFallback,
-  });
+  const cashEligibleFinal = await filterPartnersByCashLimit(picked, { requiredAmount });
 
   return { partners: cashEligibleFinal };
 }
@@ -314,16 +351,13 @@ export async function tryAutoAssign(orderId, options = {}) {
     const isCashOrder = paymentMethod === 'cash';
     const requiredAmount = isCashOrder ? Number(order?.pricing?.total || 0) : 0;
 
-    // RADIUS EXPANSION LOGIC
-    const feeSettings = await FoodFeeSettings.findOne({ isActive: true }).lean();
-    let radiusTiers = feeSettings?.dispatchRadiusTiers || [];
-    if (!radiusTiers.length) {
-      radiusTiers = [2, 4, 6, 8, 10, 15]; // Exact tiers requested: 2, 4, 6, 8, 10, 15
-    }
+    // RADIUS EXPANSION LOGIC (tiers, timeout and expansion toggle come from admin Fee Settings)
+    const { radiusTiers: configuredTiers, expansionEnabled, offerTimeoutMs } = await getDispatchConfig();
+    const radiusTiers = expansionEnabled ? configuredTiers : [configuredTiers[configuredTiers.length - 1]];
 
     // CYCLE RESTART LOGIC: If we exceeded the maximum tiers, restart the cycle from 2km
     if (attempt > radiusTiers.length) {
-      logger.info(`[Dispatch] Order ${order._id}: All ${radiusTiers.length} tiers exhausted (attempt was ${attempt}). Restarting cycle from 2km.`);
+      logger.info(`[Dispatch] Order ${order._id}: All ${radiusTiers.length} tiers exhausted (attempt was ${attempt}). Restarting cycle from ${radiusTiers[0]}km.`);
       attempt = 1;
       order.dispatch.offeredTo = []; // Clear history so all riders get a fresh chance
       order.dispatch.dispatchAttempt = 1;
@@ -335,15 +369,20 @@ export async function tryAutoAssign(orderId, options = {}) {
 
     const searchOptions = {
       maxKm,
-      requiredAmount: 0,
-      allowOverLimitFallback: true,
+      requiredAmount,
     };
     
     logger.info(`[Dispatch] Order ${order._id} attempt=${attempt} maxKm=${maxKm}`);
     const { partners } = await listNearbyOnlineDeliveryPartners(order.restaurantId, searchOptions);
 
-    // Re-broadcast to every rider in this radius each attempt, including previously offered riders.
-    const eligible = partners;
+    // Re-broadcast to every rider in this radius each attempt, except riders who passed on or
+    // dropped this order (they get it again only after a full cycle restart).
+    const declinedIds = new Set(
+      (order.dispatch?.offeredTo || [])
+        .filter((o) => o?.action === 'rejected')
+        .map((o) => String(o.partnerId)),
+    );
+    const eligible = partners.filter((p) => !declinedIds.has(String(p.partnerId)));
 
     if (eligible.length === 0) {
       logger.info(`[Dispatch] No eligible partners in ${maxKm}km for order ${order._id} (Attempt ${attempt}). Advancing to next tier.`);
@@ -353,13 +392,13 @@ export async function tryAutoAssign(orderId, options = {}) {
       order.dispatch.deliveryPartnerId = null;
       await order.save();
 
-      // Re-queue to check the next tier after a short delay (60s)
+      // Re-queue to check the next tier after the configured offer timeout
       await addOrderJob({
         action: 'DISPATCH_TIMEOUT_CHECK',
         orderMongoId: order._id.toString(),
         orderId: order._id.toString(),
         attempt: attempt + 1
-      }, { delay: 60000 });
+      }, { delay: offerTimeoutMs });
 
       return order;
     }
@@ -444,13 +483,13 @@ export async function tryAutoAssign(orderId, options = {}) {
     order.markModified('dispatch.offeredTo');
     await order.save();
 
-    // Re-check in 60s if no one accepts
+    // Re-check after the configured offer timeout if no one accepts
     await addOrderJob({
       action: 'DISPATCH_TIMEOUT_CHECK',
       orderMongoId: order._id.toString(),
       orderId: order._id.toString(),
       attempt: attempt + 1
-    }, { delay: 60000 });
+    }, { delay: offerTimeoutMs });
 
     return order;
   } finally {
@@ -529,11 +568,7 @@ async function resendDeliveryNotificationForOrder(order, options = {}) {
     throw new ValidationError('A delivery partner has already accepted this order.');
   }
 
-  const feeSettings = await FoodFeeSettings.findOne({ isActive: true }).lean();
-  let radiusTiers = feeSettings?.dispatchRadiusTiers || [];
-  if (!radiusTiers.length) {
-    radiusTiers = [2, 4, 6, 8, 10, 15];
-  }
+  const { radiusTiers } = await getDispatchConfig();
   const maxZoneRadius = radiusTiers[radiusTiers.length - 1];
 
   const paymentMethod = String(order.payment?.method || 'cash').toLowerCase();
@@ -541,7 +576,6 @@ async function resendDeliveryNotificationForOrder(order, options = {}) {
   const preview = await listNearbyOnlineDeliveryPartners(order.restaurantId, {
     maxKm: maxZoneRadius,
     requiredAmount,
-    allowOverLimitFallback: true,
     zoneOnly: true,
   });
   const shortlistedCount = Array.isArray(preview?.partners) ? preview.partners.length : 0;
@@ -623,6 +657,39 @@ export async function resendDeliveryNotificationAdmin(orderId, options = {}) {
   return resendDeliveryNotificationForOrder(order, options);
 }
 
+/**
+ * Stops everything dispatch-related for an order that is finished (cancelled or delivered):
+ * pending timeout job, rider offer popups (Firebase + socket) and the live tracking node.
+ */
+export async function releaseOrderDispatch(order, { reason = 'cancelled' } = {}) {
+  if (!order?._id) return;
+  const orderMongoId = String(order._id);
+  try {
+    await cancelDispatchTimeoutJob(orderMongoId);
+  } catch (err) {
+    logger.warn(`[Dispatch] Could not cancel timeout job for ${orderMongoId}: ${err.message}`);
+  }
+
+  await clearDeliveryOffersForOrder(order, { includeAssignedPartner: true });
+
+  const io = getIO();
+  const claimedPayload = { orderId: orderMongoId, orderMongoId, claimedBy: reason };
+  for (const offer of order.dispatch?.offeredTo || []) {
+    if (offer?.partnerId) io.to(rooms.delivery(offer.partnerId)).emit('order_claimed', claimedPayload);
+  }
+
+  try {
+    const { getFirebaseDB } = await import('../../../../config/firebase.js');
+    const db = getFirebaseDB();
+    if (db) {
+      const keys = new Set([orderMongoId, String(order.order_id || '')].filter(Boolean));
+      await Promise.all([...keys].map((key) => db.ref(`active_orders/${key}`).remove()));
+    }
+  } catch (err) {
+    logger.warn(`[Dispatch] Could not clear tracking node for ${orderMongoId}: ${err.message}`);
+  }
+}
+
 /** Cancel any queued dispatch timeout job for an order. */
 export async function cancelPendingDispatchJob(orderId) {
   await cancelDispatchTimeoutJob(String(orderId));
@@ -652,7 +719,7 @@ export async function resetDispatchForFreshHunt(orderId) {
  * @param {string} [options.zoneId]
  * @returns {Promise<{ available: boolean, count: number, reason: string }>}
  */
-export async function checkRidersAvailabilityInZone({ restaurantId, zoneId } = {}) {
+export async function checkRidersAvailabilityInZone({ restaurantId, zoneId, requiredCashAmount = 0 } = {}) {
   let restaurant = null;
   if (restaurantId) {
     try {
@@ -705,6 +772,8 @@ export async function checkRidersAvailabilityInZone({ restaurantId, zoneId } = {
     zonePolygon = zoneDoc.coordinates;
   }
 
+  const { radiusTiers } = await getDispatchConfig();
+  const maxDispatchKm = radiusTiers[radiusTiers.length - 1];
   const restCoords = restaurant?.location?.coordinates;
   const hasRestCoords = Array.isArray(restCoords) && restCoords.length === 2;
   const rLng = hasRestCoords ? restCoords[0] : null;
@@ -720,7 +789,7 @@ export async function checkRidersAvailabilityInZone({ restaurantId, zoneId } = {
       }
       if (rLat != null && rLng != null) {
         const d = haversineKm(rLat, rLng, lat, lng);
-        return Number.isFinite(d) && d <= 15;
+        return Number.isFinite(d) && d <= maxDispatchKm;
       }
       return true;
     }
@@ -731,6 +800,17 @@ export async function checkRidersAvailabilityInZone({ restaurantId, zoneId } = {
 
   if (eligibleRiders.length === 0) {
     return { available: false, count: 0, reason: 'no_riders_in_zone' };
+  }
+
+  if (Number(requiredCashAmount) > 0) {
+    const cashEligible = await filterPartnersByCashLimit(
+      eligibleRiders.map((p) => ({ partnerId: p._id })),
+      { requiredAmount: Number(requiredCashAmount) },
+    );
+    if (cashEligible.length === 0) {
+      return { available: false, count: 0, reason: 'all_riders_busy' };
+    }
+    return { available: true, count: cashEligible.length, reason: 'available' };
   }
 
   return {

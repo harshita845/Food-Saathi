@@ -81,6 +81,17 @@ const sendSmsViaSmsWala = async (phone, otp) => {
     }
 };
 
+/** Test/review phone numbers configured in DEFAULT_OTP_TEST_PHONES (compared on the last 10 digits). */
+function isDefaultOtpTestPhone(phone) {
+    const last10 = String(phone || '').replace(/\D/g, '').slice(-10);
+    if (!last10) return false;
+    return String(config.defaultOtpTestPhones || '')
+        .split(',')
+        .map((p) => p.replace(/\D/g, '').slice(-10))
+        .filter(Boolean)
+        .includes(last10);
+}
+
 export const createOrUpdateOtp = async (phone) => {
     const existing = await FoodOtp.findOne({ phone });
     const now = new Date();
@@ -102,9 +113,10 @@ export const createOrUpdateOtp = async (phone) => {
         }
     }
 
+    const useFixedOtp = config.useDefaultOtp || isDefaultOtpTestPhone(phone);
     let otp;
-    if (config.useDefaultOtp || phone.endsWith('9755633147') || phone.endsWith('8624862400')) {
-        otp = '123456';
+    if (useFixedOtp) {
+        otp = String(config.defaultOtpCode || '123456');
         logger.info(`Default OTP mode enabled – OTP is ${otp} for phone ${phone}`);
     } else {
         otp = generateOtpCode();
@@ -138,7 +150,7 @@ export const createOrUpdateOtp = async (phone) => {
     }
 
     // Only send SMS if not in default OTP mode
-    if (!config.useDefaultOtp && !phone.endsWith('9755633147') && !phone.endsWith('8624862400')) {
+    if (!useFixedOtp) {
         await sendSmsViaSmsWala(phone, otp);
     }
 

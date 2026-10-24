@@ -25,6 +25,10 @@ const feeSettingsSchema = new mongoose.Schema(
         deliveryBonusAmount: { type: Number, min: 0, default: 0 },
         dispatchRadiusExpansionEnabled: { type: Boolean, default: true },
         dispatchRadiusTiers: { type: [Number], default: [2, 4, 6, 8, 15] },
+        /** How long a broadcast offer stays open before dispatch widens the radius. */
+        dispatchOfferTimeoutSeconds: { type: Number, min: 15, max: 600, default: 60 },
+        /** Scheduled orders start the rider search this many minutes before the scheduled time. */
+        scheduledDispatchLeadMinutes: { type: Number, min: 0, max: 240, default: 30 },
         globalRestaurantCommission: { type: Number, min: 0, default: 0 },
         globalGstOnItem: { type: Number, min: 0, max: 100, default: 0 },
         globalGstOnCommission: { type: Number, min: 0, max: 100, default: 18 },

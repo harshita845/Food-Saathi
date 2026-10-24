@@ -6,6 +6,7 @@ import { getRedisClient } from '../../../../config/redis.js';
 import { getFirebaseDB } from '../../../../config/firebase.js';
 import { getIO, rooms } from '../../../../config/socket.js';
 import { logger } from '../../../../utils/logger.js';
+import { ACTIVE_DELIVERY_ORDER_STATUSES } from './deliveryMultiOrderSettings.service.js';
 
 /**
  * Normalizes and processes batched driver GPS coordinates.
@@ -39,13 +40,16 @@ export const processDriverLocationBatch = async (deliveryPartnerId, payload = {}
     console.log(`📦 Coordinates count: ${rawLocations.length} points`);
 
     // 2. Fetch driver profile & active order in parallel
-    const [partner, activeOrder] = await Promise.all([
+    // A rider can carry several orders at once (multi-order): every accepted, unfinished order gets the location.
+    const [partner, activeOrders] = await Promise.all([
         FoodDeliveryPartner.findById(deliveryPartnerId).select('status availabilityStatus lastLocationAt name phone').lean(),
-        FoodOrder.findOne({
+        FoodOrder.find({
             'dispatch.deliveryPartnerId': partnerObjectId,
-            orderStatus: { $in: ['accepted', 'confirmed', 'reached_pickup', 'picked_up', 'out_for_delivery', 'reached_drop'] }
-        }).select('_id orderId orderStatus user restaurantId').lean()
+            'dispatch.status': 'accepted',
+            orderStatus: { $in: ACTIVE_DELIVERY_ORDER_STATUSES }
+        }).select('_id order_id orderStatus userId restaurantId').sort({ 'dispatch.acceptedAt': 1 }).lean()
     ]);
+    const activeOrder = activeOrders[0] || null;
 
     if (!partner) {
         console.error(`❌ [LOCATION_TRACKING] Driver not found: ${deliveryPartnerId}`);
@@ -53,7 +57,7 @@ export const processDriverLocationBatch = async (deliveryPartnerId, payload = {}
     }
 
     if (activeOrder) {
-        console.log(`🚀 Active Order: ${activeOrder.orderId || activeOrder._id} (Status: ${activeOrder.orderStatus})`);
+        console.log(`🚀 Active Orders: ${activeOrders.map((o) => `${o.order_id || o._id}(${o.orderStatus})`).join(', ')}`);
     } else {
         console.log(`ℹ️ State: Online / Idle (No active trip)`);
     }
@@ -162,6 +166,13 @@ export const processDriverLocationBatch = async (deliveryPartnerId, payload = {}
                 }
             }).catch(e => logger.error(`❌ [LOCATION_TRACKING] Mongo driver location update error: ${e.message}`));
 
+            if (activeOrders.length) {
+                FoodOrder.updateMany(
+                    { _id: { $in: activeOrders.map((o) => o._id) } },
+                    { $set: { lastRiderLocation: newestPoint.location } }
+                ).catch(e => logger.error(`❌ [LOCATION_TRACKING] Mongo order location update error: ${e.message}`));
+            }
+
             // B. Update Redis Hot Cache
             try {
                 const redis = getRedisClient();
@@ -170,8 +181,8 @@ export const processDriverLocationBatch = async (deliveryPartnerId, payload = {}
                     const redisOps = [
                         redis.hSet('rider:locations:hot', String(deliveryPartnerId), coordString)
                     ];
-                    if (activeOrder) {
-                        redisOps.push(redis.hSet('order:locations:hot', String(activeOrder.orderId || activeOrder._id), coordString));
+                    for (const o of activeOrders) {
+                        redisOps.push(redis.hSet('order:locations:hot', String(o._id), coordString));
                     }
                     await Promise.all(redisOps);
                     logger.info(`🔥 [LOCATION_TRACKING] Redis hot cache updated for driver: ${deliveryPartnerId}`);
@@ -194,16 +205,17 @@ export const processDriverLocationBatch = async (deliveryPartnerId, payload = {}
                         accuracy: newestPoint.accuracy || 0,
                         last_updated: now,
                         is_online: partner.availabilityStatus === 'online',
-                        active_order_id: activeOrder ? String(activeOrder.orderId || activeOrder._id) : null
+                        active_order_id: activeOrder ? String(activeOrder._id) : null,
+                        active_order_ids: activeOrders.map((o) => String(o._id))
                     }).then(() => {
                         logger.info(`🔥 [FIREBASE] Updated node delivery_boys/${deliveryPartnerId}`);
                     }).catch(e => logger.warn(`⚠️ [FIREBASE] delivery_boys error: ${e.message}`));
 
-                    // Update active order node if on trip
-                    if (activeOrder) {
-                        const orderKeys = [String(activeOrder._id)];
-                        if (activeOrder.orderId && String(activeOrder.orderId) !== String(activeOrder._id)) {
-                            orderKeys.push(String(activeOrder.orderId));
+                    // Update the tracking node of every order on this trip
+                    for (const o of activeOrders) {
+                        const orderKeys = [String(o._id)];
+                        if (o.order_id && String(o.order_id) !== String(o._id)) {
+                            orderKeys.push(String(o.order_id));
                         }
 
                         for (const key of orderKeys) {
@@ -215,9 +227,7 @@ export const processDriverLocationBatch = async (deliveryPartnerId, payload = {}
                                 speed: newestPoint.speed || 0,
                                 accuracy: newestPoint.accuracy || 0,
                                 last_updated: now,
-                                status: activeOrder.orderStatus || 'on_the_way'
-                            }).then(() => {
-                                logger.info(`🔥 [FIREBASE] Updated active_orders/${key}`);
+                                status: o.orderStatus || 'on_the_way'
                             }).catch(e => logger.warn(`⚠️ [FIREBASE] active_orders error: ${e.message}`));
                         }
                     }
@@ -226,51 +236,26 @@ export const processDriverLocationBatch = async (deliveryPartnerId, payload = {}
                 logger.warn(`⚠️ [LOCATION_TRACKING] Firebase sync error: ${fErr.message}`);
             }
 
-            // D. Broadcast via Socket.IO if clients are connected
+            // D. Broadcast via Socket.IO to every order's tracking, customer and restaurant rooms
             try {
                 const io = getIO();
-                if (io) {
+                for (const o of activeOrders) {
+                    const orderMongoId = String(o._id);
                     const trackingBroadcast = {
-                        orderId: activeOrder ? String(activeOrder._id) : null,
-                        order_id: activeOrder ? String(activeOrder._id) : null,
-                        customOrderId: activeOrder?.orderId || null,
-                        trackingId: activeOrder ? String(activeOrder._id) : null,
+                        orderId: orderMongoId,
+                        order_id: orderMongoId,
+                        customOrderId: o.order_id || null,
+                        trackingId: orderMongoId,
                         deliveryPartnerId: String(deliveryPartnerId),
                         driverId: String(deliveryPartnerId),
                         ...coordPayload,
-                        status: activeOrder?.orderStatus || 'on_the_way'
+                        status: o.orderStatus || 'on_the_way'
                     };
-
-                    if (activeOrder) {
-                        // Emit to order tracking rooms
-                        const orderTrackingRoom = rooms.tracking(activeOrder._id.toString());
-                        io.to(orderTrackingRoom).emit('location-update', trackingBroadcast);
-                        logger.info(`📢 [SOCKET] Emitted 'location-update' to room: ${orderTrackingRoom}`);
-
-                        if (activeOrder.orderId && activeOrder.orderId !== activeOrder._id.toString()) {
-                            const customTrackingRoom = rooms.tracking(activeOrder.orderId);
-                            io.to(customTrackingRoom).emit('location-update', trackingBroadcast);
-                            logger.info(`📢 [SOCKET] Emitted 'location-update' to room: ${customTrackingRoom}`);
-                        }
-
-                        // Emit to customer room
-                        if (activeOrder.user) {
-                            const userId = activeOrder.user?._id?.toString() || activeOrder.user?.toString();
-                            if (userId) {
-                                io.to(rooms.user(userId)).emit('location-update', trackingBroadcast);
-                                logger.info(`📢 [SOCKET] Emitted 'location-update' to user room: user:${userId}`);
-                            }
-                        }
-
-                        // Emit to restaurant room
-                        if (activeOrder.restaurantId) {
-                            const restId = activeOrder.restaurantId?._id?.toString() || activeOrder.restaurantId?.toString();
-                            if (restId) {
-                                io.to(rooms.restaurant(restId)).emit('location-update', trackingBroadcast);
-                                logger.info(`📢 [SOCKET] Emitted 'location-update' to restaurant room: restaurant:${restId}`);
-                            }
-                        }
-                    }
+                    let target = io.to(rooms.tracking(orderMongoId));
+                    if (o.order_id && o.order_id !== orderMongoId) target = target.to(rooms.tracking(o.order_id));
+                    if (o.userId) target = target.to(rooms.user(String(o.userId)));
+                    if (o.restaurantId) target = target.to(rooms.restaurant(String(o.restaurantId)));
+                    target.emit('location-update', trackingBroadcast);
                 }
             } catch (sErr) {
                 logger.error(`❌ [LOCATION_TRACKING] Socket emit error: ${sErr.message}`);
@@ -312,7 +297,8 @@ export const processDriverLocationBatch = async (deliveryPartnerId, payload = {}
     return {
         processedCount: validPoints.length,
         totalReceived: rawLocations.length,
-        activeOrderId: activeOrder ? (activeOrder.orderId || activeOrder._id) : null,
+        activeOrderId: activeOrder ? String(activeOrder._id) : null,
+        activeOrderIds: activeOrders.map((o) => String(o._id)),
         config: {
             stopTracking,
             mode,

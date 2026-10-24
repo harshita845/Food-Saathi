@@ -13,10 +13,12 @@ const errorHandler = (err, req, res, next) => {
         logger.error(`[${requestId}] ${err.stack || JSON.stringify(err.error)}`);
     }
 
-    res.status(statusCode).json({
-        success: false,
-        error: message
-    });
+    const body = { success: false, error: message };
+    // Machine-readable reason (e.g. PRICE_CHANGED, NO_RIDERS_AVAILABLE, CASH_LIMIT_EXCEEDED) for client handling
+    if (typeof err.code === 'string' && /^[A-Z][A-Z0-9_]+$/.test(err.code)) {
+        body.code = err.code;
+    }
+    res.status(statusCode).json(body);
 };
 
 export default errorHandler;

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { getNotificationLogoUrl } from '../../../../utils/brandAssets.js';
 import * as adminService from '../services/admin.service.js';
 import { FoodRestaurant } from '../../restaurant/models/restaurant.model.js';
 import { validateCategoryListQuery, validateCategoryRejectDto, validateCategoryUpsertDto } from '../validators/category.validator.js';
@@ -1662,7 +1663,7 @@ export async function processRefund(req, res, next) {
                 {
                     title: 'Refund Processed! 💸',
                     body: `Your refund of ₹${refundAmount || order.totalAmount || order.total || 0} for Order #${order.orderId} has been processed successfully.`,
-                    image: 'https://res.cloudinary.com/dxuuamva/image/upload/foodsaathi/brand/foodsaathi-logo.png',
+                    image: (await getNotificationLogoUrl()),
                     data: {
                         type: 'refund_processed',
                         orderId: String(order.orderId),

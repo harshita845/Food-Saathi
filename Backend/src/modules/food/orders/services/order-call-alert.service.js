@@ -67,7 +67,15 @@ export async function pollAndTriggerRestaurantCallAlerts() {
         const unacceptedOrders = await FoodOrder.find({
             orderStatus: 'created',
             createdAt: { $lte: primaryCutoff, $gte: safetyMinDate },
-            'callAlert.primaryCallStatus': { $in: [null, 'none'] }
+            'callAlert.primaryCallStatus': { $in: [null, 'none'] },
+            // Only orders the restaurant can actually see: skip online orders still awaiting payment
+            $nor: [{ 'payment.method': 'razorpay', 'payment.status': { $in: ['created', 'failed'] } }],
+            // Scheduled orders are only chased once their slot is near
+            $or: [
+                { scheduledAt: null },
+                { scheduledAt: { $exists: false } },
+                { scheduledAt: { $lte: new Date(now + alertConfig.delayMinutes * 60 * 1000) } },
+            ],
         })
             .select('_id order_id orderId restaurantId createdAt callAlert')
             .limit(10)

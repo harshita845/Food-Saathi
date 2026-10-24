@@ -41,7 +41,8 @@ const pricingSchema = z.object({
     platformFee: z.number().min(0).optional(),
     discount: z.number().min(0).optional(),
     total: z.number().min(0),
-    currency: z.string().optional()
+    currency: z.string().optional(),
+    couponCode: z.string().nullable().optional()
 });
 
 export function validateCalculateOrderDto(body) {
@@ -82,6 +83,7 @@ export function validateCreateOrderDto(body) {
         customerName: z.string().optional(),
         customerPhone: z.string().optional(),
         pricing: pricingSchema,
+        couponCode: z.string().nullable().optional(),
         deliveryFleet: z.string().optional(),
         note: z.string().optional(),
         restaurantNote: z.string().optional(),
@@ -126,14 +128,13 @@ export function validateCancelOrderDto(body) {
     return result.data;
 }
 
+/** Restaurants may only accept, prepare, mark ready or reject; pickup and delivery belong to the rider flow. */
 export function validateOrderStatusDto(body) {
     const schema = z.object({
         orderStatus: z.enum([
             'confirmed',
             'preparing',
             'ready_for_pickup',
-            'picked_up',
-            'delivered',
             'cancelled_by_restaurant'
         ]),
         note: z.string().optional()
@@ -141,6 +142,29 @@ export function validateOrderStatusDto(body) {
     const result = schema.safeParse(body);
     if (!result.success) {
         throw new ValidationError(result.error.errors?.[0]?.message || 'Validation failed');
+    }
+    return result.data;
+}
+
+export const ADMIN_ORDER_STATUSES = [
+    'created',
+    'confirmed',
+    'preparing',
+    'ready_for_pickup',
+    'picked_up',
+    'delivered',
+    'cancelled_by_admin',
+    'dead'
+];
+
+export function validateAdminOrderStatusDto(body) {
+    const schema = z.object({
+        orderStatus: z.enum(ADMIN_ORDER_STATUSES),
+        note: z.string().optional()
+    });
+    const result = schema.safeParse(body || {});
+    if (!result.success) {
+        throw new ValidationError(result.error.errors?.[0]?.message || 'Invalid order status');
     }
     return result.data;
 }

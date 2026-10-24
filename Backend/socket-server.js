@@ -4,7 +4,8 @@ import dns from "node:dns/promises";
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 import { config } from './src/config/env.js';
 import { connectRedis, closeRedis } from './src/config/redis.js';
-import { initSocket } from './src/config/socket.js';
+import { initSocket, getInternalEmitSecret } from './src/config/socket.js';
+import crypto from 'node:crypto';
 import { logger } from './src/utils/logger.js';
 import { loadEnvFromDb } from './src/config/envLoader.js';
 import { connectDB, disconnectDB } from './src/config/db.js';
@@ -36,7 +37,24 @@ const startSocketServer = async () => {
         }
 
         logger.info('[Bootstrap] Initializing Socket.IO infrastructure on dedicated socket server');
-        await initSocket(httpServer);
+        const io = await initSocket(httpServer);
+
+        // Internal relay: the API server posts its socket events here when Redis is off.
+        app.post('/internal/emit', express.json({ limit: '2mb' }), (req, res) => {
+            const expected = Buffer.from(getInternalEmitSecret());
+            const provided = Buffer.from(String(req.get('x-internal-secret') || ''));
+            if (!expected.length || expected.length !== provided.length || !crypto.timingSafeEqual(expected, provided)) {
+                return res.status(401).json({ success: false });
+            }
+            const events = Array.isArray(req.body?.events) ? req.body.events : [];
+            for (const entry of events) {
+                if (!entry || typeof entry.event !== 'string') continue;
+                const targetRooms = Array.isArray(entry.rooms) ? entry.rooms.map(String).filter(Boolean) : [];
+                const target = targetRooms.length ? io.to(targetRooms) : io;
+                target.emit(entry.event, entry.payload);
+            }
+            return res.json({ success: true, delivered: events.length });
+        });
 
         const port = config.socketPort || 5001;
         httpServer.listen(port, config.host || '127.0.0.1', () => {

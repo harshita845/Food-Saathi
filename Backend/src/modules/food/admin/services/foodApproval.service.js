@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { getNotificationLogoUrl } from '../../../../utils/brandAssets.js';
 import { ValidationError } from '../../../../core/auth/errors.js';
 import { FoodItem } from '../models/food.model.js';
 import { FoodAddon } from '../../restaurant/models/foodAddon.model.js';
@@ -120,7 +121,7 @@ export async function approveFoodItem(id) {
                 {
                     title: 'Dish Approved! 🍲',
                     body: `Your dish "${updated.name}" has been approved and is now visible to customers.`,
-                    image: updated.image || 'https://res.cloudinary.com/dxuuamva/image/upload/foodsaathi/brand/foodsaathi-logo.png',
+                    image: updated.image || (await getNotificationLogoUrl()),
                     data: {
                         type: 'food_approved',
                         foodId: String(updated._id),
@@ -158,7 +159,7 @@ export async function rejectFoodItem(id, reason) {
                 {
                     title: 'Dish Rejected ❌',
                     body: `Your dish "${updated.name}" was rejected. Reason: ${r}`,
-                    image: updated.image || 'https://res.cloudinary.com/dxuuamva/image/upload/foodsaathi/brand/foodsaathi-logo.png',
+                    image: updated.image || (await getNotificationLogoUrl()),
                     data: {
                         type: 'food_rejected',
                         foodId: String(updated._id),

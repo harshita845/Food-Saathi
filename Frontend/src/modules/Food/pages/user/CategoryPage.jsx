@@ -20,7 +20,7 @@ import { useProfile } from "@food/context/ProfileContext"
 import { useAppLocation } from "@food/hooks/useAppLocation"
 import { useDelayedLoading } from "@food/hooks/useDelayedLoading"
 import { getMenuFromResponse } from "@food/utils/menuItems"
-import { extractImages, normalizeImageUrl } from "@food/utils/common"
+import { extractImages, normalizeImageUrl, slugify } from "@food/utils/common"
 import { getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailability"
 import RestaurantImageCarousel, { RestaurantCarouselStateProvider, RestaurantOfferBanner } from "@food/components/user/home/RestaurantImageCarousel"
 
@@ -40,12 +40,22 @@ const CATEGORY_PAGE_FILTERS_STORAGE_KEY = "food-category-page-filters-v1"
 
 
 export default function CategoryPage() {
-  const { category } = useParams()
+  const { category, '*': splatCategory } = useParams()
+  // Handles slugs with slashes (e.g. "mocktails-/-smoothies"), trailing dots/slashes, and splat params
+  const rawCategoryParam = splatCategory
+    ? (category ? `${category}/${splatCategory}` : splatCategory)
+    : (category || '')
+
+  const resolvedCategory = useMemo(() => {
+    const cleaned = String(rawCategoryParam || '').replace(/^[/\s]+|[./\s]+$/g, '')
+    return slugify(cleaned) || 'all'
+  }, [rawCategoryParam])
+
   const navigate = useNavigate()
   const { vegMode, vegModeOption } = useProfile()
   const { location, zoneId, isOutOfService } = useAppLocation()
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState(category?.toLowerCase() || 'all')
+  const [selectedCategory, setSelectedCategory] = useState(resolvedCategory || 'all')
   const [activeFilters, setActiveFilters] = useState(new Set())
   const [favorites, setFavorites] = useState(new Set())
   const [sortBy, setSortBy] = useState(null)
@@ -96,7 +106,6 @@ export default function CategoryPage() {
     }
   }, [observerTarget.current])
   const BACKEND_ORIGIN = useMemo(() => API_BASE_URL.replace(/\/api(\/v\d+)?\/?$/, ""), [])
-  const slugify = (value) => String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
   const buildRestaurantLink = (restaurant) => {
     const restaurantIdentifier = restaurant?.slug || restaurant?.restaurantId || restaurant?.mongoId || slugify(restaurant?.name || "")
     const dishId = restaurant?.dishId || restaurant?.categoryDish?.id || restaurant?.categoryDish?._id || null
@@ -390,8 +399,8 @@ export default function CategoryPage() {
 
 
   const currentFilterStorageKey = useMemo(
-    () => slugify(selectedCategory || category || "all") || "all",
-    [selectedCategory, category]
+    () => slugify(selectedCategory || resolvedCategory || "all") || "all",
+    [selectedCategory, resolvedCategory]
   )
 
   const parseFirstNumber = (value) => {
@@ -573,7 +582,7 @@ export default function CategoryPage() {
               id: cat.slug || cat.id,
               name: cat.name,
               image: cat.image || foodImages[0],
-              slug: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-'),
+              slug: slugify(cat.slug || cat.name || ''),
               type: cat.type,
             }))
           ]
@@ -584,12 +593,15 @@ export default function CategoryPage() {
           const keywordsMap = {}
           const stopWords = ['of', 'the', 'and', 'in', 'with', 'a', 'an', 'to', 'for']
           categoriesArray.forEach((cat) => {
-            const categoryId = cat.slug || cat.id
-            const categoryName = cat.name.toLowerCase()
+            const catSlug = slugify(cat.slug || cat.name || '')
+            const categoryName = (cat.name || '').toLowerCase()
 
             // Generate keywords from category name, filtering out stop words and short words
-            const words = categoryName.split(/[\s-]+/).filter(w => w.length > 2 && !stopWords.includes(w))
-            keywordsMap[categoryId] = [categoryName, ...words]
+            const words = categoryName.split(/[^a-z0-9]+/).filter(w => w.length > 2 && !stopWords.includes(w))
+            const keywords = Array.from(new Set([categoryName, catSlug, ...words]))
+            keywordsMap[catSlug] = keywords
+            if (cat.id) keywordsMap[String(cat.id).toLowerCase()] = keywords
+            if (cat.slug) keywordsMap[String(cat.slug).toLowerCase()] = keywords
           })
 
           setCategoryKeywords(keywordsMap)
@@ -618,15 +630,15 @@ export default function CategoryPage() {
   const getCategoryKeywords = (categoryId) => {
     if (categoryId === 'all') return ['all']
     const raw = String(categoryId || "").trim().toLowerCase()
-    const fromAdmin = categoryKeywords[raw]
+    const targetSlug = slugify(raw)
+    const fromAdmin = categoryKeywords[targetSlug] || categoryKeywords[raw]
     let keywords = []
     if (Array.isArray(fromAdmin) && fromAdmin.length > 0) {
       keywords = [...fromAdmin]
     } else {
-      // Fallback: derive keywords from the slug in URL (e.g. "samosha" -> ["samosha"])
-      // This prevents "no data" when admin categories don't include the slug.
-      const parts = raw.split(/[\s-]+/).filter(Boolean)
-      keywords = parts.length > 0 ? Array.from(new Set([raw, ...parts])) : []
+      // Fallback: derive keywords from the slug in URL (e.g. "mocktails-smoothies" -> ["mocktails", "smoothies"])
+      const parts = raw.split(/[^a-z0-9]+/).filter(Boolean)
+      keywords = parts.length > 0 ? Array.from(new Set([raw, targetSlug, ...parts])) : []
     }
 
     // Add common variations/misspellings (e.g. "samosha" vs "samosa")
@@ -1023,22 +1035,24 @@ export default function CategoryPage() {
 
   // Update selected category when URL changes
   useEffect(() => {
-    if (category && categories && categories.length > 0) {
-      const categorySlug = category.toLowerCase()
+    if (resolvedCategory && categories && categories.length > 0) {
+      const targetSlug = slugify(resolvedCategory)
       const matchedCategory = categories.find(cat =>
-        cat.slug === categorySlug ||
-        cat.id === categorySlug ||
-        cat.name.toLowerCase().replace(/\s+/g, '-') === categorySlug
+        slugify(cat.slug) === targetSlug ||
+        slugify(cat.name) === targetSlug ||
+        String(cat.id).toLowerCase() === targetSlug ||
+        cat.slug === resolvedCategory ||
+        cat.id === resolvedCategory
       )
       if (matchedCategory) {
         setSelectedCategory(matchedCategory.slug || matchedCategory.id)
       } else {
-        setSelectedCategory(categorySlug)
+        setSelectedCategory(targetSlug || resolvedCategory)
       }
-    } else if (category) {
-      setSelectedCategory(category.toLowerCase())
+    } else if (resolvedCategory) {
+      setSelectedCategory(slugify(resolvedCategory) || resolvedCategory)
     }
-  }, [category, categories])
+  }, [resolvedCategory, categories])
 
   useEffect(() => {
     if (typeof window === "undefined" || !currentFilterStorageKey) return
@@ -1224,13 +1238,13 @@ export default function CategoryPage() {
   )
 
   const handleCategorySelect = (category) => {
-    const categorySlug = category.slug || category.id
+    const categorySlug = category.slug || slugify(category.name) || category.id
     setSelectedCategory(categorySlug)
     // Update URL to reflect category change
     if (categorySlug === 'all') {
-      navigate('/user/category/all')
+      navigate('/food/user/category/all')
     } else {
-      navigate(`/user/category/${categorySlug}`)
+      navigate(`/food/user/category/${categorySlug}`)
     }
   }
 
@@ -1245,7 +1259,7 @@ export default function CategoryPage() {
           {/* Search Bar, Back Button, and View Toggle */}
           <div className="flex items-center gap-2 px-3 md:px-6 py-2 border-b border-gray-100 dark:border-gray-800">
             <button
-              onClick={() => navigate('/user')}
+              onClick={() => navigate('/food/user')}
               className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors flex-shrink-0"
             >
               <ArrowLeft className="h-4 w-4 text-gray-700 dark:text-gray-300" />
@@ -1276,7 +1290,10 @@ export default function CategoryPage() {
             ) : (
               categories && categories.length > 0 ? categories.filter(cat => cat.id !== 'all' && cat.slug !== 'all').map((cat) => {
                 const categorySlug = cat.slug || cat.id
-                const isSelected = selectedCategory === categorySlug || selectedCategory === cat.id
+                const isSelected = selectedCategory === categorySlug || 
+                                   selectedCategory === cat.id ||
+                                   slugify(selectedCategory) === slugify(categorySlug) ||
+                                   slugify(selectedCategory) === slugify(cat.name)
                 return (
                   <button
                     key={cat.id}
