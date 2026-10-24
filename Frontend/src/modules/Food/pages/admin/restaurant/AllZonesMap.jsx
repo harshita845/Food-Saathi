@@ -197,7 +197,7 @@ export default function AllZonesMap() {
     infoWindowsRef.current.forEach((infoWindow) => infoWindow?.close())
     infoWindowsRef.current = []
 
-    const colors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#84cc16"]
+    const colors = ["#FF7A3D", "#10b981", "#f59e0b", "#ef4444", "#FFA51F", "#F2541B", "#06b6d4", "#84cc16"]
     const bounds = new google.maps.LatLngBounds()
 
     zones.forEach((zone, index) => {
@@ -263,10 +263,10 @@ export default function AllZonesMap() {
       const infoWindow = new google.maps.InfoWindow({
         content: `
           <div style="padding: 12px; min-width: 220px;">
-            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #1e293b;">
+            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #3E2A1F;">
               ${zone.name || zone.zoneName || "Unnamed Zone"}
             </h3>
-            <div style="font-size: 13px; color: #64748b; line-height: 1.6;">
+            <div style="font-size: 13px; color: #8C705B; line-height: 1.6;">
               <div style="margin-bottom: 4px;"><strong>Country:</strong> ${zone.country || "N/A"}</div>
               <div style="margin-bottom: 4px;"><strong>Unit:</strong> ${zone.unit || "km"}</div>
               <div style="margin-bottom: 4px;"><strong>Points:</strong> ${zone.coordinates.length}</div>
@@ -343,14 +343,14 @@ export default function AllZonesMap() {
       const infoWindow = new google.maps.InfoWindow({
         content: `
           <div style="padding: 12px; min-width: 200px;">
-            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #1e293b;">
+            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #3E2A1F;">
               ${restaurant.restaurantName || "Unnamed Restaurant"}
             </h3>
-            <div style="font-size: 13px; color: #64748b; line-height: 1.6;">
+            <div style="font-size: 13px; color: #8C705B; line-height: 1.6;">
               ${restaurant.location?.formattedAddress || restaurant.location?.address || restaurant.location?.area || "Location not specified"}
             </div>
             ${restaurant.ownerName ? `
-              <div style="margin-top: 8px; font-size: 12px; color: #94a3b8;">
+              <div style="margin-top: 8px; font-size: 12px; color: #B9A08A;">
                 <strong>Owner:</strong> ${restaurant.ownerName}
               </div>
             ` : ""}

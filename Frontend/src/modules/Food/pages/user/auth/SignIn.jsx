@@ -160,7 +160,7 @@ export default function SignIn() {
         
         {/* --- Background Delicate Doodles --- */}
         <div className="absolute top-8 left-8 pointer-events-none opacity-25">
-          <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="#2D3748" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="#3E2A1F" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2L2 22h20L12 2z" />
             <circle cx="12" cy="14" r="1.5" />
             <circle cx="9" cy="18" r="1" />
@@ -169,7 +169,7 @@ export default function SignIn() {
         </div>
 
         <div className="absolute top-16 right-7 pointer-events-none opacity-20">
-          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#2D3748" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#3E2A1F" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 11h16a1 1 0 0 0 1-1A6 6 0 0 0 3 10a1 1 0 0 0 1 1z" />
             <path d="M3 14h18" />
             <path d="M4 17h16a2 2 0 0 1 2 2 1 1 0 0 1-1 1H3a1 1 0 0 1-1-1 2 2 0 0 1 2-2z" />
@@ -177,7 +177,7 @@ export default function SignIn() {
         </div>
 
         <div className="absolute top-[380px] left-4 pointer-events-none opacity-20">
-          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#2D3748" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#3E2A1F" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 11h16a1 1 0 0 0 1-1A6 6 0 0 0 3 10a1 1 0 0 0 1 1z" />
             <path d="M3 14h18" />
             <path d="M4 17h16a2 2 0 0 1 2 2 1 1 0 0 1-1 1H3a1 1 0 0 1-1-1 2 2 0 0 1 2-2z" />
@@ -185,7 +185,7 @@ export default function SignIn() {
         </div>
 
         <div className="absolute top-[330px] right-6 pointer-events-none opacity-25">
-          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#2D3748" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#3E2A1F" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 2v20M21 2v6a3 3 0 0 1-3 3M15 2v6a3 3 0 0 0 3 3" />
             <path d="M6 2v20M3 2v6a3 3 0 0 0 6 0V2" />
           </svg>
@@ -218,14 +218,14 @@ export default function SignIn() {
             className="bg-white px-4 py-1.5 rounded-full shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-gray-100 flex items-center gap-2 hover:shadow-md transition-all active:scale-95 group"
           >
             <Headphones className="w-4 h-4 text-[#F97316] stroke-[2.5]" />
-            <span className="text-[#1E293B] font-extrabold text-[12px] tracking-wider uppercase">SUPPORT</span>
+            <span className="text-[#3E2A1F] font-extrabold text-[12px] tracking-wider uppercase">SUPPORT</span>
           </Link>
         </div>
 
         {/* --- Main Content Area --- */}
         <div className="w-full px-6 flex-1 flex flex-col items-center justify-center relative z-20 pt-1 pb-4">
           
-          {/* Circular CityFood Badge Logo */}
+          {/* Circular Food Saathi Badge Logo */}
           <motion.div
             initial={{ scale: 0.85, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -234,7 +234,7 @@ export default function SignIn() {
           >
             <img
               src="/logo.png"
-              alt="CityFood Logo"
+              alt="Food Saathi Logo"
               className="w-full h-full object-cover scale-[1.04] select-none pointer-events-none transition-transform hover:scale-108 duration-300"
               onError={(e) => {
                 e.target.onerror = null
@@ -250,14 +250,14 @@ export default function SignIn() {
             transition={{ duration: 0.4, delay: 0.1 }}
             className="text-center w-full mb-6"
           >
-            <h1 className="text-[34px] sm:text-[38px] font-extrabold tracking-[-0.03em] leading-[1.12] text-[#0A4D27]">
+            <h1 className="text-[34px] sm:text-[38px] font-extrabold tracking-[-0.03em] leading-[1.12] text-[#3A1C10]">
               Delicious food
             </h1>
             <div className="text-[34px] sm:text-[38px] font-extrabold tracking-[-0.03em] leading-[1.12] text-[#E52E2E] flex items-center justify-center gap-2 mt-0.5">
               <span>Delivered fast</span>
               <span className="inline-block transform hover:rotate-12 transition-transform text-[32px] cursor-default select-none">🍕</span>
             </div>
-            <p className="text-[#6B7280] font-medium text-[15px] sm:text-[16px] mt-2">
+            <p className="text-[#8C705B] font-medium text-[15px] sm:text-[16px] mt-2">
               Login with your mobile number
             </p>
           </motion.div>
@@ -269,7 +269,7 @@ export default function SignIn() {
               <div className="w-full h-[58px] bg-white rounded-full shadow-[0_4px_22px_rgba(0,0,0,0.06)] border border-gray-100/90 px-4 flex items-center transition-all focus-within:shadow-[0_8px_30px_rgba(229,46,46,0.12)] focus-within:border-red-300">
                 {/* Country Selector IN ⌄ */}
                 <div className="flex items-center gap-1 cursor-pointer select-none">
-                  <span className="font-bold text-[#111827] text-[15px] tracking-wide">IN</span>
+                  <span className="font-bold text-[#2C1A11] text-[15px] tracking-wide">IN</span>
                   <ChevronDown className="w-4 h-4 text-gray-500 stroke-[2.2]" />
                 </div>
 
@@ -292,7 +292,7 @@ export default function SignIn() {
                     placeholder="9755633314"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full bg-transparent border-none outline-none text-[#111827] font-semibold text-[16px] tracking-wider placeholder:text-gray-400 placeholder:font-normal p-0"
+                    className="w-full bg-transparent border-none outline-none text-[#2C1A11] font-semibold text-[16px] tracking-wider placeholder:text-gray-400 placeholder:font-normal p-0"
                     autoComplete="tel-national"
                   />
                 </div>
@@ -322,11 +322,11 @@ export default function SignIn() {
               </button>
 
               {/* Terms & Privacy Policy */}
-              <p className="text-[12px] sm:text-[13px] text-[#6B7280] font-normal text-center mt-4">
+              <p className="text-[12px] sm:text-[13px] text-[#8C705B] font-normal text-center mt-4">
                 By continuing, you agree to our{" "}
                 <Link
                   to="/profile/terms"
-                  className="text-[#0A4D27] font-bold underline decoration-[#0A4D27]/40 underline-offset-2 hover:text-[#064E3B] transition-colors"
+                  className="text-[#3A1C10] font-bold underline decoration-[#3A1C10]/40 underline-offset-2 hover:text-[#064E3B] transition-colors"
                 >
                   Terms & Privacy Policy
                 </Link>
@@ -339,7 +339,7 @@ export default function SignIn() {
         <div className="w-full relative z-10 leading-none select-none pointer-events-none mt-auto">
           <img
             src="/food/login-bottom-banner.png"
-            alt="CityFood - Good Food, Fast Delivery, Better Tomorrow"
+            alt="Food Saathi - Good Food, Fast Delivery, Better Tomorrow"
             className="w-full object-cover object-top block drop-shadow-sm"
           />
         </div>

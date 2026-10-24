@@ -16,7 +16,7 @@ export default function TableModificationPolicy() {
     };
 
     return (
-        <AnimatedPage className="min-h-screen bg-[#f8f9fa] pb-20">
+        <AnimatedPage className="min-h-screen bg-[#FFFAF4] pb-20">
             {/* Header */}
             <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100">
                 <div className="max-w-lg mx-auto px-4 h-16 flex items-center gap-4">

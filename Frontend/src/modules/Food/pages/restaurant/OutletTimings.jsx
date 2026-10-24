@@ -196,7 +196,7 @@ export default function OutletTimings() {
 
         {/* Main Content */}
         <div className="px-4 py-6">
-          {/* CityFood delivery Section Header */}
+          {/* Food Saathi delivery Section Header */}
           <div className="mb-6">
             <div className="text-center mb-2">
               <h2 className="text-base font-semibold text-blue-600">{companyName} delivery</h2>
@@ -290,10 +290,10 @@ export default function OutletTimings() {
                                             fontSize: "12px",
                                             backgroundColor: "white",
                                             "& fieldset": {
-                                              borderColor: "#e5e7eb",
+                                              borderColor: "#F1E2D0",
                                             },
                                             "&:hover fieldset": {
-                                              borderColor: "#d1d5db",
+                                              borderColor: "#E0CBB4",
                                             },
                                             "&.Mui-focused fieldset": {
                                               borderColor: "#000",
@@ -346,10 +346,10 @@ export default function OutletTimings() {
                                             fontSize: "12px",
                                             backgroundColor: "white",
                                             "& fieldset": {
-                                              borderColor: "#e5e7eb",
+                                              borderColor: "#F1E2D0",
                                             },
                                             "&:hover fieldset": {
-                                              borderColor: "#d1d5db",
+                                              borderColor: "#E0CBB4",
                                             },
                                             "&.Mui-focused fieldset": {
                                               borderColor: "#000",

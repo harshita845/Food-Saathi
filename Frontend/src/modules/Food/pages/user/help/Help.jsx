@@ -82,7 +82,7 @@ const helpCategories = [
     id: "delivery",
     title: "Delivery",
     icon: Truck,
-    color: "text-#55254b",
+    color: "text-#C93C0E",
     bgColor: "bg-orange-50",
     description: "Delivery times, fees, and tracking",
     topics: [
@@ -207,7 +207,7 @@ export default function Help() {
   }
 
   return (
-    <AnimatedPage className="min-h-screen bg-gradient-to-b from-yellow-50/30 via-white to-orange-50/20 dark:from-[#0a0a0a] dark:via-[#0a0a0a] dark:to-[#0a0a0a] p-4 md:p-6 lg:p-8">
+    <AnimatedPage className="min-h-screen bg-gradient-to-b from-yellow-50/30 via-white to-orange-50/20 dark:from-[#1A0F09] dark:via-[#1A0F09] dark:to-[#1A0F09] p-4 md:p-6 lg:p-8">
       <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto space-y-4 md:space-y-5 lg:space-y-6">
         <ScrollReveal>
           <div className="text-center space-y-3 md:space-y-4 mb-6 md:mb-8">
@@ -406,10 +406,10 @@ export default function Help() {
                       We'll respond within 24 hours
                     </p>
                     <a
-                      href="mailto:support@tuggo.com"
+                      href="mailto:support@foodsaathi.in"
                       className="text-sm text-primary hover:underline font-medium"
                     >
-                      support@tuggo.com
+                      support@foodsaathi.in
                     </a>
                   </div>
                 </div>

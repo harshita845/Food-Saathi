@@ -511,7 +511,7 @@ export default function Dining() {
   }, [heroSearch, openSearch, setSearchValue])
 
   return (
-    <AnimatedPage className="bg-white dark:bg-[#0a0a0a] min-h-screen relative pb-40">
+    <AnimatedPage className="bg-white dark:bg-[#1A0F09] min-h-screen relative pb-40">
       <style>{`
         @keyframes shimmer {
           100% {
@@ -521,7 +521,7 @@ export default function Dining() {
       `}</style>
       
       {/* Premium Sticky Header - High Z-Index & Optimized Blur */}
-      <div className="sticky top-0 z-[100] w-full bg-white dark:bg-[#0a0a0a] supports-[backdrop-filter]:bg-white/90 backdrop-blur-xl shadow-sm md:hidden border-b border-gray-100 dark:border-gray-800 transition-all duration-300">
+      <div className="sticky top-0 z-[100] w-full bg-white dark:bg-[#1A0F09] supports-[backdrop-filter]:bg-white/90 backdrop-blur-xl shadow-sm md:hidden border-b border-gray-100 dark:border-gray-800 transition-all duration-300">
         {/* Navbar Section */}
         <div className="relative z-20 py-2 px-2">
           <PageNavbar
@@ -537,7 +537,7 @@ export default function Dining() {
           onClick={(e) => e.stopPropagation()}
         >
           {/* Enhanced Search Bar (Matching Home Style) */}
-          <div className="relative bg-gray-50 dark:bg-[#1a1a1a] rounded-xl border border-gray-200 dark:border-gray-800 p-2 flex items-center shadow-inner group">
+          <div className="relative bg-gray-50 dark:bg-[#2A1A11] rounded-xl border border-gray-200 dark:border-gray-800 p-2 flex items-center shadow-inner group">
             <Search className="h-4 w-4 text-primary ml-2 shrink-0" strokeWidth={2.5} />
             <div className="flex-1 px-3">
               <Input
@@ -757,7 +757,7 @@ export default function Dining() {
                 <Button
                   variant="outline"
                   onClick={() => setIsFilterOpen(true)}
-                  className="h-7 sm:h-8 px-2 sm:px-3 rounded-full flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 font-medium transition-all bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+                  className="h-7 sm:h-8 px-2 sm:px-3 rounded-full flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 font-medium transition-all bg-white dark:bg-[#2A1A11] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
                 >
                   <SlidersHorizontal className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span className="text-xs sm:text-sm font-bold text-black dark:text-white">Filters</span>
@@ -782,7 +782,7 @@ export default function Dining() {
                       onClick={() => toggleFilter(filter.id)}
                       className={`h-7 sm:h-8 px-2 sm:px-3 rounded-full flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 transition-all font-medium ${isActive
                         ? 'bg-primary text-white border border-primary hover:bg-secondary'
-                        : 'bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300'
+                        : 'bg-white dark:bg-[#2A1A11] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300'
                         }`}
                     >
                       {Icon && <Icon className={`h-3 w-3 sm:h-4 sm:w-4 ${isActive ? 'text-white fill-white' : 'text-current'}`} />}
@@ -876,7 +876,7 @@ export default function Dining() {
                       state={{ restaurant }}
                       className="h-full flex rounded-[22px]"
                     >
-                      <Card className="overflow-hidden gap-0 space-y-0 cursor-pointer border-0 dark:border-gray-800 group bg-white dark:bg-[#1a1a1a] transition-all duration-500 py-0 rounded-[22px] h-full flex flex-col w-full relative">
+                      <Card className="overflow-hidden gap-0 space-y-0 cursor-pointer border-0 dark:border-gray-800 group bg-white dark:bg-[#2A1A11] transition-all duration-500 py-0 rounded-[22px] h-full flex flex-col w-full relative">
                         {/* Image Section */}
                         <div className="relative h-44 sm:h-56 md:h-60 lg:h-64 xl:h-72 w-full flex-shrink-0">
                           <motion.div
@@ -954,7 +954,7 @@ export default function Dining() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-9 w-9 bg-white/90 dark:bg-[#1a1a1a]/90 backdrop-blur-sm rounded-lg hover:bg-white dark:hover:bg-[#2a2a2a] transition-colors"
+                              className="h-9 w-9 bg-white/90 dark:bg-[#2A1A11]/90 backdrop-blur-sm rounded-lg hover:bg-white dark:hover:bg-[#3A271C] transition-colors"
                               onClick={handleToggleFavorite}
                             >
                               <Bookmark className={`h-5 w-5 ${favorite ? "fill-gray-800 dark:fill-gray-200 text-gray-800 dark:text-gray-200" : "text-gray-600 dark:text-gray-400"}`} strokeWidth={2} />
@@ -994,7 +994,7 @@ export default function Dining() {
                                   className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white line-clamp-1"
                                   variants={{
                                     rest: {},
-                                    hover: { color: "#7e3866" }
+                                    hover: { color: "#F2541B" }
                                   }}
                                   transition={{ duration: 0.3 }}
                                 >
@@ -1115,7 +1115,7 @@ export default function Dining() {
                       state={{ restaurant }}
                       className="h-full flex rounded-[22px]"
                     >
-                      <Card className="overflow-hidden gap-0 space-y-0 cursor-pointer border-0 dark:border-gray-800 group bg-white dark:bg-[#1a1a1a] transition-all duration-500 py-0 rounded-[22px] h-full flex flex-col w-full relative">
+                      <Card className="overflow-hidden gap-0 space-y-0 cursor-pointer border-0 dark:border-gray-800 group bg-white dark:bg-[#2A1A11] transition-all duration-500 py-0 rounded-[22px] h-full flex flex-col w-full relative">
                         {/* Image Section */}
                         <div className="relative h-44 sm:h-56 md:h-60 lg:h-64 xl:h-72 w-full flex-shrink-0">
                           <motion.div
@@ -1177,7 +1177,7 @@ export default function Dining() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="absolute top-3 right-3 h-9 w-9 bg-white/90 dark:bg-[#1a1a1a]/90 backdrop-blur-sm rounded-lg hover:bg-white dark:hover:bg-[#2a2a2a] transition-colors"
+                            className="absolute top-3 right-3 h-9 w-9 bg-white/90 dark:bg-[#2A1A11]/90 backdrop-blur-sm rounded-lg hover:bg-white dark:hover:bg-[#3A271C] transition-colors"
                             onClick={handleToggleFavorite}
                           >
                             <Bookmark className={`h-5 w-5 ${favorite ? "fill-gray-800 dark:fill-gray-200 text-gray-800 dark:text-gray-200" : "text-gray-600 dark:text-gray-400"}`} strokeWidth={2} />
@@ -1270,7 +1270,7 @@ export default function Dining() {
           />
 
           {/* Modal Content */}
-          <div className="absolute bottom-0 left-0 right-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:max-w-4xl bg-white dark:bg-[#1a1a1a] rounded-t-3xl md:rounded-3xl max-h-[85vh] md:max-h-[90vh] flex flex-col animate-[slideUp_0.3s_ease-out]">
+          <div className="absolute bottom-0 left-0 right-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:max-w-4xl bg-white dark:bg-[#2A1A11] rounded-t-3xl md:rounded-3xl max-h-[85vh] md:max-h-[90vh] flex flex-col animate-[slideUp_0.3s_ease-out]">
             {/* Header */}
             <div className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5 border-b dark:border-gray-800">
               <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">Filters and sorting</h2>
@@ -1289,7 +1289,7 @@ export default function Dining() {
             {/* Body */}
             <div className="flex flex-1 overflow-hidden">
               {/* Left Sidebar - Tabs */}
-              <div className="w-24 sm:w-28 md:w-32 bg-gray-50 dark:bg-[#0a0a0a] border-r dark:border-gray-800 flex flex-col">
+              <div className="w-24 sm:w-28 md:w-32 bg-gray-50 dark:bg-[#1A0F09] border-r dark:border-gray-800 flex flex-col">
                 {[
                   { id: 'sort', label: 'Sort By', icon: ArrowDownUp },
                   { id: 'time', label: 'Time', icon: Timer },
@@ -1304,7 +1304,7 @@ export default function Dining() {
                     <button
                       key={tab.id}
                       onClick={() => setActiveFilterTab(tab.id)}
-                      className={`flex flex-col items-center gap-1 py-4 px-2 text-center relative transition-colors ${isActive ? 'bg-white dark:bg-[#1a1a1a] text-primary' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      className={`flex flex-col items-center gap-1 py-4 px-2 text-center relative transition-colors ${isActive ? 'bg-white dark:bg-[#2A1A11] text-primary' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                         }`}
                     >
                       {isActive && (
@@ -1333,7 +1333,7 @@ export default function Dining() {
                           key={option.id || 'relevance'}
                           onClick={() => setSortBy(option.id)}
                           className={`px-4 md:px-5 py-3 md:py-4 rounded-xl border text-left transition-colors ${sortBy === option.id
-                            ? 'border-primary bg-[#F9F9FB] dark:bg-primary/20'
+                            ? 'border-primary bg-[#FFF9F0] dark:bg-primary/20'
                             : 'border-gray-200 dark:border-gray-700 hover:border-primary'
                             }`}
                         >
@@ -1354,7 +1354,7 @@ export default function Dining() {
                       <button
                         onClick={() => toggleFilter('delivery-under-30')}
                         className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-colors ${activeFilters.has('delivery-under-30')
-                          ? 'border-primary bg-[#F9F9FB] dark:bg-primary/20'
+                          ? 'border-primary bg-[#FFF9F0] dark:bg-primary/20'
                           : 'border-gray-200 dark:border-gray-700 hover:border-primary'
                           }`}
                       >
@@ -1364,7 +1364,7 @@ export default function Dining() {
                       <button
                         onClick={() => toggleFilter('delivery-under-45')}
                         className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-colors ${activeFilters.has('delivery-under-45')
-                          ? 'border-primary bg-[#F9F9FB] dark:bg-primary/20'
+                          ? 'border-primary bg-[#FFF9F0] dark:bg-primary/20'
                           : 'border-gray-200 dark:border-gray-700 hover:border-primary'
                           }`}
                       >
@@ -1383,7 +1383,7 @@ export default function Dining() {
                       <button
                         onClick={() => toggleFilter('rating-35-plus')}
                         className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-colors ${activeFilters.has('rating-35-plus')
-                          ? 'border-primary bg-[#F9F9FB] dark:bg-primary/20'
+                          ? 'border-primary bg-[#FFF9F0] dark:bg-primary/20'
                           : 'border-gray-200 dark:border-gray-700 hover:border-primary'
                           }`}
                       >
@@ -1393,7 +1393,7 @@ export default function Dining() {
                       <button
                         onClick={() => toggleFilter('rating-4-plus')}
                         className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-colors ${activeFilters.has('rating-4-plus')
-                          ? 'border-primary bg-[#F9F9FB] dark:bg-primary/20'
+                          ? 'border-primary bg-[#FFF9F0] dark:bg-primary/20'
                           : 'border-gray-200 dark:border-gray-700 hover:border-primary'
                           }`}
                       >
@@ -1403,7 +1403,7 @@ export default function Dining() {
                       <button
                         onClick={() => toggleFilter('rating-45-plus')}
                         className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-colors ${activeFilters.has('rating-45-plus')
-                          ? 'border-primary bg-[#F9F9FB] dark:bg-primary/20'
+                          ? 'border-primary bg-[#FFF9F0] dark:bg-primary/20'
                           : 'border-gray-200 dark:border-gray-700 hover:border-primary'
                           }`}
                       >
@@ -1422,7 +1422,7 @@ export default function Dining() {
                       <button
                         onClick={() => toggleFilter('distance-under-1km')}
                         className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-colors ${activeFilters.has('distance-under-1km')
-                          ? 'border-primary bg-[#F9F9FB] dark:bg-primary/20'
+                          ? 'border-primary bg-[#FFF9F0] dark:bg-primary/20'
                           : 'border-gray-200 dark:border-gray-700 hover:border-primary'
                           }`}
                       >
@@ -1432,7 +1432,7 @@ export default function Dining() {
                       <button
                         onClick={() => toggleFilter('distance-under-2km')}
                         className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-colors ${activeFilters.has('distance-under-2km')
-                          ? 'border-primary bg-[#F9F9FB] dark:bg-primary/20'
+                          ? 'border-primary bg-[#FFF9F0] dark:bg-primary/20'
                           : 'border-gray-200 dark:border-gray-700 hover:border-primary'
                           }`}
                       >
@@ -1480,7 +1480,7 @@ export default function Dining() {
                           key={cuisine}
                           onClick={() => setSelectedCuisine(selectedCuisine === cuisine ? null : cuisine)}
                           className={`px-4 py-3 rounded-xl border text-center transition-colors ${selectedCuisine === cuisine
-                            ? 'border-primary bg-[#F9F9FB] dark:bg-primary/20'
+                            ? 'border-primary bg-[#FFF9F0] dark:bg-primary/20'
                             : 'border-gray-200 dark:border-gray-700 hover:border-primary'
                             }`}
                         >
@@ -1496,7 +1496,7 @@ export default function Dining() {
             </div>
 
             {/* Footer */}
-            <div className="flex items-center gap-4 md:gap-6 px-4 md:px-6 py-4 md:py-5 border-t dark:border-gray-800 bg-white dark:bg-[#1a1a1a]">
+            <div className="flex items-center gap-4 md:gap-6 px-4 md:px-6 py-4 md:py-5 border-t dark:border-gray-800 bg-white dark:bg-[#2A1A11]">
               <button
                 onClick={() => setIsFilterOpen(false)}
                 className="flex-1 py-3 md:py-4 text-center font-semibold text-gray-700 dark:text-gray-300 text-sm md:text-base"

@@ -109,7 +109,7 @@ export default function SubAdminsList() {
         </div>
         <button
           onClick={handleAddNew}
-          className="flex items-center gap-2 bg-[#11b5b8] text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors"
+          className="flex items-center gap-2 bg-[#F2541B] text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors"
         >
           <Plus size={20} />
           <span>Add New</span>
@@ -122,7 +122,7 @@ export default function SubAdminsList() {
           <input
             type="text"
             placeholder="Search by name or email..."
-            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#11b5b8]"
+            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F2541B]"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -169,7 +169,7 @@ export default function SubAdminsList() {
                         </span>
                         <button
                           onClick={() => togglePasswordVisibility(admin._id)}
-                          className="p-1 text-gray-400 hover:text-[#11b5b8] rounded-md transition-colors"
+                          className="p-1 text-gray-400 hover:text-[#F2541B] rounded-md transition-colors"
                           title={showPasswords[admin._id] ? "Hide password" : "Show password"}
                         >
                           {showPasswords[admin._id] ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -185,14 +185,14 @@ export default function SubAdminsList() {
                           checked={admin.isActive !== false}
                           onChange={() => handleToggleStatus(admin)}
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#11b5b8]"></div>
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#F2541B]"></div>
                       </label>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-3">
                         <button
                           onClick={() => handleEdit(admin)}
-                          className="p-1.5 text-gray-400 hover:text-[#11b5b8] hover:bg-teal-50 rounded-lg transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-[#F2541B] hover:bg-teal-50 rounded-lg transition-colors"
                           title="Edit"
                         >
                           <Edit size={18} />

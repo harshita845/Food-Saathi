@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { memo, useMemo } from "react";
+import { motion } from "framer-motion";
 import {
   Bookmark,
   Plus,
@@ -105,7 +106,7 @@ function PreviewItemCard({ item, onSelect }) {
     <button
       type="button"
       onClick={(event) => onSelect(item, event)}
-      className="flex-shrink-0 w-[150px] sm:w-[170px] text-left focus:outline-none"
+      className="group/item flex-shrink-0 w-[150px] sm:w-[170px] text-left focus:outline-none"
     >
       <div className="relative h-[120px] sm:h-[135px] w-full overflow-hidden rounded-2xl bg-gray-100 dark:bg-zinc-800">
         <img
@@ -113,19 +114,24 @@ function PreviewItemCard({ item, onSelect }) {
           alt={item.name}
           loading="lazy"
           decoding="async"
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover/item:scale-110"
           onError={(event) => {
             event.currentTarget.src = foodImages[0];
           }}
         />
+        <span className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/25 to-transparent" />
         {item.isRecommended && (
           <span className="absolute left-2 top-2 rounded-lg bg-white px-2 py-0.5 text-[11px] font-bold text-green-700 shadow-sm">
             Popular
           </span>
         )}
-        <span className="absolute bottom-2 right-2 flex h-9 w-9 items-center justify-center rounded-full border-2 border-primary/60 bg-white text-primary shadow-md">
-          <Plus className="h-5 w-5" strokeWidth={2.5} />
-        </span>
+        <motion.span
+          whileHover={{ rotate: 90, scale: 1.08 }}
+          whileTap={{ scale: 0.85 }}
+          className="absolute bottom-2 right-2 flex h-9 w-9 items-center justify-center rounded-full fs-gradient text-white shadow-[0_6px_14px_-4px_rgba(242,84,27,0.7)]"
+        >
+          <Plus className="h-5 w-5" strokeWidth={2.75} />
+        </motion.span>
       </div>
 
       <div className="mt-2 flex items-start gap-1.5">
@@ -239,8 +245,11 @@ function HomeRestaurantCard({
     : { to: `/user/restaurants/${restaurantSlug}`, className: "h-full flex" };
 
   return (
-    <div
+    <motion.div
       ref={ref}
+      whileHover={isBanned ? undefined : { y: -4 }}
+      whileTap={isBanned ? undefined : { scale: 0.985 }}
+      transition={{ type: "spring", stiffness: 380, damping: 28 }}
       className={`h-full ${isBanned ? "cursor-not-allowed select-none" : ""}`}
       style={{
         animation: animateEntrance
@@ -251,21 +260,21 @@ function HomeRestaurantCard({
       <CardWrapper {...cardWrapperProps}>
         <RestaurantCarouselStateProvider>
           <Card
-            className={`overflow-hidden gap-0 border border-gray-200/80 dark:border-gray-800 bg-white dark:bg-[#1a1a1a] py-0 rounded-[24px] flex flex-col h-full w-full relative shadow-sm transition-shadow duration-300 ${
+            className={`overflow-hidden gap-0 border border-[#F1E2D0] dark:border-gray-800 bg-white dark:bg-[#2A1A11] py-0 rounded-[26px] flex flex-col h-full w-full relative shadow-[0_8px_24px_-16px_rgba(58,28,16,0.35)] transition-shadow duration-300 ${
               isBanned || isOutOfService || !availability.isOpen
                 ? "grayscale opacity-75"
                 : ""
-            } ${isBanned ? "cursor-not-allowed" : "cursor-pointer hover:shadow-lg"}`}
+            } ${isBanned ? "cursor-not-allowed" : "cursor-pointer hover:shadow-[0_18px_40px_-18px_rgba(242,84,27,0.45)]"}`}
           >
             {/* Restaurant info */}
             <div className="flex items-start justify-between gap-3 px-4 pt-4">
               <div className="min-w-0 flex-1">
                 {headlineOffer && (
-                  <p className="mb-0.5 text-[13px] font-extrabold uppercase tracking-wide text-primary line-clamp-1">
-                    {headlineOffer}
+                  <p className="mb-1 inline-flex max-w-full items-center gap-1 rounded-full bg-[#FFF4EC] px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wide text-primary line-clamp-1">
+                    🎉 {headlineOffer}
                   </p>
                 )}
-                <h3 className="text-[20px] font-bold leading-tight tracking-tight text-gray-950 dark:text-white line-clamp-1">
+                <h3 className="font-display text-[21px] font-extrabold leading-tight tracking-tight text-gray-950 dark:text-white line-clamp-1">
                   {restaurant.name}
                 </h3>
 
@@ -314,7 +323,7 @@ function HomeRestaurantCard({
                   aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
                   className={`h-10 w-10 flex-shrink-0 rounded-full border transition-all duration-300 ${
                     favorite
-                      ? "bg-red-500 border-red-500 text-white"
+                      ? "fs-gradient border-transparent text-white"
                       : "bg-white border-gray-200 text-gray-800 hover:bg-gray-50 dark:bg-zinc-900 dark:border-zinc-700 dark:text-gray-100"
                   }`}
                 >
@@ -350,7 +359,7 @@ function HomeRestaurantCard({
           </Card>
         </RestaurantCarouselStateProvider>
       </CardWrapper>
-    </div>
+    </motion.div>
   );
 }
 

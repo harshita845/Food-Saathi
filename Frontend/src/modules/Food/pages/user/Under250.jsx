@@ -1274,7 +1274,7 @@ export default function Under250() {
   const shouldShowGrayscale = isOutOfService
 
   return (
-    <div className={`relative min-h-screen bg-white dark:bg-[#0a0a0a] ${shouldShowGrayscale ? 'grayscale opacity-75' : ''}`}>
+    <div className={`relative min-h-screen bg-white dark:bg-[#1A0F09] ${shouldShowGrayscale ? 'grayscale opacity-75' : ''}`}>
       {/* ── Menu Scan Intro Animation ── */}
       {showScanAnimation && (
         <MenuScanAnimation
@@ -1398,14 +1398,14 @@ export default function Under250() {
           </div>
         )}
         {bannerImages.length === 0 && !loadingBanner && (
-          <div className="w-full h-full relative z-0 bg-gradient-to-br from-[#fcf4f9] to-[#f5e8f1] dark:from-[#3c0f3d] dark:to-secondary overflow-hidden rounded-b-[2rem] md:rounded-b-none" />
+          <div className="w-full h-full relative z-0 bg-gradient-to-br from-[#fcf4f9] to-[#f5e8f1] dark:from-[#3A1C10] dark:to-secondary overflow-hidden rounded-b-[2rem] md:rounded-b-none" />
         )}
       </div>
 
       {/* Content Section */}
       <div className="relative max-w-7xl mx-auto space-y-0 pb-6 md:pb-8 lg:pb-10">
 
-        <div className={`sticky z-30 transition-all duration-300 bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-xl shadow-sm border-b border-gray-100 dark:border-gray-800 top-0 pt-2 sm:pt-3 md:pt-4 px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12`}>
+        <div className={`sticky z-30 transition-all duration-300 bg-white/95 dark:bg-[#1A0F09]/95 backdrop-blur-xl shadow-sm border-b border-gray-100 dark:border-gray-800 top-0 pt-2 sm:pt-3 md:pt-4 px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12`}>
           <section className="space-y-1 sm:space-y-1.5">
           <div
             className="flex gap-3 sm:gap-4 md:gap-5 lg:gap-6 overflow-x-auto md:overflow-x-visible overflow-y-visible scrollbar-hide scroll-smooth px-2 sm:px-3 pt-1 pb-1 sm:pt-2 sm:pb-2 md:pt-3 md:pb-3"
@@ -1419,7 +1419,7 @@ export default function Under250() {
             {/* All Button */}
             <div className="flex-shrink-0 cursor-pointer" onClick={() => handleCategorySwitch(null)}>
               <motion.div
-                className={`flex flex-col items-center justify-center gap-1 w-[76px] h-[76px] sm:w-[88px] sm:h-[88px] md:w-[96px] md:h-[96px] rounded-[1rem] transition-all border ${!activeCategory ? 'bg-primary border-primary text-white shadow-md' : 'bg-white border-gray-100 text-gray-600 dark:bg-[#1a1a1a] dark:border-gray-800 dark:text-gray-300'}`}
+                className={`flex flex-col items-center justify-center gap-1 w-[76px] h-[76px] sm:w-[88px] sm:h-[88px] md:w-[96px] md:h-[96px] rounded-[1rem] transition-all border ${!activeCategory ? 'bg-primary border-primary text-white shadow-md' : 'bg-white border-gray-100 text-gray-600 dark:bg-[#2A1A11] dark:border-gray-800 dark:text-gray-300'}`}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -1434,7 +1434,7 @@ export default function Under250() {
             {loadingCategories ? (
               Array.from({ length: 6 }).map((_, i) => (
                 <div key={`skel-cat-${i}`} className="flex-shrink-0">
-                  <div className="flex flex-col items-center justify-center gap-1 w-[76px] h-[76px] sm:w-[88px] sm:h-[88px] md:w-[96px] md:h-[96px] rounded-[1rem] border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1a1a1a]">
+                  <div className="flex flex-col items-center justify-center gap-1 w-[76px] h-[76px] sm:w-[88px] sm:h-[88px] md:w-[96px] md:h-[96px] rounded-[1rem] border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#2A1A11]">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
                     <div className="h-3 w-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                   </div>
@@ -1446,7 +1446,7 @@ export default function Under250() {
                 return (
                   <div key={category.id} className="flex-shrink-0 cursor-pointer" onClick={() => handleCategorySwitch(isActive ? null : category.id)}>
                       <motion.div
-                        className={`flex flex-col items-center justify-center gap-1 w-[76px] h-[76px] sm:w-[88px] sm:h-[88px] md:w-[96px] md:h-[96px] rounded-[1rem] transition-all border ${isActive ? 'bg-primary border-primary text-white shadow-md' : 'bg-white border-gray-100 text-gray-600 dark:bg-[#1a1a1a] dark:border-gray-800 dark:text-gray-300'}`}
+                        className={`flex flex-col items-center justify-center gap-1 w-[76px] h-[76px] sm:w-[88px] sm:h-[88px] md:w-[96px] md:h-[96px] rounded-[1rem] transition-all border ${isActive ? 'bg-primary border-primary text-white shadow-md' : 'bg-white border-gray-100 text-gray-600 dark:bg-[#2A1A11] dark:border-gray-800 dark:text-gray-300'}`}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
@@ -1478,7 +1478,7 @@ export default function Under250() {
             <Button
               variant="outline"
               onClick={() => setShowSortPopup(true)}
-              className="h-8 sm:h-9 md:h-10 px-3 sm:px-4 md:px-5 rounded-md flex items-center gap-2 whitespace-nowrap flex-shrink-0 font-medium transition-all bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm md:text-base"
+              className="h-8 sm:h-9 md:h-10 px-3 sm:px-4 md:px-5 rounded-md flex items-center gap-2 whitespace-nowrap flex-shrink-0 font-medium transition-all bg-white dark:bg-[#2A1A11] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm md:text-base"
             >
               <ArrowDownUp className="h-4 w-4 md:h-5 md:w-5 rotate-90" />
               <span className="text-sm md:text-base font-medium">
@@ -1491,7 +1491,7 @@ export default function Under250() {
               onClick={() => setUnder30MinsFilter(!under30MinsFilter)}
               className={`h-8 sm:h-9 md:h-10 px-3 sm:px-4 md:px-5 rounded-md flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 font-medium transition-all text-sm md:text-base ${under30MinsFilter
                 ? 'bg-primary text-white border border-primary hover:bg-secondary'
-                : 'bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300'
+                : 'bg-white dark:bg-[#2A1A11] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300'
                 }`}
             >
               <Timer className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" />
@@ -1521,7 +1521,7 @@ export default function Under250() {
                 {/* Skeleton Menu Items Horizontal Scroll */}
                 <div className="flex md:grid gap-3 sm:gap-4 md:gap-5 lg:gap-6 overflow-hidden md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {Array.from({ length: 4 }).map((_, iIndex) => (
-                    <div key={`skel-item-${rIndex}-${iIndex}`} className="flex-shrink-0 w-[200px] sm:w-[220px] md:w-full bg-white dark:bg-[#1a1a1a] rounded-lg md:rounded-xl border border-orange-100 dark:border-orange-900/20 overflow-hidden relative shadow-[0_4px_20px_rgba(249,115,22,0.08)]">
+                    <div key={`skel-item-${rIndex}-${iIndex}`} className="flex-shrink-0 w-[200px] sm:w-[220px] md:w-full bg-white dark:bg-[#2A1A11] rounded-lg md:rounded-xl border border-orange-100 dark:border-orange-900/20 overflow-hidden relative shadow-[0_4px_20px_rgba(249,115,22,0.08)]">
                       <div className="w-full h-32 sm:h-36 md:h-40 lg:h-48 xl:h-52 bg-orange-50 dark:bg-orange-900/20 animate-pulse"></div>
                       <div className="p-3 md:p-4 space-y-3">
                         <div className="h-5 w-3/4 bg-orange-100 dark:bg-orange-900/30 rounded animate-pulse"></div>
@@ -1552,7 +1552,7 @@ export default function Under250() {
             const isClosed = !availability.isOpen
 
             return (
-              <section key={restaurant.id} className={`p-4 md:p-5 lg:p-6 mb-6 md:mb-8 rounded-2xl bg-slate-50 dark:bg-[#1a1a1a] ${isClosed ? 'opacity-70 grayscale' : ''}`}>
+              <section key={restaurant.id} className={`p-4 md:p-5 lg:p-6 mb-6 md:mb-8 rounded-2xl bg-slate-50 dark:bg-[#2A1A11] ${isClosed ? 'opacity-70 grayscale' : ''}`}>
                 {/* Restaurant Header */}
                 <div className="flex items-start justify-between mb-4 md:mb-5">
                   <div className="flex-1">
@@ -1639,7 +1639,7 @@ export default function Under250() {
                 stiffness: 300,
                 damping: 30
               }}
-              className="fixed bottom-0 left-0 right-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:max-w-lg lg:max-w-2xl bg-white dark:bg-[#1a1a1a] rounded-t-3xl shadow-2xl z-[110] max-h-[60vh] md:max-h-[80vh] overflow-hidden flex flex-col"
+              className="fixed bottom-0 left-0 right-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:max-w-lg lg:max-w-2xl bg-white dark:bg-[#2A1A11] rounded-t-3xl shadow-2xl z-[110] max-h-[60vh] md:max-h-[80vh] overflow-hidden flex flex-col"
             >
               {/* Drag Handle */}
               <div className="flex justify-center pt-3 pb-2">
@@ -1651,7 +1651,7 @@ export default function Under250() {
                 <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">Sort By</h2>
                 <button
                   onClick={handleClearAll}
-                  className="text-primary dark:text-[#b18da5] font-medium text-sm md:text-base"
+                  className="text-primary dark:text-[#F4A47A] font-medium text-sm md:text-base"
                 >
                   Clear all
                 </button>
@@ -1665,11 +1665,11 @@ export default function Under250() {
                       key={option.id || 'relevance'}
                       onClick={() => setDraftSelectedSort(option.id)}
                       className={`px-4 md:px-5 lg:px-6 py-3 md:py-4 rounded-xl border text-left transition-colors ${draftSelectedSort === option.id
-                        ? 'border-primary bg-[#fdfafc] dark:bg-primary/20'
+                        ? 'border-primary bg-[#FFFAF4] dark:bg-primary/20'
                         : 'border-gray-200 dark:border-gray-800 hover:border-primary'
                         }`}
                     >
-                      <span className={`text-sm md:text-base lg:text-lg font-medium ${draftSelectedSort === option.id ? 'text-primary dark:text-[#b18da5]' : 'text-gray-700 dark:text-gray-300'}`}>
+                      <span className={`text-sm md:text-base lg:text-lg font-medium ${draftSelectedSort === option.id ? 'text-primary dark:text-[#F4A47A]' : 'text-gray-700 dark:text-gray-300'}`}>
                         {option.label}
                       </span>
                     </button>
@@ -1678,7 +1678,7 @@ export default function Under250() {
               </div>
 
               {/* Footer */}
-              <div className="flex items-center gap-4 md:gap-6 px-4 md:px-6 py-4 md:py-5 border-t dark:border-gray-800 bg-white dark:bg-[#1a1a1a]">
+              <div className="flex items-center gap-4 md:gap-6 px-4 md:px-6 py-4 md:py-5 border-t dark:border-gray-800 bg-white dark:bg-[#2A1A11]">
                 <button
                   onClick={() => setShowSortPopup(false)}
                   className="flex-1 py-3 md:py-4 text-center font-semibold text-gray-700 dark:text-gray-300 text-sm md:text-base"
@@ -1713,7 +1713,7 @@ export default function Under250() {
 
             {/* Item Detail Bottom Sheet */}
             <motion.div
-              className="fixed left-0 right-0 bottom-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:max-w-2xl lg:max-w-4xl xl:max-w-5xl z-[10000] bg-white dark:bg-[#1a1a1a] rounded-t-3xl shadow-2xl max-h-[90vh] md:max-h-[85vh] flex flex-col"
+              className="fixed left-0 right-0 bottom-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:max-w-2xl lg:max-w-4xl xl:max-w-5xl z-[10000] bg-white dark:bg-[#2A1A11] rounded-t-3xl shadow-2xl max-h-[90vh] md:max-h-[85vh] flex flex-col"
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
@@ -1849,7 +1849,7 @@ export default function Under250() {
               </div>
 
               {/* Bottom Action Bar */}
-              <div className="border-t dark:border-gray-800 border-gray-200 px-4 md:px-6 lg:px-8 xl:px-10 py-4 md:py-5 lg:py-6 bg-white dark:bg-[#1a1a1a]">
+              <div className="border-t dark:border-gray-800 border-gray-200 px-4 md:px-6 lg:px-8 xl:px-10 py-4 md:py-5 lg:py-6 bg-white dark:bg-[#2A1A11]">
                 <div className="flex items-center gap-4 md:gap-5 lg:gap-6">
                   {/* Quantity Selector */}
                   <div className={`flex items-center gap-3 md:gap-4 lg:gap-5 border-2 rounded-lg md:rounded-xl px-3 md:px-4 lg:px-5 h-[44px] md:h-[50px] lg:h-[56px] ${shouldShowGrayscale
@@ -1969,7 +1969,7 @@ export default function Under250() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ duration: 0.2, type: "spring", damping: 28, stiffness: 320 }}
-              className="fixed bottom-0 left-0 right-0 z-[10021] bg-white dark:bg-[#1a1a1a] rounded-t-3xl shadow-2xl px-4 py-4"
+              className="fixed bottom-0 left-0 right-0 z-[10021] bg-white dark:bg-[#2A1A11] rounded-t-3xl shadow-2xl px-4 py-4"
             >
               <div className="flex justify-center pb-3">
                 <div className="w-12 h-1 bg-gray-300 rounded-full" />

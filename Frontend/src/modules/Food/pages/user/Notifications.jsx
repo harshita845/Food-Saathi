@@ -92,7 +92,7 @@ export default function Notifications() {
         timestamp: Date.now(),
         read: false,
         icon: "AlertCircle",
-        iconColor: "text-#55254b"
+        iconColor: "text-#C93C0E"
       }
       setNotificationsList(prev => [newNotification, ...prev])
     }
@@ -162,7 +162,7 @@ export default function Notifications() {
   }
 
   return (
-    <AnimatedPage className="min-h-screen bg-white dark:bg-[#0a0a0a]">
+    <AnimatedPage className="min-h-screen bg-white dark:bg-[#1A0F09]">
       <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
         {/* Header */}
         <div className="flex items-center gap-3 sm:gap-4 mb-4 md:mb-6 lg:mb-8">

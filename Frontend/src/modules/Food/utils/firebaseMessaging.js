@@ -111,7 +111,7 @@ async function getNativeDevicePlatform(moduleName) {
 
 function getDeviceId(moduleName, devicePlatform, fcmToken, voipToken) {
   const tokenSeed = sanitize(voipToken || fcmToken).slice(-16);
-  return ["tuggo", moduleName, devicePlatform || "unknown", tokenSeed || "device"].join(":");
+  return ["foodsaathi", moduleName, devicePlatform || "unknown", tokenSeed || "device"].join(":");
 }
 
 function getNotificationKey(payload = {}) {
@@ -917,7 +917,9 @@ export async function registerWebPushForCurrentModule(pathname = window.location
       if (firebasePublicEnv.measurementId) swParams.set("measurementId", firebasePublicEnv.measurementId);
 
       const swQuery = swParams.toString();
-      const swUrl = swQuery ? `/firebase-messaging-sw.js?${swQuery}` : "/firebase-messaging-sw.js";
+      // Vite's dev server rejects /public files requested with a query string, so in dev the worker
+      // uses the Food Saathi config built into firebase-messaging-sw.js instead.
+      const swUrl = swQuery && !import.meta.env.DEV ? `/firebase-messaging-sw.js?${swQuery}` : "/firebase-messaging-sw.js";
 
       let registration = await navigator.serviceWorker.register(swUrl, {
         updateViaCache: "none",
@@ -979,7 +981,7 @@ export async function registerWebPushForCurrentModule(pathname = window.location
   // This keeps restaurant/delivery FCM alerts working even when Web Push APIs are limited.
   const nativeToken = await registerNativeWebViewFcmToken(moduleName);
   if (!nativeToken && options?.throwOnError === true) {
-    throw new Error("Push notifications are not supported in this browser mode. On iPhone, install CityFood using Add to Home Screen first.");
+    throw new Error("Push notifications are not supported in this browser mode. On iPhone, install Food Saathi using Add to Home Screen first.");
   }
   return nativeToken;
 }

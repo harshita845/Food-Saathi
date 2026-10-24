@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import FoodSaathiLogo from "@/shared/components/brand/FoodSaathiLogo"
 import { useState, useEffect, useRef, useMemo } from "react"
 import { ChevronDown, ShoppingCart, Wallet } from "lucide-react"
 import { Button } from "@food/components/ui/button"
@@ -759,7 +760,7 @@ export default function PageNavbar({
           partsLength: parts.length
         })
 
-        // For CityFood addresses: city and state are usually before pincode (which is a 6-digit number)
+        // For Food Saathi addresses: city and state are usually before pincode (which is a 6-digit number)
         // Format: "Mama Loca, G-2, Princess Center 6/3, Opposite Manpasand Garden, New Palasia, Indore, 452001, India"
         if (parts.length >= 4) {
           // Method 1: Find pincode index (6-digit number)
@@ -996,7 +997,7 @@ export default function PageNavbar({
   }
 
   const textColorClass = textColor === "white" ? "text-white" : "text-primary"
-  const iconFill = textColor === "white" ? "white" : "#7e3866"
+  const iconFill = textColor === "white" ? "white" : "#F2541B"
   const ringColor = textColor === "white" ? "ring-white/30" : "ring-primary/30"
 
   const zIndexClass = zIndex === 50 ? "z-50" : "z-20"
@@ -1022,9 +1023,7 @@ export default function PageNavbar({
                 }}
               />
             ) : (
-              <span className={`text-base font-bold ${textColorClass}`}>
-                {companyName || "CityFood"}
-              </span>
+              <FoodSaathiLogo variant="lockup" size="text-lg sm:text-xl" imgClassName="h-8 sm:h-9" light={textColorClass?.includes("white")} />
             )}
           </Link>
         )}
@@ -1072,7 +1071,7 @@ export default function PageNavbar({
               title="Wallet"
             >
               <div className={`h-full w-full rounded-full bg-transparent flex items-center justify-center shadow-md border border-gray-100/50 dark:border-white/10`}>
-                <Wallet className={`h-4.5 w-4.5 sm:h-5.5 sm:w-5.5 ${textColor === "white" ? "text-white" : "text-primary dark:text-[#a14b84]"}`} strokeWidth={3} />
+                <Wallet className={`h-4.5 w-4.5 sm:h-5.5 sm:w-5.5 ${textColor === "white" ? "text-white" : "text-primary dark:text-[#E0470F]"}`} strokeWidth={3} />
               </div>
             </Button>
           </Link>
@@ -1085,7 +1084,7 @@ export default function PageNavbar({
               title="Cart"
             >
               <div className={`h-full w-full rounded-full bg-transparent flex items-center justify-center shadow-md border border-gray-100/50 dark:border-white/10`}>
-                <ShoppingCart className={`h-4.5 w-4.5 sm:h-5.5 sm:w-5.5 ${textColor === "white" ? "text-white" : "text-primary dark:text-[#a14b84]"}`} strokeWidth={3} />
+                <ShoppingCart className={`h-4.5 w-4.5 sm:h-5.5 sm:w-5.5 ${textColor === "white" ? "text-white" : "text-primary dark:text-[#E0470F]"}`} strokeWidth={3} />
               </div>
               {cartCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-4.5 h-4.5 bg-primary rounded-full flex items-center justify-center ring-2 ring-white">
@@ -1105,7 +1104,7 @@ export default function PageNavbar({
                 title="Profile"
               >
                 <div className={`h-full w-full rounded-full bg-transparent flex items-center justify-center shadow-md border border-gray-100/50 dark:border-white/10`}>
-                  <span className={`text-sm sm:text-base font-black ${textColor === "white" ? "text-white" : "text-primary dark:text-[#a14b84]"}`}>
+                  <span className={`text-sm sm:text-base font-black ${textColor === "white" ? "text-white" : "text-primary dark:text-[#E0470F]"}`}>
                     A
                   </span>
                 </div>

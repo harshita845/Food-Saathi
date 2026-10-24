@@ -1,11 +1,11 @@
 :root {
-  --rt-primary: #B80B3D;
-  --rt-primary-strong: #66001D;
-  --rt-primary-soft: #fdf2f5;
+  --rt-primary: #F2541B;
+  --rt-primary-strong: #C93C0E;
+  --rt-primary-soft: #FFF4EC;
   --rt-surface: #ffffff;
-  --rt-border: #f0ccd5;
-  --rt-text: #1f1f24;
-  --rt-muted: #6d6470;
+  --rt-border: #F1DCC6;
+  --rt-text: #3A1C10;
+  --rt-muted: #8C705B;
   --rt-modal-z: 200;
   --rt-sidebar-z: 50;
   --rt-header-z: 30;
@@ -17,23 +17,23 @@
 }
 
 .restaurant-theme [class~="text-primary"],
-.restaurant-theme [class~="text-[#EB590E]"] {
+.restaurant-theme [class~="text-[#F2541B]"] {
   color: var(--rt-primary) !important;
 }
 
 .restaurant-theme [class~="bg-primary"],
-.restaurant-theme [class~="bg-[#EB590E]"] {
+.restaurant-theme [class~="bg-[#F2541B]"] {
   background-color: var(--rt-primary) !important;
 }
 
 .restaurant-theme [class~="hover:bg-secondary"]:hover,
-.restaurant-theme [class~="hover:bg-[#d84f0a]"]:hover,
+.restaurant-theme [class~="hover:bg-[#C93C0E]"]:hover,
 .restaurant-theme [class~="hover:bg-[#00A055]"]:hover {
   background-color: var(--rt-primary-strong) !important;
 }
 
 .restaurant-theme [class~="border-primary"],
-.restaurant-theme [class~="border-[#EB590E]"] {
+.restaurant-theme [class~="border-[#F2541B]"] {
   border-color: color-mix(in srgb, var(--rt-primary) 30%, #ffffff) !important;
 }
 
@@ -77,11 +77,11 @@
 }
 
 /* Dynamic overrides for hardcoded restaurant hex colors found in pages */
-.restaurant-theme [class~="bg-[#6a2f56]"] {
+.restaurant-theme [class~="bg-[#C93C0E]"] {
   background-color: var(--rt-primary-strong) !important;
 }
 
-.restaurant-theme [class~="hover:bg-[#6a2f56]"]:hover {
+.restaurant-theme [class~="hover:bg-[#C93C0E]"]:hover {
   background-color: var(--rt-primary-strong) !important;
 }
 
@@ -89,29 +89,29 @@
   background-color: color-mix(in srgb, var(--rt-primary) 8%, #ffffff) !important;
 }
 
-.restaurant-theme [class~="bg-[#fcf7fb]"] {
+.restaurant-theme [class~="bg-[#FFF9F3]"] {
   background-color: color-mix(in srgb, var(--rt-primary) 3%, #ffffff) !important;
 }
 
-.restaurant-theme [class~="bg-[#f9f0f7]"],
-.restaurant-theme [class~="hover:bg-[#f9f0f7]"]:hover {
+.restaurant-theme [class~="bg-[#FFF4EC]"],
+.restaurant-theme [class~="hover:bg-[#FFF4EC]"]:hover {
   background-color: color-mix(in srgb, var(--rt-primary) 6%, #ffffff) !important;
 }
 
-.restaurant-theme [class~="border-[#e7d5e0]"] {
+.restaurant-theme [class~="border-[#F7DCC4]"] {
   border-color: color-mix(in srgb, var(--rt-primary) 15%, #ffffff) !important;
 }
 
-.restaurant-theme [class~="border-[#d5bdd0]"],
-.restaurant-theme [class~="hover:border-[#d5bdd0]"]:hover {
+.restaurant-theme [class~="border-[#FFC7A3]"],
+.restaurant-theme [class~="hover:border-[#FFC7A3]"]:hover {
   border-color: color-mix(in srgb, var(--rt-primary) 25%, #ffffff) !important;
 }
 
-.restaurant-theme [class~="text-[#6d6470]"] {
+.restaurant-theme [class~="text-[#8C705B]"] {
   color: var(--rt-muted) !important;
 }
 
-.restaurant-theme [class~="text-[#6b4d62]"] {
+.restaurant-theme [class~="text-[#6E5443]"] {
   color: color-mix(in srgb, var(--rt-primary-strong) 40%, var(--rt-muted)) !important;
 }
 

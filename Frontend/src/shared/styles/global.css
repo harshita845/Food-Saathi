@@ -15,34 +15,48 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  --radius: 0.625rem;
-  
-  --background: #F9F9FB;
-  --foreground: #3c0f3d;
+  --radius: 0.875rem;
+
+  /* ── Food Saathi brand tokens (taken from the logo) ───────────────────── */
+  --fs-orange: #F2541B;        /* "Saathi" wordmark + arc */
+  --fs-orange-deep: #C93C0E;
+  --fs-saffron: #FFA51F;       /* scooter body */
+  --fs-sun: #FFC93C;           /* helmet highlight */
+  --fs-cocoa: #3A1C10;         /* "Food" wordmark */
+  --fs-cocoa-soft: #6B4A38;
+  --fs-cream: #FDF3E1;         /* logo background */
+  --fs-cream-soft: #FFF9F0;
+  --fs-gradient: linear-gradient(135deg, #FF7A2F 0%, #F2541B 45%, #E2420F 100%);
+  --fs-gradient-sunny: linear-gradient(135deg, #FFC93C 0%, #FFA51F 50%, #F2541B 100%);
+  --fs-shadow: 0 18px 40px -18px rgba(201, 60, 14, 0.45);
+  --fs-shadow-soft: 0 10px 30px -16px rgba(58, 28, 16, 0.28);
+
+  --background: #FFF9F0;
+  --foreground: #3A1C10;
   --card: #ffffff;
-  --card-foreground: #3c0f3d;
+  --card-foreground: #3A1C10;
   --popover: #ffffff;
-  --popover-foreground: #3c0f3d;
-  --primary: #7e3866;
+  --popover-foreground: #3A1C10;
+  --primary: #F2541B;
   --primary-foreground: #ffffff;
-  --secondary: #55254b;
-  --secondary-foreground: #ffffff;
-  --muted: #f1f5f9;
-  --muted-foreground: #b18da5;
-  --accent: #b18da5;
-  --accent-foreground: #ffffff;
-  --destructive: #ef4444;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #7e3866;
+  --secondary: #FFA51F;
+  --secondary-foreground: #3A1C10;
+  --muted: #FBEFE0;
+  --muted-foreground: #8C705B;
+  --accent: #FFE7C7;
+  --accent-foreground: #3A1C10;
+  --destructive: #e5383b;
+  --border: #F1E2D0;
+  --input: #EBDDCD;
+  --ring: #F2541B;
   --sidebar: #ffffff;
-  --sidebar-foreground: #3c0f3d;
-  --sidebar-primary: #7e3866;
+  --sidebar-foreground: #3A1C10;
+  --sidebar-primary: #F2541B;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #55254b;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #e2e8f0;
-  --sidebar-ring: #7e3866;
+  --sidebar-accent: #FFF1E3;
+  --sidebar-accent-foreground: #C93C0E;
+  --sidebar-border: #F1E2D0;
+  --sidebar-ring: #F2541B;
 }
 
 @theme inline {
@@ -77,39 +91,218 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   
-  --color-page-bg: #F9F9FB;
-  --color-primary-orange: #7e3866;
+  --color-page-bg: #FFF9F0;
+  --color-primary-orange: #F2541B;
+  --color-saathi: #F2541B;
+  --color-saffron: #FFA51F;
+  --color-cocoa: #3A1C10;
+  --color-cream: #FDF3E1;
+  --font-display: 'Baloo 2', 'Poppins', sans-serif;
+  --font-script: 'Kalam', 'Baloo 2', cursive;
   --font-poppins: var(--font-poppins);
   --font-outfit: var(--font-outfit);
 }
 
+
+/* ── Food Saathi palette ────────────────────────────────────────────────────
+   Tailwind's stock blues/purples/pinks and cool greys are re-pointed at the
+   logo colours, so every screen (user, restaurant, delivery, admin) picks up
+   the brand without each page needing its own edits. Red/green/amber/yellow
+   keep their meaning as status colours. */
+@theme {
+  /* brand orange */
+  --color-orange-50: #FFF4EC;
+  --color-orange-100: #FFE4D1;
+  --color-orange-200: #FFC7A3;
+  --color-orange-300: #FFA06B;
+  --color-orange-400: #FF7A3D;
+  --color-orange-500: #F2541B;
+  --color-orange-600: #E0470F;
+  --color-orange-700: #C2370C;
+  --color-orange-800: #9A2D10;
+  --color-orange-900: #7C2711;
+  --color-orange-950: #431106;
+
+  --color-blue-50: #FFF4EC;
+  --color-blue-100: #FFE4D1;
+  --color-blue-200: #FFC7A3;
+  --color-blue-300: #FFA06B;
+  --color-blue-400: #FF7A3D;
+  --color-blue-500: #F2541B;
+  --color-blue-600: #E0470F;
+  --color-blue-700: #C2370C;
+  --color-blue-800: #9A2D10;
+  --color-blue-900: #7C2711;
+  --color-blue-950: #431106;
+
+  --color-indigo-50: #FFF4EC;
+  --color-indigo-100: #FFE4D1;
+  --color-indigo-200: #FFC7A3;
+  --color-indigo-300: #FFA06B;
+  --color-indigo-400: #FF7A3D;
+  --color-indigo-500: #F2541B;
+  --color-indigo-600: #E0470F;
+  --color-indigo-700: #C2370C;
+  --color-indigo-800: #9A2D10;
+  --color-indigo-900: #7C2711;
+  --color-indigo-950: #431106;
+
+  --color-violet-50: #FFF4EC;
+  --color-violet-100: #FFE4D1;
+  --color-violet-200: #FFC7A3;
+  --color-violet-300: #FFA06B;
+  --color-violet-400: #FF7A3D;
+  --color-violet-500: #F2541B;
+  --color-violet-600: #E0470F;
+  --color-violet-700: #C2370C;
+  --color-violet-800: #9A2D10;
+  --color-violet-900: #7C2711;
+  --color-violet-950: #431106;
+
+  --color-purple-50: #FFF4EC;
+  --color-purple-100: #FFE4D1;
+  --color-purple-200: #FFC7A3;
+  --color-purple-300: #FFA06B;
+  --color-purple-400: #FF7A3D;
+  --color-purple-500: #F2541B;
+  --color-purple-600: #E0470F;
+  --color-purple-700: #C2370C;
+  --color-purple-800: #9A2D10;
+  --color-purple-900: #7C2711;
+  --color-purple-950: #431106;
+
+  --color-pink-50: #FFF4EC;
+  --color-pink-100: #FFE4D1;
+  --color-pink-200: #FFC7A3;
+  --color-pink-300: #FFA06B;
+  --color-pink-400: #FF7A3D;
+  --color-pink-500: #F2541B;
+  --color-pink-600: #E0470F;
+  --color-pink-700: #C2370C;
+  --color-pink-800: #9A2D10;
+  --color-pink-900: #7C2711;
+  --color-pink-950: #431106;
+
+  --color-fuchsia-50: #FFF4EC;
+  --color-fuchsia-100: #FFE4D1;
+  --color-fuchsia-200: #FFC7A3;
+  --color-fuchsia-300: #FFA06B;
+  --color-fuchsia-400: #FF7A3D;
+  --color-fuchsia-500: #F2541B;
+  --color-fuchsia-600: #E0470F;
+  --color-fuchsia-700: #C2370C;
+  --color-fuchsia-800: #9A2D10;
+  --color-fuchsia-900: #7C2711;
+  --color-fuchsia-950: #431106;
+
+  /* scooter saffron */
+  --color-sky-50: #FFF8EB;
+  --color-sky-100: #FFEDC9;
+  --color-sky-200: #FFDB94;
+  --color-sky-300: #FFC75C;
+  --color-sky-400: #FFB436;
+  --color-sky-500: #FFA51F;
+  --color-sky-600: #E68A0A;
+  --color-sky-700: #BF6C08;
+  --color-sky-800: #99540D;
+  --color-sky-900: #7D460F;
+  --color-sky-950: #482303;
+
+  --color-cyan-50: #FFF8EB;
+  --color-cyan-100: #FFEDC9;
+  --color-cyan-200: #FFDB94;
+  --color-cyan-300: #FFC75C;
+  --color-cyan-400: #FFB436;
+  --color-cyan-500: #FFA51F;
+  --color-cyan-600: #E68A0A;
+  --color-cyan-700: #BF6C08;
+  --color-cyan-800: #99540D;
+  --color-cyan-900: #7D460F;
+  --color-cyan-950: #482303;
+
+  /* warm "cocoa" neutrals, from the logo's brown wordmark and cream background */
+  --color-slate-50: #FFFAF4;
+  --color-slate-100: #FBF1E6;
+  --color-slate-200: #F1E2D0;
+  --color-slate-300: #E0CBB4;
+  --color-slate-400: #B9A08A;
+  --color-slate-500: #8C705B;
+  --color-slate-600: #6E5443;
+  --color-slate-700: #553E31;
+  --color-slate-800: #3E2A1F;
+  --color-slate-900: #2C1A11;
+  --color-slate-950: #1C0F08;
+
+  --color-gray-50: #FFFAF4;
+  --color-gray-100: #FBF1E6;
+  --color-gray-200: #F1E2D0;
+  --color-gray-300: #E0CBB4;
+  --color-gray-400: #B9A08A;
+  --color-gray-500: #8C705B;
+  --color-gray-600: #6E5443;
+  --color-gray-700: #553E31;
+  --color-gray-800: #3E2A1F;
+  --color-gray-900: #2C1A11;
+  --color-gray-950: #1C0F08;
+
+  --color-zinc-50: #FFFAF4;
+  --color-zinc-100: #FBF1E6;
+  --color-zinc-200: #F1E2D0;
+  --color-zinc-300: #E0CBB4;
+  --color-zinc-400: #B9A08A;
+  --color-zinc-500: #8C705B;
+  --color-zinc-600: #6E5443;
+  --color-zinc-700: #553E31;
+  --color-zinc-800: #3E2A1F;
+  --color-zinc-900: #2C1A11;
+  --color-zinc-950: #1C0F08;
+
+  --color-neutral-50: #FFFAF4;
+  --color-neutral-100: #FBF1E6;
+  --color-neutral-200: #F1E2D0;
+  --color-neutral-300: #E0CBB4;
+  --color-neutral-400: #B9A08A;
+  --color-neutral-500: #8C705B;
+  --color-neutral-600: #6E5443;
+  --color-neutral-700: #553E31;
+  --color-neutral-800: #3E2A1F;
+  --color-neutral-900: #2C1A11;
+  --color-neutral-950: #1C0F08;
+
+  --color-black: #1C0F08;
+
+  --animate-fs-float: fs-float 4s ease-in-out infinite;
+  --animate-fs-ride: fs-ride 1.6s ease-in-out infinite;
+  --animate-fs-shine: fs-shine 2.8s ease-in-out infinite;
+}
+
 .user-app.dark {
-  --background: #0A0A0A;
-  --foreground: #F3F4F6;
-  --card: #141414;
-  --card-foreground: #F3F4F6;
-  --popover: #141414;
-  --popover-foreground: #F3F4F6;
-  --primary: #F76208;
+  --background: #1A0F09;
+  --foreground: #FBEFE0;
+  --card: #26170E;
+  --card-foreground: #FBEFE0;
+  --popover: #26170E;
+  --popover-foreground: #FBEFE0;
+  --primary: #FF6A2C;
   --primary-foreground: #ffffff;
-  --secondary: #000000;
-  --secondary-foreground: #F3F4F6;
-  --muted: #1f2937;
-  --muted-foreground: #9ca3af;
-  --accent: #1f2937;
-  --accent-foreground: #F3F4F6;
+  --secondary: #FFA51F;
+  --secondary-foreground: #1A0F09;
+  --muted: #33211A;
+  --muted-foreground: #C9AE97;
+  --accent: #33211A;
+  --accent-foreground: #FBEFE0;
   --destructive: #ef4444;
-  --border: #27272A;
-  --input: #27272A;
-  --ring: #F76208;
-  --sidebar: #141414;
-  --sidebar-foreground: #F3F4F6;
-  --sidebar-primary: #F76208;
+  --border: #3E2A1F;
+  --input: #3E2A1F;
+  --ring: #FF6A2C;
+  --sidebar: #26170E;
+  --sidebar-foreground: #FBEFE0;
+  --sidebar-primary: #FF6A2C;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1f2937;
-  --sidebar-accent-foreground: #F3F4F6;
-  --sidebar-border: #27272A;
-  --sidebar-ring: #F76208;
+  --sidebar-accent: #33211A;
+  --sidebar-accent-foreground: #FBEFE0;
+  --sidebar-border: #3E2A1F;
+  --sidebar-ring: #FF6A2C;
 }
 
 @layer base {
@@ -118,6 +311,12 @@
   }
   body {
     @apply bg-background text-foreground m-0 min-h-screen;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--fs-orange) 25%, transparent);
+  }
+  button, [role="button"], a {
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
@@ -200,4 +399,94 @@ html.admin-compact {
 /* Text that has no size class (plain paragraphs, table cells, inputs) follows the same scale */
 html.admin-compact body {
   font-size: calc(1rem * var(--admin-text-scale));
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Food Saathi — shared motion & surface helpers
+   ───────────────────────────────────────────────────────────────────────────── */
+@keyframes fs-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes fs-ride { 0%, 100% { transform: translateX(0) rotate(0deg); } 50% { transform: translateX(6px) rotate(-1.5deg); } }
+@keyframes fs-shine { 0% { transform: translateX(-120%) skewX(-20deg); } 60%, 100% { transform: translateX(220%) skewX(-20deg); } }
+@keyframes fs-speed { 0% { transform: translateX(0); opacity: 1; } 100% { transform: translateX(-28px); opacity: 0; } }
+@keyframes fs-pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(242, 84, 27, 0.45); } 100% { box-shadow: 0 0 0 16px rgba(242, 84, 27, 0); } }
+
+.font-display { font-family: var(--font-display); }
+.font-script { font-family: var(--font-script); }
+
+.fs-gradient { background-image: var(--fs-gradient); }
+.fs-gradient-sunny { background-image: var(--fs-gradient-sunny); }
+.fs-text-gradient {
+  background-image: var(--fs-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.fs-cream-bg {
+  background-color: var(--fs-cream-soft);
+  background-image:
+    radial-gradient(600px 300px at 100% 0%, rgba(255, 165, 31, 0.18), transparent 60%),
+    radial-gradient(500px 280px at 0% 10%, rgba(242, 84, 27, 0.10), transparent 60%);
+}
+.fs-dots {
+  background-image: radial-gradient(rgba(242, 84, 27, 0.14) 1.2px, transparent 1.2px);
+  background-size: 18px 18px;
+}
+.fs-shadow { box-shadow: var(--fs-shadow); }
+.fs-shadow-soft { box-shadow: var(--fs-shadow-soft); }
+.fs-glass {
+  background: rgba(255, 249, 240, 0.78);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+}
+.fs-shine { position: relative; overflow: hidden; }
+.fs-shine::after {
+  content: "";
+  position: absolute; inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  animation: fs-shine 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+.fs-pulse { animation: fs-pulse-ring 1.6s ease-out infinite; }
+.fs-speed-line { animation: fs-speed 0.9s linear infinite; }
+
+/* Tactile press feedback on every button across the four apps */
+button:not(:disabled),
+[role="button"] {
+  transition: transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+button:not(:disabled):active,
+[role="button"]:active {
+  transform: scale(0.97);
+}
+
+/* Inputs get the brand focus ring everywhere */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--fs-orange) 18%, transparent);
+  border-color: color-mix(in srgb, var(--fs-orange) 60%, #ffffff);
+}
+
+/* Warm scrollbars on desktop */
+@media (pointer: fine) {
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--fs-cocoa) 18%, transparent);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background-color: color-mix(in srgb, var(--fs-orange) 55%, transparent); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

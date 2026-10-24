@@ -51,9 +51,9 @@ export default function Cancellation() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex items-center justify-center p-6">
+      <div className="min-h-screen bg-white dark:bg-[#1A0F09] flex items-center justify-center p-6">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-10 w-10 animate-spin text-[#CB202D]" />
+          <Loader2 className="h-10 w-10 animate-spin text-[#C93C0E]" />
           <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Loading...</p>
         </div>
       </div>
@@ -61,9 +61,9 @@ export default function Cancellation() {
   }
 
   return (
-    <AnimatedPage className="min-h-screen bg-white dark:bg-[#0a0a0a] pb-10">
+    <AnimatedPage className="min-h-screen bg-white dark:bg-[#1A0F09] pb-10">
       {/* Premium Sticky Header */}
-      <div className="sticky top-0 z-50 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-gray-100 dark:border-gray-900">
+      <div className="sticky top-0 z-50 bg-white/80 dark:bg-[#1A0F09]/80 backdrop-blur-xl border-b border-gray-100 dark:border-gray-900">
         <div className="max-w-4xl mx-auto px-4 h-16 md:h-20 flex items-center gap-4">
           <Button
             variant="ghost"
@@ -77,7 +77,7 @@ export default function Cancellation() {
             <h1 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white tracking-tight leading-none">
               {cancellationData.title || "Cancellation Policy"}
             </h1>
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">CityFood Ecosystem</p>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Food Saathi Ecosystem</p>
           </div>
         </div>
       </div>
@@ -94,7 +94,7 @@ export default function Cancellation() {
                 prose-headings:font-black prose-headings:text-gray-900 dark:prose-headings:text-white
                 prose-p:text-gray-600 dark:prose-p:text-gray-400 prose-p:leading-relaxed
                 prose-strong:text-gray-900 dark:prose-strong:text-white
-                prose-a:text-[#CB202D] dark:prose-a:text-primary
+                prose-a:text-[#C93C0E] dark:prose-a:text-primary
                 prose-li:text-gray-600 dark:prose-li:text-gray-400"
               dangerouslySetInnerHTML={{ __html: cancellationData.content }}
             />
@@ -108,7 +108,7 @@ export default function Cancellation() {
 
         <p className="text-center mt-10 text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] leading-relaxed">
           Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} <br />
-          © {new Date().getFullYear()} CityFood. All Rights Reserved.
+          © {new Date().getFullYear()} Food Saathi. All Rights Reserved.
         </p>
       </div>
     </AnimatedPage>

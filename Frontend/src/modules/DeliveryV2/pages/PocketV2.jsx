@@ -288,7 +288,7 @@ export const PocketV2 = () => {
                 <div className="flex flex-col items-center">
                    <div className="relative w-28 h-28">
                       <svg className="w-28 h-28 transform -rotate-90" viewBox="0 0 100 100">
-                         <circle cx="50" cy="50" r="45" fill="none" stroke="#f3f4f6" strokeWidth="8" />
+                         <circle cx="50" cy="50" r="45" fill="none" stroke="#FBF1E6" strokeWidth="8" />
                          <motion.circle 
                             cx="50" cy="50" r="45" fill="none" stroke="#000" strokeWidth="8" strokeLinecap="round"
                             initial={{ pathLength: 0 }} animate={{ pathLength: ordersProgress }} transition={{ duration: 1.5, ease: "easeOut" }}
@@ -306,9 +306,9 @@ export const PocketV2 = () => {
                 <div className="flex flex-col items-center">
                    <div className="relative w-28 h-28">
                       <svg className="w-28 h-28 transform -rotate-90" viewBox="0 0 100 100">
-                         <circle cx="50" cy="50" r="45" fill="none" stroke="#f3f4f6" strokeWidth="8" />
+                         <circle cx="50" cy="50" r="45" fill="none" stroke="#FBF1E6" strokeWidth="8" />
                          <motion.circle 
-                            cx="50" cy="50" r="45" fill="none" stroke="#ff8100" strokeWidth="8" strokeLinecap="round"
+                            cx="50" cy="50" r="45" fill="none" stroke="#FFA51F" strokeWidth="8" strokeLinecap="round"
                             initial={{ pathLength: 0 }} animate={{ pathLength: earningsProgress }} transition={{ duration: 1.5, ease: "easeOut" }}
                          />
                       </svg>

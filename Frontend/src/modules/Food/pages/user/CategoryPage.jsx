@@ -1238,9 +1238,9 @@ export default function CategoryPage() {
   const shouldShowGrayscale = isOutOfService
 
   return (
-    <div className={`min-h-screen bg-white dark:bg-[#0a0a0a] ${shouldShowGrayscale ? 'grayscale opacity-75' : ''}`}>
+    <div className={`min-h-screen bg-white dark:bg-[#1A0F09] ${shouldShowGrayscale ? 'grayscale opacity-75' : ''}`}>
       {/* Sticky Header */}
-      <div className="sticky top-0 z-20 bg-white/95 dark:bg-[#1a1a1a]/95 backdrop-blur supports-[backdrop-filter]:bg-white/90 shadow-sm">
+      <div className="sticky top-0 z-20 bg-white/95 dark:bg-[#2A1A11]/95 backdrop-blur supports-[backdrop-filter]:bg-white/90 shadow-sm">
         <div className="max-w-7xl mx-auto">
           {/* Search Bar, Back Button, and View Toggle */}
           <div className="flex items-center gap-2 px-3 md:px-6 py-2 border-b border-gray-100 dark:border-gray-800">
@@ -1257,7 +1257,7 @@ export default function CategoryPage() {
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 pr-3 h-9 rounded-lg border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-[#1a1a1a] focus:bg-white dark:focus:bg-[#2a2a2a] focus:border-gray-500 dark:focus:border-gray-600 text-xs md:text-sm dark:text-white placeholder:text-gray-600 dark:placeholder:text-gray-400"
+                className="pl-8 pr-3 h-9 rounded-lg border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-[#2A1A11] focus:bg-white dark:focus:bg-[#3A271C] focus:border-gray-500 dark:focus:border-gray-600 text-xs md:text-sm dark:text-white placeholder:text-gray-600 dark:placeholder:text-gray-400"
               />
             </div>
           </div>
@@ -1265,7 +1265,7 @@ export default function CategoryPage() {
           {/* Browse Category Section */}
           <div
             ref={categoryScrollRef}
-            className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-6 py-3 bg-white dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-gray-800"
+            className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-6 py-3 bg-white dark:bg-[#2A1A11] border-b border-gray-100 dark:border-gray-800"
             style={{
               scrollbarWidth: "none",
               msOverflowStyle: "none",
@@ -1337,7 +1337,7 @@ export default function CategoryPage() {
               <Button
                 variant="outline"
                 onClick={() => setIsFilterOpen(true)}
-                className="h-7 md:h-8 px-2.5 md:px-3 rounded-md flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
+                className="h-7 md:h-8 px-2.5 md:px-3 rounded-md flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all bg-white dark:bg-[#2A1A11] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
               >
                 <SlidersHorizontal className="h-3.5 w-3.5 md:h-4 md:w-4" />
                 <span className="text-xs md:text-sm font-bold text-black dark:text-white">Filters</span>
@@ -1356,7 +1356,7 @@ export default function CategoryPage() {
                     onClick={() => toggleFilter(filter.id)}
                     className={`h-7 md:h-8 px-2.5 md:px-3 rounded-md flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${isActive
                       ? 'bg-primary text-white border border-primary hover:bg-secondary'
-                      : 'bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      : 'bg-white dark:bg-[#2A1A11] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800'
                       }`}
                   >
                     <span className={`text-xs md:text-sm text-black dark:text-white font-bold ${isActive ? 'text-white' : 'text-black dark:text-white'}`}>{filter.label}</span>
@@ -1388,7 +1388,7 @@ export default function CategoryPage() {
                     onClick={() => toggleFilter(filter.id)}
                     className={`h-7 md:h-8 px-2.5 md:px-3 rounded-md flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${isActive
                       ? 'bg-primary text-white border border-primary hover:bg-secondary'
-                      : 'bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      : 'bg-white dark:bg-[#2A1A11] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800'
                       }`}
                   >
                     {Icon && <Icon className={`h-3.5 w-3.5 md:h-4 md:w-4 ${isActive ? 'text-white' : 'text-gray-900 dark:text-white'}`} />}
@@ -1427,7 +1427,7 @@ export default function CategoryPage() {
                       <motion.div
                         whileHover={isClosed ? {} : { scale: 1.01 }}
                         whileTap={isClosed ? {} : { scale: 0.98 }}
-                        className={`flex gap-3 md:gap-4 bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-gray-800 p-2 md:p-3 rounded-2xl md:rounded-3xl shadow-sm transition-all duration-300 ${isClosed ? '' : 'hover:shadow-md'} ${shouldShowGrayscale || isClosed ? 'grayscale opacity-75' : ''}`}
+                        className={`flex gap-3 md:gap-4 bg-white dark:bg-[#2A1A11] border border-gray-100 dark:border-gray-800 p-2 md:p-3 rounded-2xl md:rounded-3xl shadow-sm transition-all duration-300 ${isClosed ? '' : 'hover:shadow-md'} ${shouldShowGrayscale || isClosed ? 'grayscale opacity-75' : ''}`}
                       >
                         {/* Image Container */}
                         <div className="relative w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-xl md:rounded-2xl overflow-hidden flex-shrink-0 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
@@ -1514,7 +1514,7 @@ export default function CategoryPage() {
 
             {/* Loading Overlay */}
             {showRestaurantSkeleton && (
-              <div className="absolute inset-0 z-10 rounded-lg bg-white/92 backdrop-blur-sm dark:bg-[#1a1a1a]/92">
+              <div className="absolute inset-0 z-10 rounded-lg bg-white/92 backdrop-blur-sm dark:bg-[#2A1A11]/92">
                 <LoadingSkeletonRegion label="Loading restaurants" className="h-full p-1 sm:p-2">
                   <RestaurantGridSkeleton count={4} compact />
                 </LoadingSkeletonRegion>
@@ -1542,7 +1542,7 @@ export default function CategoryPage() {
                       transition={{ type: "spring", stiffness: 300, damping: 20 }}
                       className="h-full w-full flex"
                     >
-                      <Card className={`overflow-hidden gap-0 border border-gray-100 dark:border-gray-800 group bg-white dark:bg-[#1a1a1a] shadow-md transition-all duration-300 py-0 rounded-2xl h-full flex flex-col w-full ${isClosed ? 'cursor-not-allowed' : 'cursor-pointer hover:shadow-xl'} ${shouldShowGrayscale || isClosed ? 'grayscale opacity-75' : ''
+                      <Card className={`overflow-hidden gap-0 border border-gray-100 dark:border-gray-800 group bg-white dark:bg-[#2A1A11] shadow-md transition-all duration-300 py-0 rounded-2xl h-full flex flex-col w-full ${isClosed ? 'cursor-not-allowed' : 'cursor-pointer hover:shadow-xl'} ${shouldShowGrayscale || isClosed ? 'grayscale opacity-75' : ''
                         }`}>
                         {/* Image Section */}
                         <div className="relative h-48 sm:h-56 md:h-64 lg:h-72 xl:h-80 w-full overflow-hidden rounded-t-2xl flex-shrink-0">
@@ -1584,7 +1584,7 @@ export default function CategoryPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="absolute top-3 right-3 h-9 w-9 md:h-10 md:w-10 bg-white/95 dark:bg-[#1a1a1a]/95 backdrop-blur-sm rounded-xl hover:bg-white dark:hover:bg-[#2a2a2a] transition-all duration-300 shadow-sm z-10"
+                            className="absolute top-3 right-3 h-9 w-9 md:h-10 md:w-10 bg-white/95 dark:bg-[#2A1A11]/95 backdrop-blur-sm rounded-xl hover:bg-white dark:hover:bg-[#3A271C] transition-all duration-300 shadow-sm z-10"
                             onClick={(e) => {
                               e.preventDefault()
                               e.stopPropagation()
@@ -1596,7 +1596,7 @@ export default function CategoryPage() {
                         </div>
 
                         {/* Content Section */}
-                        <CardContent className="p-4 sm:p-5 gap-0 flex-1 flex flex-col bg-white dark:bg-[#1a1a1a] rounded-b-2xl">
+                        <CardContent className="p-4 sm:p-5 gap-0 flex-1 flex flex-col bg-white dark:bg-[#2A1A11] rounded-b-2xl">
                           {/* Restaurant Name & Rating */}
                           <div className="flex items-start justify-between gap-2 mb-2 lg:mb-3">
                             <div className="flex-1 min-w-0">
@@ -1686,7 +1686,7 @@ export default function CategoryPage() {
                 />
 
                 {/* Modal Content */}
-                <div className="absolute bottom-0 left-0 right-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:max-w-4xl bg-white dark:bg-[#1a1a1a] rounded-t-3xl md:rounded-3xl max-h-[85vh] md:max-h-[90vh] flex flex-col animate-[slideUp_0.3s_ease-out]">
+                <div className="absolute bottom-0 left-0 right-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:max-w-4xl bg-white dark:bg-[#2A1A11] rounded-t-3xl md:rounded-3xl max-h-[85vh] md:max-h-[90vh] flex flex-col animate-[slideUp_0.3s_ease-out]">
                   {/* Header */}
                   <div className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-gray-200 dark:border-gray-800">
                     <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">Filters and sorting</h2>
@@ -1706,7 +1706,7 @@ export default function CategoryPage() {
                   {/* Body */}
                   <div className="flex flex-1 overflow-hidden">
                     {/* Left Sidebar - Tabs */}
-                    <div className="w-24 sm:w-28 md:w-32 bg-gray-50 dark:bg-[#0a0a0a] border-r border-gray-200 dark:border-gray-800 flex flex-col">
+                    <div className="w-24 sm:w-28 md:w-32 bg-gray-50 dark:bg-[#1A0F09] border-r border-gray-200 dark:border-gray-800 flex flex-col">
                       {[
                         { id: 'sort', label: 'Sort By', icon: ArrowDownUp },
                         { id: 'time', label: 'Time', icon: Timer },
@@ -1728,7 +1728,7 @@ export default function CategoryPage() {
                                 section.scrollIntoView({ behavior: 'smooth', block: 'start' })
                               }
                             }}
-                            className={`flex flex-col items-center gap-1 py-4 px-2 text-center relative transition-colors ${isActive ? 'bg-white dark:bg-[#1a1a1a] text-primary' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                            className={`flex flex-col items-center gap-1 py-4 px-2 text-center relative transition-colors ${isActive ? 'bg-white dark:bg-[#2A1A11] text-primary' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                               }`}
                           >
                             {isActive && (
@@ -1762,7 +1762,7 @@ export default function CategoryPage() {
                               key={option.id || 'relevance'}
                               onClick={() => setSortBy(option.id)}
                               className={`px-4 md:px-5 py-3 md:py-4 rounded-xl border text-left transition-colors ${sortBy === option.id
-                                ? 'border-primary bg-[#F9F9FB] dark:bg-primary/20'
+                                ? 'border-primary bg-[#FFF9F0] dark:bg-primary/20'
                                 : 'border-gray-200 dark:border-gray-700 hover:border-primary'
                                 }`}
                             >
@@ -1785,7 +1785,7 @@ export default function CategoryPage() {
                           <button
                             onClick={() => toggleFilter('under-30-mins')}
                             className={`flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl border transition-colors ${activeFilters.has('under-30-mins')
-                              ? 'border-primary bg-[#F9F9FB] dark:bg-primary/20'
+                              ? 'border-primary bg-[#FFF9F0] dark:bg-primary/20'
                               : 'border-gray-200 dark:border-gray-700 hover:border-primary'
                               }`}
                           >
@@ -1795,7 +1795,7 @@ export default function CategoryPage() {
                           <button
                             onClick={() => toggleFilter('delivery-under-45')}
                             className={`flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl border transition-colors ${activeFilters.has('delivery-under-45')
-                              ? 'border-primary bg-[#F9F9FB] dark:bg-primary/20'
+                              ? 'border-primary bg-[#FFF9F0] dark:bg-primary/20'
                               : 'border-gray-200 dark:border-gray-700 hover:border-primary'
                               }`}
                           >
@@ -1816,7 +1816,7 @@ export default function CategoryPage() {
                           <button
                             onClick={() => toggleFilter('rating-35-plus')}
                             className={`flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl border transition-colors ${activeFilters.has('rating-35-plus')
-                              ? 'border-primary bg-[#F9F9FB] dark:bg-primary/20'
+                              ? 'border-primary bg-[#FFF9F0] dark:bg-primary/20'
                               : 'border-gray-200 dark:border-gray-700 hover:border-primary'
                               }`}
                           >
@@ -1964,7 +1964,7 @@ export default function CategoryPage() {
                   </div>
 
                   {/* Footer */}
-                  <div className="flex items-center gap-4 px-4 md:px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a1a1a]">
+                  <div className="flex items-center gap-4 px-4 md:px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#2A1A11]">
                     <button
                       onClick={() => setIsFilterOpen(false)}
                       className="flex-1 py-3 md:py-4 text-center font-semibold text-gray-700 dark:text-gray-300 text-sm md:text-base"

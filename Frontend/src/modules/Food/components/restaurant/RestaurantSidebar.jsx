@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom"
+import { logoMark } from "@/shared/components/brand/FoodSaathiLogo"
 import {
   FileText,
   Package,
@@ -28,7 +29,7 @@ export default function RestaurantSidebar({
 }) {
   const { pathname } = useLocation()
   const [companyName, setCompanyName] = useState("Restaurant Panel")
-  const [logoUrl, setLogoUrl] = useState(null)
+  const [logoUrl, setLogoUrl] = useState(logoMark)
 
   useEffect(() => {
     const apply = (settings) => {

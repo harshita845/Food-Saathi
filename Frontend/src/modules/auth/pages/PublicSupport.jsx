@@ -50,7 +50,7 @@ export default function PublicSupport() {
   ]
 
   return (
-    <AnimatedPage className="min-h-screen bg-[#F8F9FA] font-['Inter',sans-serif]">
+    <AnimatedPage className="min-h-screen bg-[#FFFAF4] font-['Inter',sans-serif]">
       {/* Header */}
       <div className="bg-white sticky top-0 z-10 px-4 py-4 flex items-center gap-3 border-b border-gray-100">
         <button onClick={() => navigate(-1)} className="p-1 hover:bg-gray-50 rounded-full transition-colors">

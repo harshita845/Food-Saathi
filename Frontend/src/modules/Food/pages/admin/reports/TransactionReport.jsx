@@ -284,7 +284,7 @@ export default function TransactionReport() {
           {/* Left Column - Large Cards */}
           <div className="space-y-3">
             {/* Completed Transaction - Green */}
-            <div className="rounded-lg shadow-sm border border-slate-200 p-4" style={{ backgroundColor: '#f1f5f9' }}>
+            <div className="rounded-lg shadow-sm border border-slate-200 p-4" style={{ backgroundColor: '#FBF1E6' }}>
               <div className="relative mb-3 flex justify-center">
                 <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
                   <img src={completedIcon} alt="Completed" className="w-12 h-12" />
@@ -300,7 +300,7 @@ export default function TransactionReport() {
             </div>
 
             {/* Refunded Transaction - Red */}
-            <div className="rounded-lg shadow-sm border border-slate-200 p-4" style={{ backgroundColor: '#f1f5f9' }}>
+            <div className="rounded-lg shadow-sm border border-slate-200 p-4" style={{ backgroundColor: '#FBF1E6' }}>
               <div className="relative mb-3 flex justify-center">
                 <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
                   <img src={refundedIcon} alt="Refunded" className="w-12 h-12" />
@@ -321,7 +321,7 @@ export default function TransactionReport() {
             {/* Admin Earning */}
             <div 
               className="rounded-lg shadow-sm border border-slate-200 p-3 cursor-pointer hover:shadow-md transition-all" 
-              style={{ backgroundColor: '#f1f5f9' }}
+              style={{ backgroundColor: '#FBF1E6' }}
               onClick={() => navigate('/admin/food/admin-earning-report', { state: { filters, searchQuery } })}
             >
               <div className="flex items-center justify-between">
@@ -341,7 +341,7 @@ export default function TransactionReport() {
             </div>
 
             {/* Restaurant Earning */}
-            <div className="rounded-lg shadow-sm border border-slate-200 p-3" style={{ backgroundColor: '#f1f5f9' }}>
+            <div className="rounded-lg shadow-sm border border-slate-200 p-3" style={{ backgroundColor: '#FBF1E6' }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
@@ -359,7 +359,7 @@ export default function TransactionReport() {
             </div>
 
             {/* Deliveryman Earning */}
-            <div className="rounded-lg shadow-sm border border-slate-200 p-3" style={{ backgroundColor: '#f1f5f9' }}>
+            <div className="rounded-lg shadow-sm border border-slate-200 p-3" style={{ backgroundColor: '#FBF1E6' }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">

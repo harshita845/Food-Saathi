@@ -425,7 +425,7 @@ export const ProfileDetailsV2 = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center font-poppins">
+      <div className="min-h-screen bg-[#FFFAF4] flex items-center justify-center font-poppins">
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
             <div className="w-16 h-16 border-4 border-orange-100 border-t-orange-500 rounded-full animate-spin" />
@@ -598,7 +598,7 @@ export const ProfileDetailsV2 = () => {
           </div>
 
           <div className="space-y-3">
-            <div className="bg-[#121212] rounded-3xl p-6 text-white shadow-2xl relative overflow-hidden group">
+            <div className="bg-[#1E120B] rounded-3xl p-6 text-white shadow-2xl relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-white/10 transition-colors" />
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-10">
@@ -810,7 +810,7 @@ export const ProfileDetailsV2 = () => {
               if (!num) return toast.error("Vehicle number is required");
               if (!brand) return toast.error("Vehicle brand is required");
 
-              // Improved validation for CityFood vehicle numbers
+              // Improved validation for Indian vehicle numbers
               // Accept common formats like MH12AB1234 or MH12A1234
               const numRegex = /^[A-Z]{2}[0-9]{1,2}[A-Z]{0,2}[0-9]{4}$/i;
               if (!numRegex.test(num.replace(/\s+/g, ""))) {

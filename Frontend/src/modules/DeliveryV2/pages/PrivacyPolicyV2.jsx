@@ -43,7 +43,7 @@ export default function PrivacyPolicyV2() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] overflow-x-hidden">
+    <div className="min-h-screen bg-white dark:bg-[#1A0F09] overflow-x-hidden">
       <div className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 px-4 py-4 flex items-center gap-4 sticky top-0 z-10 shadow-sm">
         <button
           onClick={goBack}
@@ -58,7 +58,7 @@ export default function PrivacyPolicyV2() {
         <div className="max-w-4xl mx-auto">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20">
-              <Loader2 className="w-8 h-8 text-[#E23744] animate-spin mb-4" />
+              <Loader2 className="w-8 h-8 text-[#F2541B] animate-spin mb-4" />
               <p className="text-gray-500">Loading policy...</p>
             </div>
           ) : (

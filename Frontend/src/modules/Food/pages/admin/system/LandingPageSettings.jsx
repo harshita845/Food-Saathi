@@ -995,12 +995,12 @@ export default function LandingPageSettings({ type = "admin" }) {
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
-                      defaultValue="#f8f9fa"
+                      defaultValue="#FFFAF4"
                       className="w-16 h-10 rounded border border-slate-300 cursor-pointer"
                     />
                     <input
                       type="text"
-                      placeholder="#f8f9fa"
+                      placeholder="#FFFAF4"
                       className="flex-1 px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -1013,12 +1013,12 @@ export default function LandingPageSettings({ type = "admin" }) {
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
-                      defaultValue="#006fbd"
+                      defaultValue="#E0470F"
                       className="w-16 h-10 rounded border border-slate-300 cursor-pointer"
                     />
                     <input
                       type="text"
-                      placeholder="#006fbd"
+                      placeholder="#E0470F"
                       className="flex-1 px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>

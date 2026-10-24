@@ -703,8 +703,8 @@ Order again from this restaurant in the ${companyName} app.`
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] pb-24">
-        <div className="bg-white dark:bg-[#121212] p-4 flex items-center shadow-sm sticky top-0 z-10 border-b dark:border-gray-800">
+      <div className="min-h-screen bg-gray-50 dark:bg-[#1A0F09] pb-24">
+        <div className="bg-white dark:bg-[#1E120B] p-4 flex items-center shadow-sm sticky top-0 z-10 border-b dark:border-gray-800">
           <Link to="/user">
             <ArrowLeft className="w-6 h-6 text-gray-700 dark:text-gray-300 cursor-pointer" />
           </Link>
@@ -719,8 +719,8 @@ Order again from this restaurant in the ${companyName} app.`
 
   if (orders.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] pb-24">
-        <div className="bg-white dark:bg-[#121212] p-4 flex items-center shadow-sm sticky top-0 z-10 border-b dark:border-gray-800">
+      <div className="min-h-screen bg-gray-50 dark:bg-[#1A0F09] pb-24">
+        <div className="bg-white dark:bg-[#1E120B] p-4 flex items-center shadow-sm sticky top-0 z-10 border-b dark:border-gray-800">
           <Link to="/user">
             <ArrowLeft className="w-6 h-6 text-gray-700 dark:text-gray-300 cursor-pointer" />
           </Link>
@@ -737,9 +737,9 @@ Order again from this restaurant in the ${companyName} app.`
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] pb-24 font-sans">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#1A0F09] pb-24 font-sans">
       {/* Header */}
-      <div className="bg-white dark:bg-[#121212] p-4 flex items-center shadow-sm sticky top-0 z-10 border-b dark:border-gray-800">
+      <div className="bg-white dark:bg-[#1E120B] p-4 flex items-center shadow-sm sticky top-0 z-10 border-b dark:border-gray-800">
         <Link to="/user">
           <ArrowLeft className="w-6 h-6 text-gray-700 dark:text-gray-300 cursor-pointer" />
         </Link>
@@ -747,8 +747,8 @@ Order again from this restaurant in the ${companyName} app.`
       </div>
 
       {/* Search Bar */}
-      <div className="p-4 bg-white dark:bg-[#121212] mt-1 border-b dark:border-gray-800">
-        <div className="flex items-center bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 shadow-sm">
+      <div className="p-4 bg-white dark:bg-[#1E120B] mt-1 border-b dark:border-gray-800">
+        <div className="flex items-center bg-white dark:bg-[#2A1A11] border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 shadow-sm">
           <Search className="w-5 h-5 text-primary" />
           <input
             type="text"
@@ -761,7 +761,7 @@ Order again from this restaurant in the ${companyName} app.`
       </div>
 
       {/* Tabs */}
-      <div className="bg-white dark:bg-[#121212] px-4 pt-3 flex gap-6 border-b dark:border-gray-800 sticky top-[60px] z-10 shadow-sm">
+      <div className="bg-white dark:bg-[#1E120B] px-4 pt-3 flex gap-6 border-b dark:border-gray-800 sticky top-[60px] z-10 shadow-sm">
         <button 
           onClick={() => setActiveTab('today')}
           className={`pb-3 text-[15px] font-semibold transition-colors relative ${activeTab === 'today' ? 'text-primary' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}
@@ -785,7 +785,7 @@ Order again from this restaurant in the ${companyName} app.`
       {/* Orders List */}
       <div className="px-4 py-2 space-y-4">
         {filteredOrders.length === 0 ? (
-          <div className="bg-white dark:bg-[#121212] rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-8 text-center">
+          <div className="bg-white dark:bg-[#1E120B] rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-8 text-center">
             <p className="text-gray-600 dark:text-gray-400">No orders found matching your search</p>
           </div>
         ) : (
@@ -817,7 +817,7 @@ Order again from this restaurant in the ${companyName} app.`
             const location = order.restaurantLocation || `${order.address?.city || ''}, ${order.address?.state || ''}`.trim() || 'Location not available'
 
             return (
-              <div key={order.id} className="relative bg-white dark:bg-[#121212] rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+              <div key={order.id} className="relative bg-white dark:bg-[#1E120B] rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
                 {/* Card Header: Restaurant Info */}
                 <div className="flex items-start justify-between p-4 pb-2">
                   <div className="flex gap-3">
@@ -866,7 +866,7 @@ Order again from this restaurant in the ${companyName} app.`
 
                 {/* Three-dots dropdown menu */}
                 {activeMenuOrderId === order.id && (
-                  <div className="absolute right-3 top-10 z-20 w-40 rounded-xl bg-white dark:bg-[#1a1a1a] shadow-lg border border-gray-100 dark:border-gray-800 py-1 text-xs">
+                  <div className="absolute right-3 top-10 z-20 w-40 rounded-xl bg-white dark:bg-[#2A1A11] shadow-lg border border-gray-100 dark:border-gray-800 py-1 text-xs">
                     <button
                       type="button"
                       onClick={() => handleShareRestaurant(order)}
@@ -948,7 +948,7 @@ Order again from this restaurant in the ${companyName} app.`
                 </div>
 
                 {/* Order Summary Section */}
-                <div className="px-3 sm:px-4 py-2 sm:py-3 bg-gray-50 dark:bg-[#1a1a1a] rounded-lg mx-3 sm:mx-4 mb-2">
+                <div className="px-3 sm:px-4 py-2 sm:py-3 bg-gray-50 dark:bg-[#2A1A11] rounded-lg mx-3 sm:mx-4 mb-2">
                   <div className="space-y-1">
                     {order.subtotal > 0 && (
                       <div className="hidden sm:flex justify-between text-xs">
@@ -1148,13 +1148,13 @@ Order again from this restaurant in the ${companyName} app.`
 
        {/* Footer Branding */}
       <div className="flex justify-center mt-8 mb-4">
-        <h1 className="text-4xl font-black text-gray-200 dark:text-gray-800 tracking-tighter italic uppercase">cityfood</h1>
+        <h1 className="text-4xl font-black text-gray-200 dark:text-gray-800 tracking-tighter italic uppercase">foodsaathi</h1>
       </div>
 
       {/* Rating & Feedback Modal */}
       {ratingModal.open && ratingModal.order && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-3xl bg-white dark:bg-[#121212] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border dark:border-gray-800">
+          <div className="w-full max-w-md rounded-3xl bg-white dark:bg-[#1E120B] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border dark:border-gray-800">
             {/* Header with gradient */}
             <div className="bg-gradient-to-r from-primary to-secondary px-6 py-5">
               <div className="flex items-center justify-between mb-2">
@@ -1202,7 +1202,7 @@ Order again from this restaurant in the ${companyName} app.`
                   rows={2}
                   value={restaurantFeedbackText}
                   onChange={(e) => setRestaurantFeedbackText(e.target.value)}
-                  className="w-full rounded-xl border-2 border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a1a1a] px-4 py-2 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none transition-all"
+                  className="w-full rounded-xl border-2 border-gray-200 dark:border-gray-800 bg-white dark:bg-[#2A1A11] px-4 py-2 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none transition-all"
                   placeholder="Restaurant feedback (optional)"
                 />
               </div>
@@ -1236,7 +1236,7 @@ Order again from this restaurant in the ${companyName} app.`
                     rows={2}
                     value={deliveryFeedbackText}
                     onChange={(e) => setDeliveryFeedbackText(e.target.value)}
-                    className="w-full rounded-xl border-2 border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a1a1a] px-4 py-2 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none transition-all"
+                    className="w-full rounded-xl border-2 border-gray-200 dark:border-gray-800 bg-white dark:bg-[#2A1A11] px-4 py-2 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none transition-all"
                     placeholder="Delivery partner feedback (optional)"
                   />
                 </div>
@@ -1272,7 +1272,7 @@ Order again from this restaurant in the ${companyName} app.`
 
       {showShareModal && sharePayload && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm px-4 pb-4 pt-10 sm:items-center">
-          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-[#121212] shadow-2xl overflow-hidden border dark:border-gray-800">
+          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-[#1E120B] shadow-2xl overflow-hidden border dark:border-gray-800">
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 px-5 py-4">
               <div>
                 <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">Share restaurant</h3>

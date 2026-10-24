@@ -11,13 +11,13 @@ import collectionsBanner from "@food/assets/collectionspagebanner.png"
 // Gradient colors for collection cards
 const gradientColors = [
   "bg-gradient-to-br from-red-400 to-red-600",
-  "bg-gradient-to-br from-orange-400 to-#55254b",
+  "bg-gradient-to-br from-orange-400 to-#C93C0E",
   "bg-gradient-to-br from-purple-500 to-pink-600",
   "bg-gradient-to-br from-green-400 to-emerald-600",
   "bg-gradient-to-br from-orange-400 to-red-500",
   "bg-gradient-to-br from-amber-400 to-yellow-600",
   "bg-gradient-to-br from-pink-400 to-rose-600",
-  "bg-gradient-to-br from-amber-400 to-#55254b",
+  "bg-gradient-to-br from-amber-400 to-#C93C0E",
 ]
 
 export default function Collections() {
@@ -60,7 +60,7 @@ export default function Collections() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0a0a0a]">
+    <div className="min-h-screen bg-white dark:bg-[#1A0F09]">
       {/* Back Button */}
       <button
         onClick={goBack}
@@ -81,7 +81,7 @@ export default function Collections() {
       </div>
 
       {/* Tabs */}
-      <div className="sticky top-0 bg-white dark:bg-[#1a1a1a] z-10 border-b dark:border-gray-800">
+      <div className="sticky top-0 bg-white dark:bg-[#2A1A11] z-10 border-b dark:border-gray-800">
         <div className="flex">
           <button
             onClick={() => setActiveTab("delivery")}
@@ -170,9 +170,9 @@ export default function Collections() {
             {/* Create New Collection Card */}
             <button
               onClick={() => setIsCreateDialogOpen(true)}
-              className="bg-white dark:bg-[#1a1a1a] border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl p-4 h-48 flex flex-col items-center justify-center gap-3 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              className="bg-white dark:bg-[#2A1A11] border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl p-4 h-48 flex flex-col items-center justify-center gap-3 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
-              <div className="w-12 h-12 rounded-full bg-[#F9F9FB] dark:bg-primary/20 flex items-center justify-center border-2 border-primary/30 dark:border-primary/40">
+              <div className="w-12 h-12 rounded-full bg-[#FFF9F0] dark:bg-primary/20 flex items-center justify-center border-2 border-primary/30 dark:border-primary/40">
                 <Plus className="h-6 w-6 text-primary dark:text-primary" />
               </div>
               <div className="text-center">
@@ -197,7 +197,7 @@ export default function Collections() {
           />
 
           {/* Modal */}
-          <div className="relative bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-2xl w-[90%] max-w-sm mx-4 overflow-hidden animate-[slideUp_0.3s_ease-out]">
+          <div className="relative bg-white dark:bg-[#2A1A11] rounded-2xl shadow-2xl w-[90%] max-w-sm mx-4 overflow-hidden animate-[slideUp_0.3s_ease-out]">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b dark:border-gray-800">
               <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Create New Collection</h2>
@@ -224,7 +224,7 @@ export default function Collections() {
                     handleCreateCollection()
                   }
                 }}
-                className="w-full h-12 text-base border-2 border-gray-200 dark:border-gray-700 focus:border-primary dark:focus:border-primary rounded-xl bg-white dark:bg-[#2a2a2a] text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
+                className="w-full h-12 text-base border-2 border-gray-200 dark:border-gray-700 focus:border-primary dark:focus:border-primary rounded-xl bg-white dark:bg-[#3A271C] text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
                 autoFocus
               />
 

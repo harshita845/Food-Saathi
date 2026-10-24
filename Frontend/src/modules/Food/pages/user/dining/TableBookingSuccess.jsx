@@ -46,7 +46,7 @@ export default function TableBookingSuccess() {
             <motion.div
                 initial={{ scale: 0.5, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className={`w-20 h-20 ${booking.status === 'pending' ? 'bg-amber-50 dark:bg-amber-950/20' : 'bg-[#F9F9FB] dark:bg-slate-900'} rounded-full flex items-center justify-center mb-6 transition-colors`}
+                className={`w-20 h-20 ${booking.status === 'pending' ? 'bg-amber-50 dark:bg-amber-950/20' : 'bg-[#FFF9F0] dark:bg-slate-900'} rounded-full flex items-center justify-center mb-6 transition-colors`}
             >
                 {booking.status === 'pending' ? (
                     <Clock className="w-12 h-12 text-amber-500" />
@@ -68,7 +68,7 @@ export default function TableBookingSuccess() {
                     {booking.status === 'pending' ? 'Waiting for restaurant approval' : 'Your table is ready for you'}
                 </p>
                 <div className="pt-2">
-                    <span className="bg-[#F9F9FB] dark:bg-slate-900 text-primary dark:text-purple-400 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest border border-primary/20 dark:border-purple-400/20">
+                    <span className="bg-[#FFF9F0] dark:bg-slate-900 text-primary dark:text-purple-400 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest border border-primary/20 dark:border-purple-400/20">
                         BOOKING ID: {booking.bookingId}
                     </span>
                 </div>
@@ -112,7 +112,7 @@ export default function TableBookingSuccess() {
                             />
                         </div>
                         <div className="min-w-0">
-                            <h2 className="font-black text-lg text-gray-900 dark:text-slate-100 truncate">{booking.restaurant?.name || "The Great CityFood Restaurant"}</h2>
+                            <h2 className="font-black text-lg text-gray-900 dark:text-slate-100 truncate">{booking.restaurant?.name || "The Great Food Saathi Restaurant"}</h2>
                             <p className="text-xs text-gray-400 dark:text-slate-500 flex items-center gap-1 mt-0.5">
                                 <MapPin className="w-3 h-3" />
                                 <span className="truncate">

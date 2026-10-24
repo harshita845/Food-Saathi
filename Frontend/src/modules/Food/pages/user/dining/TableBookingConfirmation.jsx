@@ -133,7 +133,7 @@ export default function TableBookingConfirmation() {
                 <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
                     <div className="p-4 space-y-4">
                         <div className="flex items-start gap-3">
-                            <div className="bg-[#F9F9FB] dark:bg-slate-800 p-2 rounded-xl">
+                            <div className="bg-[#FFF9F0] dark:bg-slate-800 p-2 rounded-xl">
                                 <Calendar className="w-5 h-5 text-primary" />
                             </div>
                              <div>
@@ -261,7 +261,7 @@ export default function TableBookingConfirmation() {
                 {/* Details Section */}
                 <div className="pt-4 space-y-3">
                     <p className="text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] relative">
-                        <span className="bg-[#f8f9fa] dark:bg-slate-950 px-4 z-10 relative">Your Details</span>
+                        <span className="bg-[#FFFAF4] dark:bg-slate-950 px-4 z-10 relative">Your Details</span>
                         <div className="absolute top-1/2 left-0 w-full h-[1px] bg-slate-200 dark:bg-slate-800 -z-0"></div>
                     </p>
                      <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between transition-colors">

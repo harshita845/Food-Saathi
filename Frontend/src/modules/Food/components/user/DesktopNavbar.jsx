@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom"
+import FoodSaathiLogo from "@/shared/components/brand/FoodSaathiLogo"
 import { useEffect, useState, useRef, useMemo } from "react"
 import { ChevronDown, ShoppingCart, Wallet, Search, Mic } from "lucide-react"
 import { Button } from "@food/components/ui/button"
@@ -199,9 +200,7 @@ export default function DesktopNavbar({ showLogo = true }) {
                                             }}
                                         />
                                     ) : (
-                                        <span className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">
-                                            {companyName || "CityFood"}
-                                        </span>
+                                        <FoodSaathiLogo variant="lockup" size="text-xl md:text-2xl" imgClassName="h-9 md:h-11" animated />
                                     )}
                                 </Link>
                             )}

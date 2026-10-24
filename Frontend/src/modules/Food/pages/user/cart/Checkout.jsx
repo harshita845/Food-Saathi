@@ -106,7 +106,7 @@ export default function Checkout() {
   }
 
   return (
-    <AnimatedPage className="min-h-screen bg-linear-to-b from-orange-50/30 via-white to-orange-50/20 dark:from-[#0a0a0a] dark:via-[#1a1a1a] dark:to-[#0a0a0a] p-4 sm:p-6 md:p-8">
+    <AnimatedPage className="min-h-screen bg-linear-to-b from-orange-50/30 via-white to-orange-50/20 dark:from-[#1A0F09] dark:via-[#2A1A11] dark:to-[#1A0F09] p-4 sm:p-6 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
         <ScrollReveal>
           <div className="flex items-center gap-4 mb-6 md:mb-8">
@@ -278,7 +278,7 @@ export default function Checkout() {
           {/* Right Column - Order Summary */}
           <div className="lg:col-span-1">
             <ScrollReveal delay={0.3}>
-              <Card className="sticky top-4 md:top-6 dark:bg-[#1a1a1a] dark:border-gray-800">
+              <Card className="sticky top-4 md:top-6 dark:bg-[#2A1A11] dark:border-gray-800">
                 <CardHeader>
                   <CardTitle className="text-base md:text-lg lg:text-xl dark:text-white">Order Summary</CardTitle>
                 </CardHeader>

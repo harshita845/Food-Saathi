@@ -1,21 +1,21 @@
 {
   "id": "/admin/",
-  "name": "CityFood Admin",
-  "short_name": "CityFood Admin",
-  "description": "CityFood administration panel",
+  "name": "Food Saathi Admin",
+  "short_name": "Saathi Admin",
+  "description": "Food Saathi administration panel",
   "start_url": "/admin/food",
   "scope": "/admin/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "background_color": "#FDF3E1",
+  "theme_color": "#F2541B",
   "icons": [
     {
-      "src": "/logo.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/logo.png",
+      "src": "/foodsaathi-mark.png",
       "sizes": "512x512",
       "type": "image/png"
     }

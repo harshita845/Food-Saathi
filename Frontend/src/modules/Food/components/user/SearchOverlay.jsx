@@ -160,23 +160,23 @@ export default function SearchOverlay({ isOpen, onClose, searchValue, onSearchCh
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex flex-col bg-white dark:bg-[#0a0a0a]"
+      className="fixed inset-0 z-[9999] flex flex-col bg-white dark:bg-[#1A0F09]"
       style={{
         animation: 'fadeIn 0.3s ease-out'
       }}
     >
       {/* Header with Search Bar */}
-      <div className="flex-shrink-0 bg-white dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-gray-800 shadow-sm">
+      <div className="flex-shrink-0 bg-white dark:bg-[#2A1A11] border-b border-gray-100 dark:border-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <form onSubmit={handleSearchSubmit} className="flex items-center gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 h-5 w-5 text-primary dark:text-[#a05485] z-10" strokeWidth={2.5} />
+              <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 h-5 w-5 text-primary dark:text-[#E0470F] z-10" strokeWidth={2.5} />
               <Input
                 ref={inputRef}
                 value={searchValue}
                 onChange={(e) => onSearchChange(e.target.value)}
                 placeholder="Search dishes or restaurants"
-                className="pl-14 pr-16 h-13 w-full bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary dark:focus:border-primary rounded-2xl text-base dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 shadow-sm transition-all duration-200"
+                className="pl-14 pr-16 h-13 w-full bg-white dark:bg-[#2A1A11] border-gray-200 dark:border-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary dark:focus:border-primary rounded-2xl text-base dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 shadow-sm transition-all duration-200"
               />
               <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center gap-3">
                 <div className="h-6 w-[1px] bg-gray-200 dark:bg-gray-700" />
@@ -192,7 +192,7 @@ export default function SearchOverlay({ isOpen, onClose, searchValue, onSearchCh
                   <button
                     type="button"
                     onClick={startListening}
-                    className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-primary dark:text-[#a05485] transition-all active:scale-90"
+                    className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-primary dark:text-[#E0470F] transition-all active:scale-90"
                   >
                     <Mic className="h-5 w-5" />
                   </button>
@@ -212,7 +212,7 @@ export default function SearchOverlay({ isOpen, onClose, searchValue, onSearchCh
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 scrollbar-hide bg-white dark:bg-[#0a0a0a]">
+      <div className="flex-1 overflow-y-auto max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 scrollbar-hide bg-white dark:bg-[#1A0F09]">
         {/* Suggestions Row */}
         <div
           className="mb-6"
@@ -261,7 +261,7 @@ export default function SearchOverlay({ isOpen, onClose, searchValue, onSearchCh
                   }}
                   onClick={() => handleFoodClick(food)}
                 >
-                  <div className="relative w-full aspect-square rounded-full overflow-hidden transition-all duration-200 shadow-md group-hover:shadow-lg bg-white dark:bg-[#1a1a1a] p-1 sm:p-1.5">
+                  <div className="relative w-full aspect-square rounded-full overflow-hidden transition-all duration-200 shadow-md group-hover:shadow-lg bg-white dark:bg-[#2A1A11] p-1 sm:p-1.5">
                     {food.image ? (
                       <img
                         src={food.image}

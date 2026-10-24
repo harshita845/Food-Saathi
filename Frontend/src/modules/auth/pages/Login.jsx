@@ -23,41 +23,9 @@ import {
 import { Button } from "@food/components/ui/button"
 import { Input } from "@food/components/ui/input"
 import { Label } from "@food/components/ui/label"
+import { SaathiWordmark, logoMark, BRAND_TAGLINE } from "@/shared/components/brand/FoodSaathiLogo"
+import { FloatingFoods } from "@/shared/components/brand/Motion"
 
-// Beautiful Botanical Leaf Component
-const BotanicalLeaf = ({ className = "w-8 h-8", rotate = 0, opacity = 0.85 }) => (
-  <svg
-    viewBox="0 0 64 64"
-    className={className}
-    style={{ transform: `rotate(${rotate}deg)`, opacity }}
-  >
-    <defs>
-      <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#4ADE80" />
-        <stop offset="50%" stopColor="#22C55E" />
-        <stop offset="100%" stopColor="#15803D" />
-      </linearGradient>
-      <filter id="leafShadow" x="-20%" y="-20%" width="140%" height="140%">
-        <feDropShadow dx="1" dy="3" stdDeviation="3" floodColor="#14532D" floodOpacity="0.25" />
-      </filter>
-    </defs>
-    <path
-      d="M12 52 C 16 32, 34 16, 56 10 C 52 30, 36 48, 12 52 Z"
-      fill="url(#leafGrad)"
-      filter="url(#leafShadow)"
-    />
-    <path
-      d="M14 50 Q 32 30 52 14"
-      stroke="#166534"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      opacity="0.6"
-      fill="none"
-    />
-    <path d="M26 38 Q 32 34 36 36" stroke="#166534" strokeWidth="1" strokeLinecap="round" opacity="0.4" fill="none" />
-    <path d="M36 28 Q 42 24 46 26" stroke="#166534" strokeWidth="1" strokeLinecap="round" opacity="0.4" fill="none" />
-  </svg>
-)
 
 export default function UnifiedOTPFastLogin() {
   const RESEND_COOLDOWN_SECONDS = 60
@@ -281,142 +249,75 @@ export default function UnifiedOTPFastLogin() {
     return () => clearInterval(intervalId)
   }, [step, resendTimer])
 
-  const floatingAnimation = (delay = 0, duration = 4, yOffset = 8) => ({
-    y: [-yOffset, yOffset],
-    transition: {
-      duration,
-      repeat: Infinity,
-      repeatType: "reverse",
-      ease: "easeInOut",
-      delay,
-    },
-  })
-
   return (
-    <div className="min-h-screen bg-[#FBF9F5] flex justify-center items-center relative overflow-x-hidden selection:bg-red-500 selection:text-white font-sans">
-      {/* Mobile Card Container on Desktop / Full Screen on Mobile */}
-      <div className="w-full max-w-[430px] min-h-screen sm:min-h-[920px] bg-[#FAF7F2] sm:shadow-[0_20px_60px_rgba(0,0,0,0.06)] relative flex flex-col justify-between overflow-hidden">
-        
-        {/* --- Background Delicate Doodles --- */}
-        {/* Top-Left Pizza Doodle */}
-        <div className="absolute top-8 left-8 pointer-events-none opacity-25">
-          <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="#2D3748" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2L2 22h20L12 2z" />
-            <circle cx="12" cy="14" r="1.5" />
-            <circle cx="9" cy="18" r="1" />
-            <circle cx="15" cy="18" r="1" />
-          </svg>
-        </div>
+    <div className="min-h-screen fs-cream-bg flex justify-center items-center relative overflow-x-hidden font-sans">
+      {/* Mobile card on desktop / full screen on mobile */}
+      <div className="w-full max-w-[430px] min-h-screen sm:min-h-[880px] bg-[#FDF3E1] sm:rounded-[40px] sm:my-6 sm:shadow-[0_30px_80px_-30px_rgba(58,28,16,0.35)] relative flex flex-col overflow-hidden">
+        <div className="absolute inset-0 fs-dots opacity-50 pointer-events-none" />
+        <FloatingFoods items={["🍕", "🍔", "🍛", "🍩"]} className="opacity-60" />
 
-        {/* Top-Right Burger Doodle */}
-        <div className="absolute top-16 right-7 pointer-events-none opacity-20">
-          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#2D3748" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 11h16a1 1 0 0 0 1-1A6 6 0 0 0 3 10a1 1 0 0 0 1 1z" />
-            <path d="M3 14h18" />
-            <path d="M4 17h16a2 2 0 0 1 2 2 1 1 0 0 1-1 1H3a1 1 0 0 1-1-1 2 2 0 0 1 2-2z" />
-          </svg>
-        </div>
-
-        {/* Mid-Left Burger Doodle */}
-        <div className="absolute top-[380px] left-4 pointer-events-none opacity-20">
-          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#2D3748" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 11h16a1 1 0 0 0 1-1A6 6 0 0 0 3 10a1 1 0 0 0 1 1z" />
-            <path d="M3 14h18" />
-            <path d="M4 17h16a2 2 0 0 1 2 2 1 1 0 0 1-1 1H3a1 1 0 0 1-1-1 2 2 0 0 1 2-2z" />
-          </svg>
-        </div>
-
-        {/* Mid-Right Fork & Knife Doodle */}
-        <div className="absolute top-[330px] right-6 pointer-events-none opacity-25">
-          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#2D3748" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 2v20M21 2v6a3 3 0 0 1-3 3M15 2v6a3 3 0 0 0 3 3" />
-            <path d="M6 2v20M3 2v6a3 3 0 0 0 6 0V2" />
-          </svg>
-        </div>
-
-        {/* Realistic Floating Green Leaves */}
-        <motion.div animate={floatingAnimation(0, 4.5, 6)} className="absolute top-18 left-3 pointer-events-none">
-          <BotanicalLeaf className="w-10 h-10" rotate={-35} opacity={0.9} />
-        </motion.div>
-        
-        {/* Tiny Red & Green Droplets */}
-        <div className="absolute top-25 left-12 w-2 h-1 bg-[#EF4444] rounded-full rotate-45 opacity-80" />
-        <div className="absolute top-27 left-8 w-2 h-1 bg-[#22C55E] rounded-full rotate-[-30deg] opacity-80" />
-
-        <motion.div animate={floatingAnimation(1, 5, 8)} className="absolute top-52 right-4 pointer-events-none">
-          <BotanicalLeaf className="w-8 h-8" rotate={35} opacity={0.85} />
-        </motion.div>
-
-        <motion.div animate={floatingAnimation(2, 4, 7)} className="absolute bottom-[350px] left-3 pointer-events-none">
-          <BotanicalLeaf className="w-9 h-9" rotate={-15} opacity={0.9} />
-        </motion.div>
-
-        <motion.div animate={floatingAnimation(1.5, 5.5, 6)} className="absolute bottom-[400px] right-3 pointer-events-none">
-          <BotanicalLeaf className="w-10 h-10" rotate={45} opacity={0.9} />
-        </motion.div>
-
-        {/* --- Top Bar: SUPPORT Button --- */}
-        <div className="w-full px-6 pt-6 pb-2 flex items-center justify-end relative z-20">
+        {/* Top bar: SUPPORT */}
+        <div className="w-full px-5 pt-5 pb-2 flex items-center justify-between relative z-20">
+          <SaathiWordmark size="text-xl" />
           <Link
             to="/user/auth/support"
-            className="bg-white px-4 py-1.5 rounded-full shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-gray-100 flex items-center gap-2 hover:shadow-md transition-all active:scale-95 group"
+            className="bg-white px-4 py-1.5 rounded-full shadow-[0_2px_10px_rgba(58,28,16,0.08)] border border-[#F1E2D0] flex items-center gap-2 hover:shadow-md transition-all active:scale-95"
           >
-            <Headphones className="w-4 h-4 text-[#F97316] stroke-[2.5]" />
-            <span className="text-[#1E293B] font-extrabold text-[12px] tracking-wider uppercase">SUPPORT</span>
+            <Headphones className="w-4 h-4 text-[#F2541B] stroke-[2.5]" />
+            <span className="text-[#3A1C10] font-extrabold text-[12px] tracking-wider uppercase">Support</span>
           </Link>
         </div>
 
-        {/* --- Main Content Area --- */}
-        <div className="w-full px-6 flex-1 flex flex-col items-center justify-center relative z-20 pt-1 pb-4">
-          
-          {/* Circular CityFood Badge Logo (Rounded-full with border & shadow to clip white background) */}
-          <motion.div
-            initial={{ scale: 0.85, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, type: "spring", bounce: 0.35 }}
-            className="w-44 h-44 sm:w-48 sm:h-48 mb-5 relative flex items-center justify-center rounded-full overflow-hidden shadow-[0_12px_28px_rgba(0,0,0,0.08)] bg-white"
-          >
-            <img
-              src="/logo.png"
-              alt="CityFood Logo"
-              className="w-full h-full object-cover scale-[1.04] select-none pointer-events-none transition-transform hover:scale-108 duration-300"
-              onError={(e) => {
-                e.target.onerror = null
-                e.target.src = "/favicon.ico"
-              }}
-            />
-          </motion.div>
+        {/* Hero: logo arc + rider */}
+        <div className="relative z-10 flex flex-col items-center pt-2">
+          <motion.img
+            src={logoMark}
+            alt="Food Saathi"
+            draggable={false}
+            initial={{ x: -260, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 70, damping: 13 }}
+            className="relative mt-2 h-44 w-auto select-none animate-fs-ride"
+          />
+        </div>
 
-          {/* Heading Section */}
+        {/* Main content */}
+        <div className="w-full px-6 flex-1 flex flex-col items-center relative z-20 pt-3 pb-6">
           <motion.div
             initial={{ y: 15, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
+            transition={{ duration: 0.4, delay: 0.15 }}
             className="text-center w-full mb-6"
           >
             {step === 1 ? (
               <>
-                <h1 className="text-[34px] sm:text-[38px] font-extrabold tracking-[-0.03em] leading-[1.12] text-[#0A4D27]">
-                  Delicious food
+                <h1 className="font-display text-[36px] font-extrabold leading-[1.05] tracking-tight text-[#3A1C10]">
+                  Bhookh lagi?
                 </h1>
-                <div className="text-[34px] sm:text-[38px] font-extrabold tracking-[-0.03em] leading-[1.12] text-[#E52E2E] flex items-center justify-center gap-2 mt-0.5">
-                  <span>Delivered fast</span>
-                  <span className="inline-block transform hover:rotate-12 transition-transform text-[32px] cursor-default select-none">🍕</span>
+                <div className="font-display text-[36px] font-extrabold leading-[1.05] tracking-tight text-[#F2541B] flex items-center justify-center gap-2">
+                  <span>Saathi hai na!</span>
+                  <motion.span
+                    animate={{ rotate: [0, 14, -8, 0] }}
+                    transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 1.2 }}
+                    className="inline-block text-[30px] select-none"
+                  >
+                    🍕
+                  </motion.span>
                 </div>
-                <p className="text-[#6B7280] font-medium text-[15px] sm:text-[16px] mt-2">
+                <p className="font-script text-[#6B4A38] text-[18px] mt-2">
                   Login with your mobile number
                 </p>
               </>
             ) : (
               <>
-                <h1 className="text-[30px] sm:text-[34px] font-extrabold tracking-tight text-[#0A4D27]">
+                <h1 className="font-display text-[32px] font-extrabold tracking-tight text-[#3A1C10]">
                   Verify OTP
                 </h1>
-                <div className="flex items-center justify-center gap-2 mt-1.5 text-[#6B7280] font-medium text-[15px]">
-                  <span>Code sent to <strong>+91 {phoneNumber}</strong></span>
+                <div className="flex items-center justify-center gap-2 mt-1.5 text-[#8C705B] font-medium text-[15px]">
+                  <span>Code sent to <strong className="text-[#3A1C10]">+91 {phoneNumber}</strong></span>
                   <button
                     onClick={handleEditNumber}
-                    className="p-1 hover:bg-gray-200/60 rounded-full text-[#E52E2E] transition-colors"
+                    className="p-1 hover:bg-[#FFE4D1] rounded-full text-[#F2541B] transition-colors"
                     title="Change phone number"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
@@ -426,35 +327,26 @@ export default function UnifiedOTPFastLogin() {
             )}
           </motion.div>
 
-          {/* Form Section */}
           <div className="w-full max-w-[360px]">
             <AnimatePresence mode="wait">
               {step === 1 ? (
                 <motion.form
                   key="step-1"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
+                  initial={{ opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -30 }}
                   onSubmit={handleSendOTP}
                   className="w-full flex flex-col items-center"
                 >
-                  {/* Phone Input Pill */}
-                  <div className="w-full h-[58px] bg-white rounded-full shadow-[0_4px_22px_rgba(0,0,0,0.06)] border border-gray-100/90 px-4 flex items-center transition-all focus-within:shadow-[0_8px_30px_rgba(229,46,46,0.12)] focus-within:border-red-300">
-                    {/* Country Selector IN ⌄ */}
+                  <div className="w-full h-[60px] bg-white rounded-2xl shadow-[0_6px_24px_-10px_rgba(58,28,16,0.25)] border-2 border-transparent px-4 flex items-center transition-all focus-within:border-[#F2541B]/50 focus-within:shadow-[0_10px_30px_-10px_rgba(242,84,27,0.45)]">
                     <div className="flex items-center gap-1 cursor-pointer select-none">
-                      <span className="font-bold text-[#111827] text-[15px] tracking-wide">IN</span>
-                      <ChevronDown className="w-4 h-4 text-gray-500 stroke-[2.2]" />
+                      <span className="text-lg">🇮🇳</span>
+                      <ChevronDown className="w-4 h-4 text-[#8C705B] stroke-[2.2]" />
                     </div>
-
-                    {/* Vertical Divider */}
-                    <div className="h-6 w-[1px] bg-gray-200 mx-3 shrink-0" />
-
-                    {/* Smartphone Outline Icon */}
-                    <Smartphone className="w-5 h-5 text-gray-400 mr-2.5 shrink-0 stroke-[1.8]" />
-
-                    {/* Prefix & Input */}
+                    <div className="h-6 w-[1px] bg-[#F1E2D0] mx-3 shrink-0" />
+                    <Smartphone className="w-5 h-5 text-[#B9A08A] mr-2.5 shrink-0 stroke-[1.8]" />
                     <div className="flex items-center flex-1 min-w-0">
-                      <span className="font-semibold text-gray-700 text-[15px] mr-1.5 shrink-0">+91</span>
+                      <span className="font-bold text-[#3A1C10] text-[16px] mr-1.5 shrink-0">+91</span>
                       <input
                         type="tel"
                         inputMode="numeric"
@@ -468,17 +360,22 @@ export default function UnifiedOTPFastLogin() {
                           sessionStorage.setItem("draft_phone_login", val)
                         }}
                         maxLength={10}
-                        placeholder="9755633314"
-                        className="w-full bg-transparent border-none outline-none text-[#111827] font-semibold text-[16px] tracking-wider placeholder:text-gray-400 placeholder:font-normal p-0"
+                        placeholder="Enter mobile number"
+                        className="w-full bg-transparent border-none outline-none !shadow-none text-[#3A1C10] font-semibold text-[16px] tracking-wider placeholder:text-[#B9A08A] placeholder:font-normal placeholder:tracking-normal p-0"
                       />
                     </div>
+                    {phoneNumber.length === 10 && (
+                      <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="ml-2">
+                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                      </motion.span>
+                    )}
                   </div>
 
-                  {/* Send OTP Button */}
-                  <button
+                  <motion.button
                     type="submit"
                     disabled={loading}
-                    className="w-full h-[56px] rounded-full bg-[#E52E2E] hover:bg-[#D92323] text-white font-bold text-[17px] shadow-[0_12px_28px_rgba(229,46,46,0.36)] hover:shadow-[0_16px_34px_rgba(229,46,46,0.46)] hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer"
+                    whileTap={{ scale: 0.97 }}
+                    className="fs-shine w-full h-[58px] rounded-2xl fs-gradient text-white font-bold text-[17px] fs-shadow hover:brightness-105 transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer disabled:opacity-70"
                   >
                     {loading ? (
                       <Loader2 className="w-6 h-6 animate-spin text-white" />
@@ -488,14 +385,13 @@ export default function UnifiedOTPFastLogin() {
                         <ArrowRight className="w-5 h-5 stroke-[2.5]" />
                       </>
                     )}
-                  </button>
+                  </motion.button>
 
-                  {/* Terms & Privacy Policy */}
-                  <p className="text-[12px] sm:text-[13px] text-[#6B7280] font-normal text-center mt-4">
+                  <p className="text-[12px] sm:text-[13px] text-[#8C705B] text-center mt-4">
                     By continuing, you agree to our{" "}
                     <Link
                       to="/profile/terms"
-                      className="text-[#0A4D27] font-bold underline decoration-[#0A4D27]/40 underline-offset-2 hover:text-[#064E3B] transition-colors"
+                      className="text-[#3A1C10] font-bold underline decoration-[#F2541B]/50 underline-offset-2 hover:text-[#F2541B] transition-colors"
                     >
                       Terms & Privacy Policy
                     </Link>
@@ -504,16 +400,15 @@ export default function UnifiedOTPFastLogin() {
               ) : (
                 <motion.form
                   key="step-2"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
+                  initial={{ opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -30 }}
                   onSubmit={handleVerifyOTP}
                   className="w-full flex flex-col items-center"
                 >
-                  {/* 6 Digit OTP Inputs */}
                   <div className="flex justify-between gap-2.5 w-full mb-4">
                     {[0, 1, 2, 3, 4, 5].map((index) => (
-                      <input
+                      <motion.input
                         key={index}
                         id={`otp-${index}`}
                         type="tel"
@@ -522,6 +417,9 @@ export default function UnifiedOTPFastLogin() {
                         required
                         autoFocus={index === 0}
                         value={otp[index] || ""}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0, scale: otp[index] ? [1, 1.12, 1] : 1 }}
+                        transition={{ delay: index * 0.04 }}
                         onChange={(e) => {
                           const val = e.target.value.replace(/\D/g, "").slice(-1)
                           const newOtp = otp.split("")
@@ -543,21 +441,20 @@ export default function UnifiedOTPFastLogin() {
                             }
                           }
                         }}
-                        className="w-12 h-14 text-center text-2xl font-bold bg-white border border-gray-200 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] text-[#111827] focus:border-[#E52E2E] focus:ring-2 focus:ring-[#E52E2E]/20 outline-none transition-all"
+                        className={`w-12 h-14 text-center text-2xl font-bold bg-white border-2 rounded-2xl shadow-[0_4px_14px_-6px_rgba(58,28,16,0.2)] text-[#3A1C10] outline-none transition-colors ${otp[index] ? "border-[#F2541B]" : "border-[#F1E2D0]"}`}
                       />
                     ))}
                   </div>
 
-                  {/* Resend Timer & Button */}
-                  <div className="flex items-center justify-between w-full text-xs text-gray-500 font-medium px-1 mb-2">
+                  <div className="flex items-center justify-between w-full text-xs text-[#8C705B] font-medium px-1 mb-2">
                     {resendTimer > 0 ? (
-                      <span>Resend code in <strong className="text-gray-800">{resendTimer}s</strong></span>
+                      <span>Resend code in <strong className="text-[#3A1C10]">{resendTimer}s</strong></span>
                     ) : (
                       <button
                         type="button"
                         onClick={handleResendOTP}
                         disabled={loading}
-                        className="text-[#E52E2E] font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                        className="text-[#F2541B] font-bold hover:underline flex items-center gap-1 cursor-pointer"
                       >
                         <RotateCcw className="w-3 h-3" /> Resend OTP
                       </button>
@@ -565,17 +462,17 @@ export default function UnifiedOTPFastLogin() {
                     <button
                       type="button"
                       onClick={handleEditNumber}
-                      className="text-gray-600 hover:text-gray-900 font-medium cursor-pointer"
+                      className="text-[#6B4A38] hover:text-[#3A1C10] font-medium cursor-pointer"
                     >
                       Change Number
                     </button>
                   </div>
 
-                  {/* Verify OTP Button */}
-                  <button
+                  <motion.button
                     type="submit"
+                    whileTap={{ scale: 0.97 }}
                     disabled={loading || otp.replace(/\D/g, "").length !== 6}
-                    className="w-full h-[56px] rounded-full bg-[#E52E2E] hover:bg-[#D92323] text-white font-bold text-[17px] shadow-[0_12px_28px_rgba(229,46,46,0.36)] hover:shadow-[0_16px_34px_rgba(229,46,46,0.46)] hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-3 cursor-pointer disabled:opacity-60"
+                    className="fs-shine w-full h-[58px] rounded-2xl fs-gradient text-white font-bold text-[17px] fs-shadow hover:brightness-105 transition-all flex items-center justify-center gap-2 mt-3 cursor-pointer disabled:opacity-60"
                   >
                     {loading ? (
                       <Loader2 className="w-6 h-6 animate-spin text-white" />
@@ -585,42 +482,40 @@ export default function UnifiedOTPFastLogin() {
                         <CheckCircle2 className="w-5 h-5 stroke-[2.2]" />
                       </>
                     )}
-                  </button>
+                  </motion.button>
                 </motion.form>
               )}
             </AnimatePresence>
           </div>
         </div>
 
-        {/* --- Bottom Graphic Banner --- */}
-        <div className="w-full relative z-10 leading-none select-none pointer-events-none mt-auto">
-          <img
-            src="/food/login-bottom-banner.png"
-            alt="CityFood - Good Food, Fast Delivery, Better Tomorrow"
-            className="w-full object-cover object-top block drop-shadow-sm"
-          />
+        {/* Tagline footer */}
+        <div className="relative z-10 pb-8 text-center">
+          <p className="font-script text-lg text-[#3A1C10]">{BRAND_TAGLINE}</p>
+          <span className="mx-auto mt-1 block h-[3px] w-28 rounded-full bg-[#F2541B]" />
         </div>
 
-        {/* --- New User Name Registration Modal --- */}
+        {/* New user name modal */}
         <Dialog open={showNameModal} onOpenChange={setShowNameModal}>
-          <DialogContent className="sm:max-w-md bg-white rounded-3xl p-6 shadow-2xl border-0">
-            <DialogTitle className="text-xl font-extrabold text-[#0A4D27] text-center">
-              Welcome to CityFood! 🎉
+          <DialogContent className="sm:max-w-md bg-[#FFF9F0] rounded-3xl p-6 shadow-2xl border-0">
+            <img src={logoMark} alt="" className="mx-auto h-20 w-auto animate-fs-ride" />
+            <DialogTitle className="font-display text-2xl font-extrabold text-[#3A1C10] text-center">
+              Welcome to Food Saathi! 🎉
             </DialogTitle>
-            <DialogDescription className="text-center text-gray-600 text-sm mt-1">
+            <DialogDescription className="text-center text-[#6B4A38] text-sm mt-1">
               What should we call you? Please enter your name to complete your profile.
             </DialogDescription>
             <form onSubmit={handleNameSubmit} className="space-y-4 mt-4">
               <div className="space-y-1.5">
-                <Label htmlFor="user-name" className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                <Label htmlFor="user-name" className="text-xs font-bold text-[#6B4A38] uppercase tracking-wider">
                   Full Name
                 </Label>
                 <Input
                   id="user-name"
-                  placeholder="e.g. John Doe"
+                  placeholder="e.g. Rahul Sharma"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="h-12 rounded-xl bg-gray-50 border-gray-200 text-gray-900 font-semibold focus:border-[#E52E2E] focus:ring-1 focus:ring-[#E52E2E]"
+                  className="h-12 rounded-xl bg-white border-[#F1E2D0] text-[#3A1C10] font-semibold"
                   autoFocus
                   required
                 />
@@ -628,12 +523,12 @@ export default function UnifiedOTPFastLogin() {
               <Button
                 type="submit"
                 disabled={isUpdatingName || !newName.trim()}
-                className="w-full h-12 rounded-xl bg-[#E52E2E] hover:bg-[#D92323] text-white font-bold text-base shadow-lg shadow-red-500/30 hover:brightness-105"
+                className="w-full h-12 rounded-xl fs-gradient text-white font-bold text-base fs-shadow hover:brightness-105"
               >
                 {isUpdatingName ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
-                  "Continue to CityFood"
+                  "Continue to Food Saathi"
                 )}
               </Button>
             </form>

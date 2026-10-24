@@ -406,7 +406,7 @@ export async function markPayoutAsPaid({ restaurantId, amount, transactionId, ad
             {
                 title: 'Payout Settled 💰',
                 body: `₹${numericAmount} has been settled to your account by admin.`,
-                image: 'https://i.ibb.co/3m2Yh7r/Tuggo-Brand-Image.png',
+                image: 'https://res.cloudinary.com/dxuuamva/image/upload/foodsaathi/brand/foodsaathi-logo.png',
                 data: {
                     type: 'payout_settled',
                     amount: String(numericAmount),

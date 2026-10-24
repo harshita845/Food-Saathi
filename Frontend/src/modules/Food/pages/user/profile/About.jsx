@@ -81,7 +81,7 @@ export default function About() {
 
   if (loading) {
     return (
-      <AnimatedPage className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-[#0a0a0a] dark:to-[#1a1a1a]">
+      <AnimatedPage className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-[#1A0F09] dark:to-[#2A1A11]">
         <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin text-gray-600 dark:text-gray-400 mx-auto mb-4" />
@@ -93,7 +93,7 @@ export default function About() {
   }
 
   return (
-    <AnimatedPage className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-[#0a0a0a] dark:to-[#1a1a1a]">
+    <AnimatedPage className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-[#1A0F09] dark:to-[#2A1A11]">
       <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8">
         {/* Header */}
         <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
@@ -111,7 +111,7 @@ export default function About() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Card className="bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-lg border-0 dark:border-gray-800 mb-6 overflow-hidden">
+          <Card className="bg-white dark:bg-[#2A1A11] rounded-2xl shadow-lg border-0 dark:border-gray-800 mb-6 overflow-hidden">
             <div className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 p-8 md:p-10 text-center">
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -191,7 +191,7 @@ export default function About() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <Card className="bg-white dark:bg-[#1a1a1a] rounded-xl shadow-md border-0 dark:border-gray-800 hover:shadow-xl transition-shadow duration-300 h-full">
+                  <Card className="bg-white dark:bg-[#2A1A11] rounded-xl shadow-md border-0 dark:border-gray-800 hover:shadow-xl transition-shadow duration-300 h-full">
                     <CardContent className="p-5 md:p-6">
                       <div className="flex items-start gap-4">
                         <div className={`${feature.bgColor} rounded-xl p-3 flex-shrink-0`}>
@@ -220,7 +220,7 @@ export default function About() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.2, duration: 0.5 }}
         >
-          <Card className="bg-white dark:bg-[#1a1a1a] rounded-xl shadow-md border-0 dark:border-gray-800">
+          <Card className="bg-white dark:bg-[#2A1A11] rounded-xl shadow-md border-0 dark:border-gray-800">
             <CardContent className="p-5 md:p-6">
               <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <FileText className="h-5 w-5 text-gray-600 dark:text-gray-400" />

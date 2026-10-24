@@ -1492,7 +1492,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
              <button onClick={() => setShowNotifications(true)} className="relative w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white border border-white/10 active:scale-95 transition-all shadow-lg">
                 <Bell className="w-4 h-4" />
                 {notificationUnreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-orange-600 flex items-center justify-center text-[9px] font-black text-white border-2 border-[#121212] shadow-xl animate-in zoom-in duration-300">
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-orange-600 flex items-center justify-center text-[9px] font-black text-white border-2 border-[#1E120B] shadow-xl animate-in zoom-in duration-300">
                     {notificationUnreadCount > 9 ? '9+' : notificationUnreadCount}
                   </span>
                 )}
@@ -1677,7 +1677,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
              </div>
              </>
             ) : (
-              <div className="w-full h-full bg-[#f8f9fa] flex flex-col items-center justify-center relative overflow-hidden">
+              <div className="w-full h-full bg-[#FFFAF4] flex flex-col items-center justify-center relative overflow-hidden">
                 {/* CSS Static Map Background Pattern */}
                 <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{
                   backgroundImage: `radial-gradient(#000 2px, transparent 2px)`,
@@ -1913,7 +1913,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
                         }} 
                         className="w-full text-white rounded-2xl py-4 sm:py-5 px-4 font-bold text-xs sm:text-sm tracking-[0.14em] transform transition-all active:scale-95 flex items-center justify-center gap-2.5 sm:gap-3 border border-white/20"
                         style={{
-                          background: 'linear-gradient(33deg, #15498b 0%, #000000 100%)',
+                          background: 'linear-gradient(33deg, #F2541B 0%, #000000 100%)',
                           boxShadow: '0 14px 34px rgba(21, 73, 139, 0.42)',
                         }}
                       >
@@ -2012,7 +2012,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
                            className={`p-4 rounded-2xl border transition-all active:scale-[0.98] cursor-pointer ${item.read ? 'bg-gray-50 border-gray-100' : 'bg-orange-50 border-orange-100 shadow-sm shadow-orange-500/5'}`}
                         >
                            <div className="flex gap-3 items-start">
-                              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${item.read ? 'bg-gray-200 text-gray-500' : 'bg-[#EB590E] text-white shadow-lg'}`}>
+                              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${item.read ? 'bg-gray-200 text-gray-500' : 'bg-[#F2541B] text-white shadow-lg'}`}>
                                  <Bell className="w-4 h-4" />
                               </div>
                               <div className="flex-1 min-w-0">

@@ -390,9 +390,9 @@ export default function EditProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a]">
+    <div className="min-h-screen bg-[#FBF3EA] dark:bg-[#1A0F09]">
       {/* Header */}
-      <div className="bg-white dark:bg-[#1a1a1a] sticky top-0 z-10 border-b border-gray-100 dark:border-gray-800">
+      <div className="bg-white dark:bg-[#2A1A11] sticky top-0 z-10 border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-7xl mx-auto flex items-center gap-3 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 py-4 md:py-5 lg:py-6">
           <button
             onClick={goBack}
@@ -443,7 +443,7 @@ export default function EditProfile() {
         </div>
 
         {/* Form Card */}
-        <Card className="bg-white dark:bg-[#1a1a1a] rounded-xl shadow-sm border-0 dark:border-gray-800">
+        <Card className="bg-white dark:bg-[#2A1A11] rounded-xl shadow-sm border-0 dark:border-gray-800">
           <CardContent className="p-4 sm:p-5 md:p-6 lg:p-8 space-y-4 md:space-y-5 lg:space-y-6">
             {/* Name Field */}
             <div className="space-y-1.5">
@@ -456,7 +456,7 @@ export default function EditProfile() {
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleChange('name', e.target.value)}
-                  className="pr-10 h-12 text-base border border-gray-300 dark:border-gray-700 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white"
+                  className="pr-10 h-12 text-base border border-gray-300 dark:border-gray-700 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg bg-white dark:bg-[#2A1A11] text-gray-900 dark:text-white"
                   placeholder="Name"
                 />
                 {formData.name && (
@@ -482,7 +482,7 @@ export default function EditProfile() {
                   type="tel"
                   value={formData.mobile}
                   onChange={(e) => handleChange('mobile', e.target.value)}
-                  className="flex-1 h-12 text-base  border border-gray-300 dark:border-gray-700 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white"
+                  className="flex-1 h-12 text-base  border border-gray-300 dark:border-gray-700 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg bg-white dark:bg-[#2A1A11] text-gray-900 dark:text-white"
                   placeholder="Mobile"
                 />
               </div>
@@ -502,7 +502,7 @@ export default function EditProfile() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleChange('email', e.target.value)}
-                  className="flex-1 h-12 text-base border border-gray-300 dark:border-gray-700 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white"
+                  className="flex-1 h-12 text-base border border-gray-300 dark:border-gray-700 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg bg-white dark:bg-[#2A1A11] text-gray-900 dark:text-white"
                   placeholder="Email"
                 />
               </div>
@@ -530,13 +530,13 @@ export default function EditProfile() {
                           borderRadius: '8px',
                           color: 'inherit',
                           '& fieldset': {
-                            borderColor: '#d1d5db',
+                            borderColor: '#E0CBB4',
                           },
                           '&:hover fieldset': {
-                            borderColor: '#9ca3af',
+                            borderColor: '#B9A08A',
                           },
                           '&.Mui-focused fieldset': {
-                            borderColor: '#7e3866',
+                            borderColor: '#F2541B',
                             borderWidth: '1px',
                           },
                           '& .MuiSvgIcon-root': {
@@ -580,13 +580,13 @@ export default function EditProfile() {
                           borderRadius: '8px',
                           color: 'inherit',
                           '& fieldset': {
-                            borderColor: '#d1d5db',
+                            borderColor: '#E0CBB4',
                           },
                           '&:hover fieldset': {
-                            borderColor: '#9ca3af',
+                            borderColor: '#B9A08A',
                           },
                           '&.Mui-focused fieldset': {
-                            borderColor: '#7e3866',
+                            borderColor: '#F2541B',
                             borderWidth: '1px',
                           },
                           '& .MuiSvgIcon-root': {
@@ -618,7 +618,7 @@ export default function EditProfile() {
                 value={formData.gender || ""}
                 onValueChange={(value) => handleChange('gender', value)}
               >
-                <SelectTrigger className="h-12 text-base border border-gray-300 dark:border-gray-700 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white">
+                <SelectTrigger className="h-12 text-base border border-gray-300 dark:border-gray-700 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg bg-white dark:bg-[#2A1A11] text-gray-900 dark:text-white">
                   <SelectValue placeholder="Gender" />
                 </SelectTrigger>
                 <SelectContent>

@@ -51,7 +51,7 @@ export default function Coupons() {
   }
 
   return (
-    <AnimatedPage className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a]">
+    <AnimatedPage className="min-h-screen bg-[#FBF3EA] dark:bg-[#1A0F09]">
       <div className="max-w-md mx-auto px-4 py-4">
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
@@ -82,7 +82,7 @@ export default function Coupons() {
               return (
                 <div
                   key={offer?.id || offer?.offerId || code}
-                  className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-gray-200 dark:border-gray-800 p-4"
+                  className="bg-white dark:bg-[#2A1A11] rounded-2xl border border-gray-200 dark:border-gray-800 p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 min-w-0">
@@ -140,7 +140,7 @@ export default function Coupons() {
                 {/* Main horizontal road */}
                 <path
                   d="M 20 100 Q 50 80, 80 100 T 140 100"
-                  stroke="#a1a1aa"
+                  stroke="#B9A08A"
                   strokeWidth="4"
                   fill="none"
                   strokeLinecap="round"
@@ -148,7 +148,7 @@ export default function Coupons() {
                 {/* Main vertical road */}
                 <path
                   d="M 100 20 Q 100 50, 100 80 T 100 140"
-                  stroke="#a1a1aa"
+                  stroke="#B9A08A"
                   strokeWidth="4"
                   fill="none"
                   strokeLinecap="round"
@@ -156,28 +156,28 @@ export default function Coupons() {
                 {/* Diagonal roads */}
                 <path
                   d="M 40 40 Q 60 60, 80 80 T 120 120"
-                  stroke="#b4b4b8"
+                  stroke="#C9B29C"
                   strokeWidth="3"
                   fill="none"
                   strokeLinecap="round"
                 />
                 <path
                   d="M 160 40 Q 140 60, 120 80 T 80 120"
-                  stroke="#b4b4b8"
+                  stroke="#C9B29C"
                   strokeWidth="3"
                   fill="none"
                   strokeLinecap="round"
                 />
                 <path
                   d="M 30 170 Q 50 150, 70 130 T 110 90"
-                  stroke="#b4b4b8"
+                  stroke="#C9B29C"
                   strokeWidth="3"
                   fill="none"
                   strokeLinecap="round"
                 />
                 <path
                   d="M 170 170 Q 150 150, 130 130 T 90 90"
-                  stroke="#b4b4b8"
+                  stroke="#C9B29C"
                   strokeWidth="3"
                   fill="none"
                   strokeLinecap="round"
@@ -185,25 +185,25 @@ export default function Coupons() {
                 {/* Additional connecting paths */}
                 <path
                   d="M 50 50 L 70 70"
-                  stroke="#c4c4c7"
+                  stroke="#D9C4AE"
                   strokeWidth="2"
                   strokeLinecap="round"
                 />
                 <path
                   d="M 150 50 L 130 70"
-                  stroke="#c4c4c7"
+                  stroke="#D9C4AE"
                   strokeWidth="2"
                   strokeLinecap="round"
                 />
                 <path
                   d="M 50 150 L 70 130"
-                  stroke="#c4c4c7"
+                  stroke="#D9C4AE"
                   strokeWidth="2"
                   strokeLinecap="round"
                 />
                 <path
                   d="M 150 150 L 130 130"
-                  stroke="#c4c4c7"
+                  stroke="#D9C4AE"
                   strokeWidth="2"
                   strokeLinecap="round"
                 />

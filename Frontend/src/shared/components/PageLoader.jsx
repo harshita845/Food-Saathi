@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Loader2 } from 'lucide-react'
+import ScooterLoader from './brand/ScooterLoader'
 
 /**
  * Lightweight route-change loader (CSS only).
@@ -32,13 +32,11 @@ export default function PageLoader() {
 
   return (
     <div
-      className="fixed inset-0 z-[999999] bg-white/40 dark:bg-black/40 backdrop-blur-[1px] flex items-center justify-center animate-in fade-in duration-200"
-      role="status"
-      aria-live="polite"
+      className="fixed inset-0 z-[999999] bg-[#FFF9F0]/50 dark:bg-black/40 backdrop-blur-[2px] flex items-center justify-center animate-in fade-in duration-200"
       aria-label="Loading page"
     >
-      <div className="bg-white dark:bg-[#1a1a1a] p-4 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      <div className="rounded-3xl border border-[#F1E2D0] bg-white/90 px-6 py-4 fs-shadow dark:border-gray-800 dark:bg-[#2A1A11]">
+        <ScooterLoader size={64} />
       </div>
     </div>
   )

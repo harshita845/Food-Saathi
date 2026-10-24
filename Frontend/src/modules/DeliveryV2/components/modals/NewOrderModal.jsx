@@ -151,7 +151,7 @@ export const NewOrderModal = ({ order, queuedOrders = [], onSelectOrder, onAccep
         {/* Header Ribbon (Old Green Style) */}
         <div 
           className="p-4 sm:p-8 flex justify-between items-center text-white border-b border-white/10"
-          style={{ background: 'linear-gradient(33deg, #15498b 0%, #000000 100%)' }}
+          style={{ background: 'linear-gradient(33deg, #F2541B 0%, #000000 100%)' }}
         >
           <div>
             <div className="flex items-center gap-2 mb-1">

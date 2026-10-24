@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react"
+import { logoMark } from "@/shared/components/brand/FoodSaathiLogo"
 import { useNavigate } from "react-router-dom"
 import { Search, Menu, ChevronRight, MapPin, X, Bell, HelpCircle } from "lucide-react"
 import { restaurantAPI } from "@food/api"
@@ -35,7 +36,7 @@ export default function RestaurantNavbar({
   const [restaurantData, setRestaurantData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [companyName, setCompanyName] = useState("")
-  const [logoUrl, setLogoUrl] = useState(null)
+  const [logoUrl, setLogoUrl] = useState(logoMark)
   const searchTimeoutRef = useRef(null)
   const { unreadCount } = useNotificationInbox("restaurant", { limit: 20, pollMs: 5 * 60 * 1000 })
   const { newReservation, clearNewReservation } = useRestaurantNotifications();
@@ -356,7 +357,7 @@ export default function RestaurantNavbar({
   }
 
   return (
-    <div className="w-full bg-gradient-to-r from-[#B80B3D] to-[#66001D] rounded-b-[24px] shadow-lg px-3 pt-4 pb-4 sm:px-4 sm:pt-5 sm:pb-5 flex items-center justify-between gap-2 relative">
+    <div className="w-full bg-gradient-to-r from-[#F2541B] to-[#C93C0E] rounded-b-[24px] shadow-lg px-3 pt-4 pb-4 sm:px-4 sm:pt-5 sm:pb-5 flex items-center justify-between gap-2 relative">
       {/* Search Overlay */}
       {isSearchActive && (
         <div className="absolute inset-0 bg-white z-50 flex items-center px-4 gap-3">
@@ -397,7 +398,7 @@ export default function RestaurantNavbar({
           <img
             src={logoUrl}
             alt="Logo"
-            className="h-9 w-9 shrink-0 rounded-lg object-contain sm:h-10 sm:w-10"
+            className="h-9 w-9 shrink-0 rounded-xl bg-white/95 p-0.5 object-contain sm:h-10 sm:w-10"
           />
         )}
         <div className="min-w-0 flex-1">

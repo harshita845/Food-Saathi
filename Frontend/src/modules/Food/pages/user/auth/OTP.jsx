@@ -407,14 +407,14 @@ export default function OTP() {
   }
 
   return (
-    <AnimatedPage className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] flex items-center justify-center p-4">
+    <AnimatedPage className="min-h-screen bg-gray-50 dark:bg-[#1A0F09] flex items-center justify-center p-4">
       {/* Background decoration (desktop only) */}
       <div className="fixed inset-0 z-0 hidden md:block opacity-40">
         <img src={loginBanner} alt="" className="w-full h-full object-cover blur-sm" />
         <div className="absolute inset-0 bg-white/60 dark:bg-black/80" />
       </div>
 
-      <div className="w-full max-w-[450px] bg-white dark:bg-[#1a1a1a] rounded-xl shadow-2xl relative z-10 overflow-hidden border border-gray-100 dark:border-gray-800">
+      <div className="w-full max-w-[450px] bg-white dark:bg-[#2A1A11] rounded-xl shadow-2xl relative z-10 overflow-hidden border border-gray-100 dark:border-gray-800">
         <div className="absolute top-4 right-4 z-20">
           <Link to="/user/auth/support">
             <Button variant="ghost" size="sm" className="text-gray-500 hover:text-primary font-semibold flex items-center gap-2">
@@ -484,7 +484,7 @@ export default function OTP() {
                     onPaste={index === 0 ? handlePaste : undefined}
                     disabled={isLoading}
                     aria-label={`OTP digit ${index + 1} of 6`}
-                    className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl font-bold border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary bg-white dark:bg-[#2a2a2a] text-gray-900 dark:text-white transition-all outline-none"
+                    className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl font-bold border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary bg-white dark:bg-[#3A271C] text-gray-900 dark:text-white transition-all outline-none"
                   />
                 ))}
               </div>
@@ -530,7 +530,7 @@ export default function OTP() {
                   }}
                   disabled={isLoading}
                   placeholder="Full Name"
-                  className={`h-12 md:h-14 text-lg bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white border-gray-300 dark:border-gray-700 rounded-xl focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary ${nameError ? "border-red-500" : ""} transition-all`}
+                  className={`h-12 md:h-14 text-lg bg-white dark:bg-[#2A1A11] text-gray-900 dark:text-white border-gray-300 dark:border-gray-700 rounded-xl focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary ${nameError ? "border-red-500" : ""} transition-all`}
                 />
                 {nameError && (
                   <p className="text-xs text-red-500 pl-1">
@@ -560,7 +560,7 @@ export default function OTP() {
         {/* Footer info */}
         <div className="p-6 bg-gray-50 dark:bg-[#1f1f1f] text-center">
           <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">
-            CityFood Food Delivery
+            Food Saathi Food Delivery
           </p>
         </div>
       </div>

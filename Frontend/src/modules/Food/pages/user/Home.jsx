@@ -91,6 +91,7 @@ import { API_BASE_URL } from "@food/api/config";
 import OptimizedImage, { ShopPlaceholder } from "@food/components/OptimizedImage";
 import { getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailability";
 import HomeHeader from "@food/components/user/home/HomeHeader";
+import foodSaathiMark from "@/assets/foodsaathi-mark-transparent.png";
 import HeroBanner from "@food/components/user/home/HeroBanner";
 import RestaurantGrid from "@food/components/user/home/RestaurantGrid";
 import ExploreMoreSection from "@food/components/user/home/ExploreMoreSection";
@@ -2030,14 +2031,15 @@ export default function Home() {
 
   if (shouldShowOutOfZoneHome) {
     return (
-      <div className="fixed inset-0 z-[100] w-full bg-[#1e1332] overflow-hidden flex flex-col justify-center">
+      <div className="fixed inset-0 z-[100] w-full bg-[#2C1A11] overflow-hidden flex flex-col justify-center">
         <img src={outOfZoneBg} alt="Out of zone background" className="absolute inset-0 w-full h-full object-cover z-0" />
 
         {/* Dark overlay at bottom for text readability */}
-        <div className="absolute bottom-0 w-full h-[70%] bg-gradient-to-t from-[#1b152d] via-black/60 to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute bottom-0 w-full h-[70%] bg-gradient-to-t from-[#2C1A11] via-[#2C1A11]/70 to-transparent z-10 pointer-events-none"></div>
 
         <div className="relative z-20 flex flex-col items-center justify-center px-6 text-center h-full pb-20">
-          <h2 className="text-3xl font-black text-white mb-3 tracking-tight drop-shadow-lg">
+          <img src={foodSaathiMark} alt="" className="h-28 w-auto mb-4 animate-fs-ride drop-shadow-xl" />
+          <h2 className="font-display text-3xl font-extrabold text-white mb-3 tracking-tight drop-shadow-lg">
             We are coming soon in your city
           </h2>
           <p className="text-base text-gray-200 mb-10 max-w-sm drop-shadow-md">
@@ -2046,7 +2048,7 @@ export default function Home() {
 
           <Button
             onClick={() => navigate('/food/user/address-selector')}
-            className="w-full max-w-[280px] bg-red-600 hover:bg-red-700 text-white font-bold h-14 rounded-2xl shadow-xl transition-transform active:scale-95 text-lg"
+            className="w-full max-w-[280px] fs-gradient hover:brightness-105 text-white font-bold h-14 rounded-2xl fs-shadow transition-transform active:scale-95 text-lg"
           >
             Change Location
           </Button>
@@ -2057,14 +2059,14 @@ export default function Home() {
 
   return (
 
-    <div className="relative min-h-screen bg-white dark:bg-[#0a0a0a] pb-16 md:pb-6 overflow-x-clip">
+    <div className="relative min-h-screen bg-[#FFF9F0] dark:bg-[#1A0F09] pb-16 md:pb-6 overflow-x-clip">
 
 
       <div className="transition-all duration-300">
         {/* Unified Background for Entire Page - Vibrant Food Theme */}
         <div className="absolute top-0 left-0 right-0 bottom-0 pointer-events-none overflow-hidden z-0">
           {/* Main Background */}
-          <div className="absolute inset-0 bg-white dark:bg-[#0a0a0a]"></div>
+          <div className="absolute inset-0 bg-[#FFF9F0] dark:bg-[#1A0F09]"></div>
           {/* Background Elements - Reduced to 2 blobs with CSS animations for better performance */}
           <div className="absolute inset-0 overflow-hidden opacity-20">
             {/* Top right blob - CSS animation */}
@@ -2168,8 +2170,8 @@ export default function Home() {
             }
           }
             .red-header-bg {
-              background-color: #ef4f5f;
-              background-image: linear-gradient(180deg, #ef4f5f 0%, #e03546 100%);
+              background-color: #F2541B;
+              background-image: linear-gradient(180deg, #FF7A2F 0%, #E2420F 100%);
             }
             @keyframes gradient-shift {
               0% { background-position: 0% 50%; }
@@ -2182,13 +2184,19 @@ export default function Home() {
           `}</style>
         </div>
 
-        <div className="relative overflow-x-clip bg-white dark:bg-[#0a0a0a]">
+        <div className="relative overflow-x-clip bg-[#FFF9F0] dark:bg-[#1A0F09]">
           {/* Brand Top Section (Dark) */}
           {/* Decoupled Dark Background - Dynamic height based on actual components to prevent clipping sticky elements while covering properly */}
           <div 
-             className="absolute top-0 left-0 right-0 overflow-hidden rounded-b-[28px] bg-gradient-to-b from-[#3a142c] to-[#1a0a14] shadow-lg pointer-events-none z-0 transition-all duration-300 [transform:translateZ(0)] [mask-image:-webkit-radial-gradient(white,black)]"
+             className="absolute top-0 left-0 right-0 overflow-hidden rounded-b-[28px] bg-gradient-to-br from-[#FF7A2F] via-[#F2541B] to-[#D9430F] shadow-[0_18px_40px_-20px_rgba(201,60,14,0.7)] pointer-events-none z-0 transition-all duration-300 [transform:translateZ(0)] [mask-image:-webkit-radial-gradient(white,black)]"
              style={{ height: festVideoActive ? '360px' : (headerBgHeight > 0 ? `${headerBgHeight}px` : (activeTab === 'food' ? '300px' : '140px')) }}
           >
+            {/* Food Saathi brand texture: dots + the logo's arc */}
+            <div className="absolute inset-0 fs-dots opacity-40" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.22) 1.2px, transparent 1.2px)" }} />
+            <svg viewBox="0 0 400 200" className="absolute -right-16 -top-6 w-[340px] opacity-30" aria-hidden="true">
+              <path d="M20 200 A180 180 0 0 1 380 200" fill="none" stroke="#FFC93C" strokeWidth="10" strokeLinecap="round" />
+            </svg>
+            <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-[#FFC93C]/30 blur-3xl" />
             {festVideoActive && (
               <div className="absolute inset-0 z-0 overflow-hidden bg-slate-900 pointer-events-auto">
                 {festBannerImages.map((image, index) => {
@@ -2278,10 +2286,10 @@ export default function Home() {
                 <div ref={categoryAnchorRef} className="h-0 w-full" />
                 <div
                   id="categories-section"
-                  className={`sticky top-[60px] z-[50] w-full transition-all duration-300 ${isCategoryStuck ? "bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-2xl shadow-[0_4px_30px_rgba(0,0,0,0.05)] pb-2 pt-2 border-b border-white/50 dark:border-white/10 px-4" : "bg-transparent px-4 py-2.5"} space-y-3`}
+                  className={`sticky top-[60px] z-[50] w-full transition-all duration-300 ${isCategoryStuck ? "bg-white/95 dark:bg-[#1A0F09]/95 backdrop-blur-2xl shadow-[0_4px_30px_rgba(0,0,0,0.05)] pb-2 pt-2 border-b border-white/50 dark:border-white/10 px-4" : "bg-transparent px-4 py-2.5"} space-y-3`}
                 >
                   <div className={`flex items-center gap-2 min-w-0 ${isCategoryStuck ? 'hidden' : ''}`}>
-                    <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white min-w-0 flex-shrink leading-tight">What's on your mind today?</h2>
+                    <h2 className="font-display text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white min-w-0 flex-shrink leading-tight">What's on your mind today?</h2>
                     <div className="h-[1px] bg-gray-100 dark:bg-gray-800 flex-1"></div>
                     <Link to="/food/user/under-250" className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-0.5 whitespace-nowrap shrink-0 hover:text-gray-900 dark:hover:text-white transition-colors">
                       View All <ArrowDownUp className="h-3 w-3 rotate-90" />
@@ -2307,7 +2315,7 @@ export default function Home() {
                         onClick={() => setSelectedCategory(category.name)}
                         className={`flex-shrink-0 flex flex-col items-center gap-1.5 group w-[76px] transition-transform ${isActive ? 'scale-105' : ''}`}
                       >
-                        <div className={`relative w-[68px] h-[68px] sm:w-[84px] sm:h-[84px] rounded-full overflow-hidden shadow-md border-2 ${isActive ? 'border-primary ring-2 ring-primary/30' : 'border-gray-100 dark:border-gray-800'} bg-white dark:bg-[#1a1a1a] group-active:scale-95 transition-all duration-300`}>
+                        <div className={`relative w-[68px] h-[68px] sm:w-[84px] sm:h-[84px] rounded-full overflow-hidden shadow-md border-2 ${isActive ? 'border-primary ring-2 ring-primary/30' : 'border-gray-100 dark:border-gray-800'} bg-white dark:bg-[#2A1A11] group-active:scale-95 transition-all duration-300`}>
                           {/* Shining Glint Effect */}
                           <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
                             <motion.div
@@ -2350,7 +2358,7 @@ export default function Home() {
 
 
                 {/* Filters Sticky Sidebar Header */}
-                <section className="bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-md sticky top-0 z-[40] -mx-4 w-[calc(100%+2rem)] border-b border-gray-100 dark:border-white/5 shadow-sm transition-colors duration-300">
+                <section className="bg-white/95 dark:bg-[#1A0F09]/95 backdrop-blur-md sticky top-0 z-[40] -mx-4 w-[calc(100%+2rem)] border-b border-gray-100 dark:border-white/5 shadow-sm transition-colors duration-300">
                   <div
                     className="flex items-center gap-2 overflow-x-auto scrollbar-hide px-4 py-2.5"
                     style={{
@@ -2361,7 +2369,7 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => setIsFilterOpen(true)}
-                      className="h-9 px-4 rounded-full flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 font-bold transition-all bg-white dark:bg-[#1a1a1a] border border-gray-200 shadow-sm active:scale-95"
+                      className="h-9 px-4 rounded-full flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 font-bold transition-all bg-white dark:bg-[#2A1A11] border border-gray-200 shadow-sm active:scale-95"
                     >
                       <SlidersHorizontal className="h-4 w-4 text-black" />
                       <span className="text-xs font-bold text-black dark:text-white uppercase tracking-tight">
@@ -2397,7 +2405,7 @@ export default function Home() {
                           }}
                           className={`h-9 px-4 rounded-full flex items-center gap-2 whitespace-nowrap flex-shrink-0 transition-all font-bold shadow-sm active:scale-95 ${isActive
                             ? "bg-primary text-white border border-primary hover:bg-orange-700"
-                            : "bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+                            : "bg-white dark:bg-[#2A1A11] border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
                             }`}
                         >
                           {Icon && (
@@ -2444,7 +2452,7 @@ export default function Home() {
                   >
                     <Link
                       to={`/user/restaurants/${restaurantSlug}`}
-                      className="block rounded-[20px] overflow-hidden border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1a1a1a] shadow-sm hover:shadow-md transition-shadow">
+                      className="block rounded-[20px] overflow-hidden border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#2A1A11] shadow-sm hover:shadow-md transition-shadow">
                       <div className="relative h-24 sm:h-28 md:h-32 bg-gray-50">
                         <RestaurantImageCarousel
                           restaurant={restaurant}
@@ -2514,7 +2522,7 @@ export default function Home() {
                           <div key={restaurant.mongoId || restaurant.id || restaurant._id} className="min-w-[240px] max-w-[240px] sm:min-w-[280px] sm:max-w-[280px] snap-start flex-shrink-0">
                             <Link
                               to={`/user/restaurants/${restaurantSlug}`}
-                              className="block rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1a1a1a] shadow-sm hover:shadow-md transition-all active:scale-95"
+                              className="block rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#2A1A11] shadow-sm hover:shadow-md transition-all active:scale-95"
                             >
                               <div className="relative h-32 sm:h-36 bg-gray-50 dark:bg-gray-900">
                                 <RestaurantImageCarousel
@@ -2609,7 +2617,7 @@ export default function Home() {
                   <motion.div
                     animate={{ y: [0, -25, 0] }}
                     transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-                    className="relative z-10 w-44 h-44 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-sm rounded-[3rem] shadow-[0_20px_50px_rgba(126,56,102,0.3)] flex items-center justify-center border border-white/50 dark:border-white/10 overflow-hidden"
+                    className="relative z-10 w-44 h-44 bg-white/80 dark:bg-[#2A1A11]/80 backdrop-blur-sm rounded-[3rem] shadow-[0_20px_50px_rgba(126,56,102,0.3)] flex items-center justify-center border border-white/50 dark:border-white/10 overflow-hidden"
                   >
                     <img
                       src={chefMascot}
@@ -2639,7 +2647,7 @@ export default function Home() {
                   ))}
                 </div>
 
-                <h3 className="text-3xl sm:text-4xl font-black mb-4 tracking-tight leading-tight bg-gradient-to-r from-primary via-rose-500 to-primary bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient-shift">
+                <h3 className="text-3xl sm:text-4xl font-black mb-4 tracking-tight leading-tight bg-gradient-to-r from-primary via-[#FFA51F] to-primary bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient-shift">
                   {shouldShowOutOfZoneHome ? "Coming Soon!" : "Service Unavailable"}
                 </h3>
                 <p className="text-base sm:text-lg font-medium text-gray-500 dark:text-gray-400 leading-relaxed px-4 max-w-xs">
@@ -2709,7 +2717,7 @@ export default function Home() {
 
             {/* Modal Content */}
             <motion.div
-              className="absolute bottom-0 left-0 right-0 bg-white dark:bg-[#1a1a1a] rounded-t-3xl max-h-[85vh] flex flex-col"
+              className="absolute bottom-0 left-0 right-0 bg-white dark:bg-[#2A1A11] rounded-t-3xl max-h-[85vh] flex flex-col"
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
@@ -2738,7 +2746,7 @@ export default function Home() {
               {/* Body */}
               <div className="flex flex-1 overflow-hidden">
                 {/* Left Sidebar - Tabs */}
-                <div className="w-24 sm:w-28 bg-gray-50 dark:bg-[#0a0a0a] border-r dark:border-gray-800 flex flex-col">
+                <div className="w-24 sm:w-28 bg-gray-50 dark:bg-[#1A0F09] border-r dark:border-gray-800 flex flex-col">
                   {[
                     { id: "sort", label: "Sort By", icon: ArrowDownUp },
                     { id: "time", label: "Time", icon: Timer },
@@ -2766,7 +2774,7 @@ export default function Home() {
                           }
                         }}
                         className={`flex flex-col items-center gap-1 py-4 px-2 text-center relative transition-colors ${isActive
-                          ? "bg-white dark:bg-[#1a1a1a] text-primary"
+                          ? "bg-white dark:bg-[#2A1A11] text-primary"
                           : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                           }`}>
                         {isActive && (
@@ -2806,7 +2814,7 @@ export default function Home() {
                           key={option.id || "relevance"}
                           onClick={() => setSortBy(option.id)}
                           className={`px-4 py-3 rounded-xl border text-left transition-colors ${sortBy === option.id
-                            ? "border-primary bg-[#F9F9FB] dark:bg-green-900/20"
+                            ? "border-primary bg-[#FFF9F0] dark:bg-green-900/20"
                             : "border-gray-200 dark:border-gray-800 hover:border-primary"
                             }`}>
                           <span
@@ -2830,7 +2838,7 @@ export default function Home() {
                       <button
                         onClick={() => toggleFilter("delivery-under-30")}
                         className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-colors ${activeFilters.has("delivery-under-30")
-                          ? "border-primary bg-[#F9F9FB] dark:bg-green-900/20"
+                          ? "border-primary bg-[#FFF9F0] dark:bg-green-900/20"
                           : "border-gray-200 dark:border-gray-800 hover:border-primary"
                           }`}>
                         <Timer
@@ -2845,7 +2853,7 @@ export default function Home() {
                       <button
                         onClick={() => toggleFilter("delivery-under-45")}
                         className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-colors ${activeFilters.has("delivery-under-45")
-                          ? "border-primary bg-[#F9F9FB] dark:bg-green-900/20"
+                          ? "border-primary bg-[#FFF9F0] dark:bg-green-900/20"
                           : "border-gray-200 dark:border-gray-800 hover:border-primary"
                           }`}>
                         <Timer
@@ -2872,7 +2880,7 @@ export default function Home() {
                       <button
                         onClick={() => toggleFilter("rating-35-plus")}
                         className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-colors ${activeFilters.has("rating-35-plus")
-                          ? "border-primary bg-[#F9F9FB] dark:bg-green-900/20"
+                          ? "border-primary bg-[#FFF9F0] dark:bg-green-900/20"
                           : "border-gray-200 dark:border-gray-800 hover:border-primary"
                           }`}>
                         <Star
@@ -2886,7 +2894,7 @@ export default function Home() {
                       <button
                         onClick={() => toggleFilter("rating-4-plus")}
                         className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-colors ${activeFilters.has("rating-4-plus")
-                          ? "border-primary bg-[#F9F9FB] dark:bg-green-900/20"
+                          ? "border-primary bg-[#FFF9F0] dark:bg-green-900/20"
                           : "border-gray-200 dark:border-gray-800 hover:border-primary"
                           }`}>
                         <Star
@@ -2900,7 +2908,7 @@ export default function Home() {
                       <button
                         onClick={() => toggleFilter("rating-45-plus")}
                         className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-colors ${activeFilters.has("rating-45-plus")
-                          ? "border-primary bg-[#F9F9FB] dark:bg-green-900/20"
+                          ? "border-primary bg-[#FFF9F0] dark:bg-green-900/20"
                           : "border-gray-200 dark:border-gray-800 hover:border-primary"
                           }`}>
                         <Star
@@ -2926,7 +2934,7 @@ export default function Home() {
                       <button
                         onClick={() => toggleFilter("distance-under-1km")}
                         className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-colors ${activeFilters.has("distance-under-1km")
-                          ? "border-primary bg-[#F9F9FB] dark:bg-green-900/20"
+                          ? "border-primary bg-[#FFF9F0] dark:bg-green-900/20"
                           : "border-gray-200 dark:border-gray-800 hover:border-primary"
                           }`}>
                         <MapPin
@@ -2941,7 +2949,7 @@ export default function Home() {
                       <button
                         onClick={() => toggleFilter("distance-under-2km")}
                         className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-colors ${activeFilters.has("distance-under-2km")
-                          ? "border-primary bg-[#F9F9FB] dark:bg-green-900/20"
+                          ? "border-primary bg-[#FFF9F0] dark:bg-green-900/20"
                           : "border-gray-200 dark:border-gray-800 hover:border-primary"
                           }`}>
                         <MapPin
@@ -2968,7 +2976,7 @@ export default function Home() {
                       <button
                         onClick={() => toggleFilter("price-under-200")}
                         className={`px-4 py-3 rounded-xl border text-left transition-colors ${activeFilters.has("price-under-200")
-                          ? "border-primary bg-[#F9F9FB] dark:bg-green-900/20"
+                          ? "border-primary bg-[#FFF9F0] dark:bg-green-900/20"
                           : "border-gray-200 dark:border-gray-800 hover:border-primary"
                           }`}>
                         <span
@@ -2979,7 +2987,7 @@ export default function Home() {
                       <button
                         onClick={() => toggleFilter("price-under-500")}
                         className={`px-4 py-3 rounded-xl border text-left transition-colors ${activeFilters.has("price-under-500")
-                          ? "border-primary bg-[#F9F9FB] dark:bg-green-900/20"
+                          ? "border-primary bg-[#FFF9F0] dark:bg-green-900/20"
                           : "border-gray-200 dark:border-gray-800 hover:border-primary"
                           }`}>
                         <span
@@ -3004,7 +3012,7 @@ export default function Home() {
                       <button
                         onClick={() => toggleFilter("top-rated")}
                         className={`px-4 py-3 rounded-xl border text-left transition-colors ${activeFilters.has("top-rated")
-                          ? "border-primary bg-[#F9F9FB] dark:bg-green-900/20"
+                          ? "border-primary bg-[#FFF9F0] dark:bg-green-900/20"
                           : "border-gray-200 dark:border-gray-800 hover:border-primary"
                           }`}>
                         <span
@@ -3015,7 +3023,7 @@ export default function Home() {
                       <button
                         onClick={() => toggleFilter("trusted")}
                         className={`px-4 py-3 rounded-xl border text-left transition-colors ${activeFilters.has("trusted")
-                          ? "border-primary bg-[#F9F9FB] dark:bg-green-900/20"
+                          ? "border-primary bg-[#FFF9F0] dark:bg-green-900/20"
                           : "border-gray-200 dark:border-gray-800 hover:border-primary"
                           }`}>
                         <span
@@ -3038,7 +3046,7 @@ export default function Home() {
                       <button
                         onClick={() => toggleFilter("has-offers")}
                         className={`px-4 py-3 rounded-xl border text-left transition-colors ${activeFilters.has("has-offers")
-                          ? "border-primary bg-[#F9F9FB] dark:bg-green-900/20"
+                          ? "border-primary bg-[#FFF9F0] dark:bg-green-900/20"
                           : "border-gray-200 dark:border-gray-800 hover:border-primary"
                           }`}>
                         <span
@@ -3052,7 +3060,7 @@ export default function Home() {
               </div>
 
               {/* Footer */}
-              <div className="flex items-center gap-4 px-4 py-4 border-t dark:border-gray-800 bg-white dark:bg-[#1a1a1a]">
+              <div className="flex items-center gap-4 px-4 py-4 border-t dark:border-gray-800 bg-white dark:bg-[#2A1A11]">
                 <button
                   onClick={() => setIsFilterOpen(false)}
                   className="flex-1 py-3 text-center font-semibold text-gray-700 dark:text-gray-300">
@@ -3114,7 +3122,7 @@ export default function Home() {
                 stiffness: 300,
                 mass: 0.8,
               }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-2xl p-6 w-[calc(100%-2rem)] max-w-xs"
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] bg-white dark:bg-[#2A1A11] rounded-2xl shadow-2xl p-6 w-[calc(100%-2rem)] max-w-xs"
               onClick={(e) => e.stopPropagation()}>
 
               {/* Title */}
@@ -3140,7 +3148,7 @@ export default function Home() {
                     <div
                       className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${vegModeOption === "all"
                         ? "border-green-600 dark:border-green-500 bg-green-600 dark:bg-green-500"
-                        : "border-gray-300 dark:border-gray-600 bg-white dark:bg-[#2a2a2a]"
+                        : "border-gray-300 dark:border-gray-600 bg-white dark:bg-[#3A271C]"
                         }`}>
                       {vegModeOption === "all" && (
                         <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-white" />
@@ -3168,7 +3176,7 @@ export default function Home() {
                     <div
                       className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${vegModeOption === "pure-veg"
                         ? "border-green-600 dark:border-green-500 bg-green-600 dark:bg-green-500"
-                        : "border-gray-300 dark:border-gray-600 bg-white dark:bg-[#2a2a2a]"
+                        : "border-gray-300 dark:border-gray-600 bg-white dark:bg-[#3A271C]"
                         }`}>
                       {vegModeOption === "pure-veg" && (
                         <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-white" />
@@ -3315,7 +3323,7 @@ export default function Home() {
                 damping: 30,
                 stiffness: 300,
               }}
-              className="fixed inset-x-0 bottom-0 top-12 sm:top-16 md:top-20 z-[9999] bg-white dark:bg-[#1a1a1a] rounded-t-3xl shadow-2xl overflow-hidden flex flex-col"
+              className="fixed inset-x-0 bottom-0 top-12 sm:top-16 md:top-20 z-[9999] bg-white dark:bg-[#2A1A11] rounded-t-3xl shadow-2xl overflow-hidden flex flex-col"
               onClick={(e) => e.stopPropagation()}>
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-4 sm:px-6 sm:py-5 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
@@ -3389,7 +3397,7 @@ export default function Home() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[10000] bg-white dark:bg-[#0a0a0a] flex items-center justify-center">
+            className="fixed inset-0 z-[10000] bg-white dark:bg-[#1A0F09] flex items-center justify-center">
             <div className="relative w-32 h-32 flex items-center justify-center w-full">
               {/* Animated circles - positioned absolutely at the center */}
               {[...Array(8)].map((_, i) => {
@@ -3431,7 +3439,7 @@ export default function Home() {
                   damping: 15,
                   delay: 0.1,
                 }}
-                className="absolute z-10 w-28 h-28 rounded-full border-2 border-green-600 dark:border-green-500 bg-white dark:bg-[#1a1a1a] flex flex-col items-center justify-center shadow-sm"
+                className="absolute z-10 w-28 h-28 rounded-full border-2 border-green-600 dark:border-green-500 bg-white dark:bg-[#2A1A11] flex flex-col items-center justify-center shadow-sm"
               >
                 <motion.div
                   className="flex flex-col items-center"
@@ -3468,7 +3476,7 @@ export default function Home() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[10000] bg-white dark:bg-[#0a0a0a] flex items-center justify-center">
+            className="fixed inset-0 z-[10000] bg-white dark:bg-[#1A0F09] flex items-center justify-center">
             <div className="flex flex-col items-center gap-6">
               {/* Two Circles Spinning in Opposite Directions */}
               <motion.div

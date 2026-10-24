@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react"
+import { SaathiWordmark, logoMark } from "@/shared/components/brand/FoodSaathiLogo"
 import { Link, useLocation } from "react-router-dom"
 import {
   Search,
@@ -506,7 +507,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
             isInSection ? "text-base font-bold" : "text-base font-bold",
             item.label === "Log out" ? "text-red-500 hover:bg-red-500/10 hover:text-red-400" :
               isActive(item.path)
-                ? "bg-white/10 text-white border border-white/15"
+                ? "bg-gradient-to-r from-[#FF7A2F] to-[#E2420F] text-white border border-white/10 shadow-[0_8px_20px_-10px_rgba(242,84,27,0.9)]"
                 : "text-neutral-100 hover:bg-white/5 hover:text-white",
             isVisuallyCollapsed && "justify-center px-2"
           )}
@@ -707,23 +708,24 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
           isOpen ? "translate-x-0" : "-translate-x-full",
           "w-[min(20rem,calc(100vw-1.5rem))]",
           isVisuallyCollapsed ? "lg:w-20" : "lg:w-80",
-          "bg-[#576574]"
+          "bg-[#3A1C10]"
         )}
         style={{
-          backgroundColor: 'var(--ad-primary, #576574)',
+          backgroundColor: 'var(--ad-primary, #3A1C10)',
+          backgroundImage: 'radial-gradient(420px 260px at 0% 100%, rgba(242,84,27,0.28), transparent 70%), radial-gradient(300px 200px at 100% 0%, rgba(255,165,31,0.16), transparent 70%)',
           paddingTop: 'env(safe-area-inset-top, 0px)',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         }}
       >
         {/* Header with Logo and Brand */}
         <div
-          className="shrink-0 px-3 py-3 border-b border-neutral-700/30 animate-[fadeIn_0.4s_ease-out] bg-[#4a5664]"
-          style={{ backgroundColor: 'var(--ad-primary-strong, #4a5664)' }}
+          className="shrink-0 px-3 py-3 border-b border-neutral-700/30 animate-[fadeIn_0.4s_ease-out] bg-[#2C1A11]"
+          style={{ backgroundColor: 'var(--ad-primary-strong, #2C1A11)' }}
         >
           <div className="flex items-center justify-between mb-3">
             {!isVisuallyCollapsed && (
               <div className="flex items-center gap-2 animate-[slideIn_0.3s_ease-out]">
-                <div className="w-24 h-12 rounded-lg flex items-center justify-center shadow-black/20">
+                <div className="min-w-24 h-12 rounded-lg flex items-center justify-start shadow-black/20">
                   {logoUrl ? (
                     <img
                       src={logoUrl}
@@ -734,12 +736,11 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
                         e.currentTarget.style.display = 'none'
                       }}
                     />
-                  ) : companyName ? (
-                    <span className="text-xs font-semibold text-white px-2 truncate">
-                      {companyName}
-                    </span>
                   ) : (
-                    <span className="text-sm font-bold text-white">T</span>
+                    <span className="flex items-center gap-1.5">
+                      <img src={logoMark} alt="" className="h-9 w-auto" />
+                      <SaathiWordmark size="text-lg" light />
+                    </span>
                   )}
                 </div>
               </div>
@@ -758,7 +759,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
                       }}
                     />
                   ) : (
-                    <span className="text-sm font-bold text-white">{(companyName || 'T').charAt(0).toUpperCase()}</span>
+                    <img src={logoMark} alt="Food Saathi" className="w-9 h-auto" />
                   )}
                 </div>
               </div>

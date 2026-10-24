@@ -31,7 +31,7 @@ export const exportTransactionsToExcel = (transactions, headers, filename = "tra
         <style>
           table { border-collapse: collapse; width: 100%; }
           th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-          th { background-color: #f2f2f2; font-weight: bold; }
+          th { background-color: #F8EEE3; font-weight: bold; }
           td { white-space: nowrap; }
         </style>
       </head>

@@ -476,7 +476,7 @@ export default function AddressSelectorPage() {
       }
 
       const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=1&q=${encodeURIComponent(cleanQuery)}`
-      const res = await fetch(url, { headers: { "Accept-Language": "en", "User-Agent": "CityFood-App" } })
+      const res = await fetch(url, { headers: { "Accept-Language": "en", "User-Agent": "FoodSaathi-App" } })
       const json = await res.json()
       if (Array.isArray(json) && json.length > 0) {
         const item = json[0]
@@ -561,7 +561,7 @@ export default function AddressSelectorPage() {
       const response = await fetch(url, {
         headers: {
           "Accept-Language": "en",
-          "User-Agent": "CityFood-App"
+          "User-Agent": "FoodSaathi-App"
         }
       })
       const json = await response.json()
@@ -731,9 +731,9 @@ export default function AddressSelectorPage() {
     const mapHeight = baseMapHeight
     return (
       <AnimatedPage
-        className="fixed inset-0 z-50 bg-white dark:bg-[#0a0a0a] flex flex-col h-screen overflow-hidden"
+        className="fixed inset-0 z-50 bg-white dark:bg-[#1A0F09] flex flex-col h-screen overflow-hidden"
       >
-        <div className="flex-shrink-0 bg-white dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-gray-800 px-4 py-3 flex items-center gap-4">
+        <div className="flex-shrink-0 bg-white dark:bg-[#2A1A11] border-b border-gray-100 dark:border-gray-800 px-4 py-3 flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={handleCancelAddressForm} className="rounded-full">
             <ChevronLeft className="h-6 w-6" />
           </Button>
@@ -766,7 +766,7 @@ export default function AddressSelectorPage() {
                   value={addressAutocompleteValue}
                   onChange={(e) => setAddressAutocompleteValue(e.target.value)}
                   placeholder="Search area, street, landmark..."
-                  className="pl-10 h-12 bg-white/95 dark:bg-[#1a1a1a]/95 backdrop-blur-md border-none rounded-xl shadow-lg focus:ring-2 focus:ring-primary transition-all"
+                  className="pl-10 h-12 bg-white/95 dark:bg-[#2A1A11]/95 backdrop-blur-md border-none rounded-xl shadow-lg focus:ring-2 focus:ring-primary transition-all"
                 />
                 {isKeywordSearching && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -775,7 +775,7 @@ export default function AddressSelectorPage() {
                 )}
 
                 {keywordAddressSuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1a1a1a] rounded-xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden z-30 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#2A1A11] rounded-xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden z-30 animate-in fade-in slide-in-from-top-2 duration-200">
                     <p className="px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-50 dark:bg-gray-800/50">Suggestions</p>
                     {keywordAddressSuggestions.map((s) => (
                       <button
@@ -845,7 +845,7 @@ export default function AddressSelectorPage() {
             </div>
           </div>
 
-          <div className="relative bg-white dark:bg-[#0a0a0a] rounded-t-[32px] -mt-8 z-10 p-4 space-y-6 shadow-[0_-12px_24px_-10px_rgba(0,0,0,0.1)]">
+          <div className="relative bg-white dark:bg-[#1A0F09] rounded-t-[32px] -mt-8 z-10 p-4 space-y-6 shadow-[0_-12px_24px_-10px_rgba(0,0,0,0.1)]">
             <div className="bg-primary/5 dark:bg-primary/10 border border-primary/10 dark:border-primary/20 rounded-xl p-4 flex gap-3">
               <MapPin className="h-5 w-5 text-primary mt-0.5" />
               <div className="min-w-0">
@@ -869,7 +869,7 @@ export default function AddressSelectorPage() {
 
               <Label className="text-sm font-bold mb-2 block text-gray-700 dark:text-gray-300">Secondary Address (House No. / Flat / Floor)</Label>
               <Input
-                placeholder="E.g. Flat 402, 4th Floor, CityFood Building"
+                placeholder="E.g. Flat 402, 4th Floor, Food Saathi Building"
                 value={addressFormData.additionalDetails}
                 onChange={e => setAddressFormData({ ...addressFormData, additionalDetails: e.target.value })}
                 onFocus={() => scrollFieldIntoView("additionalDetails")}
@@ -937,7 +937,7 @@ export default function AddressSelectorPage() {
         </div>
 
         <div
-          className="fixed left-0 right-0 p-4 bg-white dark:bg-[#1a1a1a] border-t dark:border-gray-800 transition-[bottom] duration-150"
+          className="fixed left-0 right-0 p-4 bg-white dark:bg-[#2A1A11] border-t dark:border-gray-800 transition-[bottom] duration-150"
           style={{ bottom: `${keyboardInset}px` }}
         >
           <Button
@@ -954,8 +954,8 @@ export default function AddressSelectorPage() {
   }
 
   return (
-    <AnimatedPage className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col">
-      <div className="flex-shrink-0 bg-white dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-gray-800 px-4 py-4 flex items-center gap-4">
+    <AnimatedPage className="min-h-screen bg-white dark:bg-[#1A0F09] flex flex-col">
+      <div className="flex-shrink-0 bg-white dark:bg-[#2A1A11] border-b border-gray-100 dark:border-gray-800 px-4 py-4 flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={handleBack} className="rounded-full">
           <ChevronLeft className="h-6 w-6" />
         </Button>
@@ -966,7 +966,7 @@ export default function AddressSelectorPage() {
         <div className="p-4 bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-800">
           <button
             onClick={handleUseCurrentLocation}
-            className="w-full flex items-center gap-4 p-4 bg-white dark:bg-[#1a1a1a] rounded-xl shadow-sm hover:shadow-md transition-all group"
+            className="w-full flex items-center gap-4 p-4 bg-white dark:bg-[#2A1A11] rounded-xl shadow-sm hover:shadow-md transition-all group"
           >
             <div className="h-10 w-10 rounded-full bg-[#7e386610] dark:bg-[#7e386620] flex items-center justify-center">
               <Navigation className="h-5 w-5 text-primary" />
@@ -1000,7 +1000,7 @@ export default function AddressSelectorPage() {
                   <div
                     key={getAddressId(addr) || idx}
                     onClick={() => handleSelectSavedAddress(addr)}
-                    className="w-full flex items-start gap-4 p-4 bg-slate-50 dark:bg-[#1a1a1a] rounded-xl hover:bg-[#7e386610] dark:hover:bg-[#7e386620] transition-colors text-left group cursor-pointer"
+                    className="w-full flex items-start gap-4 p-4 bg-slate-50 dark:bg-[#2A1A11] rounded-xl hover:bg-[#7e386610] dark:hover:bg-[#7e386620] transition-colors text-left group cursor-pointer"
                   >
                     <div className="h-10 w-10 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center shadow-sm">
                       <Icon className="h-5 w-5 text-gray-600 dark:text-gray-400" />

@@ -109,9 +109,9 @@ export default function FestBanner({ isVegMode, images = [], hideFoodImages = fa
           transition={{ delay: 0.2 }}
           className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 shadow-sm font-bold"
         >
-          <Sparkles className="h-2.5 w-2.5 text-[#fff200] animate-pulse" />
-          <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">CityFood Missions</span>
-          <Sparkles className="h-2.5 w-2.5 text-[#fff200] animate-pulse" />
+          <Sparkles className="h-2.5 w-2.5 text-[#FFC93C] animate-pulse" />
+          <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">Food Saathi Missions</span>
+          <Sparkles className="h-2.5 w-2.5 text-[#FFC93C] animate-pulse" />
         </motion.div>
 
         <motion.div
@@ -121,7 +121,7 @@ export default function FestBanner({ isVegMode, images = [], hideFoodImages = fa
           transition={{ type: "spring", damping: 10, stiffness: 100 }}
         >
           <h2
-            className="text-2xl sm:text-3xl font-black text-[#fff200] italic tracking-tighter drop-shadow-md uppercase leading-none"
+            className="text-2xl sm:text-3xl font-black text-[#FFC93C] italic tracking-tighter drop-shadow-md uppercase leading-none"
             style={{ WebkitTextStroke: '0.5px rgba(255,255,255,0.3)' }}
           >
             {isVegMode ? 'VEGGIE DELIGHT' : 'FEAST BONANZA'}
@@ -133,11 +133,11 @@ export default function FestBanner({ isVegMode, images = [], hideFoodImages = fa
           transition={{ duration: 2, repeat: Infinity }}
           className="flex items-center gap-2 px-4 py-1.5 bg-black/40 backdrop-blur-lg rounded-full border border-white/20 shadow-xl group cursor-pointer active:scale-95 transition-all text-white"
         >
-          {isVegMode ? <Leaf className="h-3.5 w-3.5 text-emerald-400 fill-emerald-400" /> : <Flame className="h-3.5 w-3.5 text-[#fff200] fill-[#fff200] animate-bounce" />}
+          {isVegMode ? <Leaf className="h-3.5 w-3.5 text-emerald-400 fill-emerald-400" /> : <Flame className="h-3.5 w-3.5 text-[#FFC93C] fill-[#FFC93C] animate-bounce" />}
           <span className="text-sm font-black uppercase tracking-[0.1em]">
             {isVegMode ? 'PURE VEG MAGIC' : 'UPTO 60% OFF NOW'}
           </span>
-          <ArrowRightCircle className="h-5 w-5 text-[#fff200] shadow-sm" />
+          <ArrowRightCircle className="h-5 w-5 text-[#FFC93C] shadow-sm" />
         </motion.div>
 
         {hideFoodImages ? (

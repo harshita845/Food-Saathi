@@ -2466,7 +2466,7 @@ function RestaurantDetailsContent() {
   return (
     <AnimatedPage
       id="scrollingelement"
-      className={`min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col transition-all duration-300 ${shouldShowGrayscale ? 'grayscale opacity-75' : ''
+      className={`min-h-screen bg-white dark:bg-[#1A0F09] flex flex-col transition-all duration-300 ${shouldShowGrayscale ? 'grayscale opacity-75' : ''
         }`}
     >
       {/* ── Menu Scan Intro Animation ── */}
@@ -2478,13 +2478,13 @@ function RestaurantDetailsContent() {
       )}
 
       {/* Header - Back, Search, Menu (like reference image) */}
-      <div className="px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 pt-3 md:pt-4 lg:pt-5 pb-2 md:pb-3 bg-white dark:bg-[#0a0a0a]">
+      <div className="px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 pt-3 md:pt-4 lg:pt-5 pb-2 md:pb-3 bg-white dark:bg-[#1A0F09]">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           {/* Back Button */}
           <Button
             variant="outline"
             size="icon"
-            className="rounded-full h-10 w-10 border-gray-200 dark:border-gray-800 shadow-sm bg-white dark:bg-[#1a1a1a]"
+            className="rounded-full h-10 w-10 border-gray-200 dark:border-gray-800 shadow-sm bg-white dark:bg-[#2A1A11]"
             onClick={goBack}
           >
             <ArrowLeft className="h-5 w-5 text-gray-900 dark:text-white" />
@@ -2495,7 +2495,7 @@ function RestaurantDetailsContent() {
             {!showSearch ? (
               <Button
                 variant="outline"
-                className="rounded-full h-10 px-4 border-gray-200 dark:border-gray-800 shadow-sm bg-white dark:bg-[#1a1a1a] flex items-center gap-2 text-gray-900 dark:text-white"
+                className="rounded-full h-10 px-4 border-gray-200 dark:border-gray-800 shadow-sm bg-white dark:bg-[#2A1A11] flex items-center gap-2 text-gray-900 dark:text-white"
                 onClick={() => setShowSearch(true)}
               >
                 <Search className="h-4 w-4" />
@@ -2510,7 +2510,7 @@ function RestaurantDetailsContent() {
                     placeholder="Search for dishes..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full h-9 md:h-10 pl-10 pr-10 rounded-full border border-primary dark:border-primary/80 shadow-sm bg-white dark:bg-[#1a1a1a] text-xs md:text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full h-9 md:h-10 pl-10 pr-10 rounded-full border border-primary dark:border-primary/80 shadow-sm bg-white dark:bg-[#2A1A11] text-xs md:text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     autoFocus
                     onBlur={() => {
                       if (!searchQuery) {
@@ -2535,7 +2535,7 @@ function RestaurantDetailsContent() {
             <Button
               variant="outline"
               size="icon"
-              className="rounded-full h-10 w-10 border-gray-200 dark:border-gray-800 shadow-sm bg-white dark:bg-[#1a1a1a]"
+              className="rounded-full h-10 w-10 border-gray-200 dark:border-gray-800 shadow-sm bg-white dark:bg-[#2A1A11]"
               onClick={() => setShowMenuOptionsSheet(true)}
             >
               <MoreVertical className="h-5 w-5 text-gray-900 dark:text-white" />
@@ -2545,11 +2545,11 @@ function RestaurantDetailsContent() {
       </div>
 
       {/* Main Content Card */}
-      <div className="bg-white dark:bg-[#0a0a0a] rounded-t-3xl relative z-10 min-h-[40vh]">
+      <div className="bg-white dark:bg-[#1A0F09] rounded-t-3xl relative z-10 min-h-[40vh]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 py-4 sm:py-5 md:py-6 lg:py-8 space-y-3 md:space-y-4 lg:space-y-5 pb-0">
           {/* Restaurant Summary */}
           <div className="relative">
-            <div className="relative rounded-3xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1a1a1a] shadow-[0_16px_40px_rgba(15,23,42,0.08)] p-4 sm:p-5 space-y-4 overflow-hidden">
+            <div className="relative rounded-3xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#2A1A11] shadow-[0_16px_40px_rgba(15,23,42,0.08)] p-4 sm:p-5 space-y-4 overflow-hidden">
               <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-[#8a4b77] to-[#b36b8f]" />
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
@@ -2634,7 +2634,7 @@ function RestaurantDetailsContent() {
             <button
               type="button"
               onClick={() => setShowOffersSheet(true)}
-              className="w-full rounded-2xl border border-gray-900/20 dark:border-gray-800 bg-white dark:bg-[#1a1a1a] px-4 py-3 text-left shadow-[0_8px_20px_rgba(15,23,42,0.08)] transition-all hover:shadow-[0_12px_24px_rgba(15,23,42,0.12)]"
+              className="w-full rounded-2xl border border-gray-900/20 dark:border-gray-800 bg-white dark:bg-[#2A1A11] px-4 py-3 text-left shadow-[0_8px_20px_rgba(15,23,42,0.08)] transition-all hover:shadow-[0_12px_24px_rgba(15,23,42,0.12)]"
             >
               <div className="flex items-start gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
@@ -2688,7 +2688,7 @@ function RestaurantDetailsContent() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex items-center gap-1.5 whitespace-nowrap border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] dark:text-white relative overflow-visible"
+                    className="flex items-center gap-1.5 whitespace-nowrap border-gray-300 dark:border-gray-700 bg-white dark:bg-[#2A1A11] dark:text-white relative overflow-visible"
                     onClick={() => setShowFilterSheet(true)}
                   >
                     <SlidersHorizontal className="h-4 w-4" />
@@ -2704,7 +2704,7 @@ function RestaurantDetailsContent() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className={`flex items-center gap-1.5 whitespace-nowrap border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] dark:text-white rounded-full ${filters.vegNonVeg === "veg" ? "border-green-600 bg-green-50 text-green-700 font-bold dark:border-green-500 dark:bg-green-900/20 dark:text-green-400" : ""
+                      className={`flex items-center gap-1.5 whitespace-nowrap border-gray-300 dark:border-gray-700 bg-white dark:bg-[#2A1A11] dark:text-white rounded-full ${filters.vegNonVeg === "veg" ? "border-green-600 bg-green-50 text-green-700 font-bold dark:border-green-500 dark:bg-green-900/20 dark:text-green-400" : ""
                         }`}
                       onClick={() =>
                         setFilters((prev) => ({
@@ -2724,7 +2724,7 @@ function RestaurantDetailsContent() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className={`flex items-center gap-1.5 whitespace-nowrap border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] dark:text-white rounded-full ${filters.vegNonVeg === "non-veg" ? "border-red-600 bg-red-50 text-red-600 dark:border-red-500 dark:bg-red-900/20 dark:text-red-400" : ""
+                      className={`flex items-center gap-1.5 whitespace-nowrap border-gray-300 dark:border-gray-700 bg-white dark:bg-[#2A1A11] dark:text-white rounded-full ${filters.vegNonVeg === "non-veg" ? "border-red-600 bg-red-50 text-red-600 dark:border-red-500 dark:bg-red-900/20 dark:text-red-400" : ""
                         }`}
                       onClick={() =>
                         setFilters((prev) => ({
@@ -2752,7 +2752,7 @@ function RestaurantDetailsContent() {
                       onClick={() => setSelectedMenuCategory("all")}
                       className={`flex items-center gap-2 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors ${selectedMenuCategory === "all"
                           ? "border-primary bg-[#7e386615] text-primary"
-                          : "border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300"
+                          : "border-gray-300 dark:border-gray-700 bg-white dark:bg-[#2A1A11] text-gray-700 dark:text-gray-300"
                         }`}
                     >
                       All
@@ -2764,7 +2764,7 @@ function RestaurantDetailsContent() {
                         onClick={() => setSelectedMenuCategory(category.id)}
                         className={`flex items-center gap-2 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors ${selectedMenuCategory === category.id
                             ? "border-primary bg-[#7e386615] text-primary"
-                            : "border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300"
+                            : "border-gray-300 dark:border-gray-700 bg-white dark:bg-[#2A1A11] text-gray-700 dark:text-gray-300"
                           }`}
                       >
                         {category.image ? (
@@ -2806,7 +2806,7 @@ function RestaurantDetailsContent() {
         {restaurant?.menuSections && Array.isArray(restaurant.menuSections) && restaurant.menuSections.length > 0 && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 py-6 sm:py-8 md:py-10 lg:py-12 space-y-6 md:space-y-8 lg:space-y-10">
             {filteredSections.length === 0 && hasActiveMenuFilters && (
-              <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] px-5 py-8 text-center">
+              <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-[#2A1A11] px-5 py-8 text-center">
                 <p className="text-sm md:text-base font-medium text-gray-700 dark:text-gray-300">
                   No dishes match the selected filters.
                 </p>
@@ -2816,7 +2816,7 @@ function RestaurantDetailsContent() {
               </div>
             )}
             {filteredSections.length === 0 && (
-              <div className="rounded-3xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] px-6 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+              <div className="rounded-3xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-[#2A1A11] px-6 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
                 No dishes match the current filters.
               </div>
             )}
@@ -2975,7 +2975,7 @@ function RestaurantDetailsContent() {
 
         {!loadingMenuItems && menuUnavailable && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 py-6 sm:py-8 md:py-10 lg:py-12">
-            <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] px-6 py-10 text-center">
+            <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-[#2A1A11] px-6 py-10 text-center">
               <p className="text-sm md:text-base font-medium text-gray-700 dark:text-gray-300">
                 Menu is not available yet.
               </p>
@@ -3030,7 +3030,7 @@ function RestaurantDetailsContent() {
 
                 {/* Menu Sheet */}
                 <motion.div
-                  className="fixed left-0 right-0 bottom-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 z-[10000] bg-white dark:bg-[#1a1a1a] rounded-t-3xl md:rounded-3xl shadow-2xl max-h-[85vh] md:max-h-[90vh] md:max-w-lg w-full md:w-auto flex flex-col"
+                  className="fixed left-0 right-0 bottom-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 z-[10000] bg-white dark:bg-[#2A1A11] rounded-t-3xl md:rounded-3xl shadow-2xl max-h-[85vh] md:max-h-[90vh] md:max-w-lg w-full md:w-auto flex flex-col"
                   initial={{ y: "100%" }}
                   animate={{ y: 0 }}
                   exit={{ y: "100%" }}
@@ -3098,7 +3098,7 @@ function RestaurantDetailsContent() {
                   </div>
 
                   {/* Close Button */}
-                  <div className="border-t border-gray-200 dark:border-gray-800 px-4 py-4 bg-white dark:bg-[#1a1a1a]">
+                  <div className="border-t border-gray-200 dark:border-gray-800 px-4 py-4 bg-white dark:bg-[#2A1A11]">
                     <Button
                       className="w-full bg-primary hover:bg-secondary text-white border-0 flex items-center justify-center gap-2 py-6 rounded-xl font-bold transition-all shadow-lg text-sm"
                       onClick={() => setShowMenuSheet(false)}
@@ -3132,7 +3132,7 @@ function RestaurantDetailsContent() {
 
                 {/* Bottom Sheet */}
                 <motion.div
-                  className="fixed left-0 right-0 bottom-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 z-[10000] bg-white dark:bg-[#1a1a1a] rounded-t-3xl md:rounded-3xl shadow-2xl max-h-[80vh] md:max-h-[90vh] md:max-w-lg w-full md:w-auto flex flex-col"
+                  className="fixed left-0 right-0 bottom-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 z-[10000] bg-white dark:bg-[#2A1A11] rounded-t-3xl md:rounded-3xl shadow-2xl max-h-[80vh] md:max-h-[90vh] md:max-w-lg w-full md:w-auto flex flex-col"
                   initial={{ y: "100%" }}
                   animate={{ y: 0 }}
                   exit={{ y: "100%" }}
@@ -3165,7 +3165,7 @@ function RestaurantDetailsContent() {
                           }
                           className={`text-left px-4 py-2.5 rounded-lg border-2 transition-all ${filters.sortBy === "low-to-high"
                             ? "border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                            : "border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a2a2a] text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
+                            : "border-gray-200 dark:border-gray-700 bg-white dark:bg-[#3A271C] text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
                             }`}
                         >
                           Price - low to high
@@ -3179,7 +3179,7 @@ function RestaurantDetailsContent() {
                           }
                           className={`text-left px-4 py-2.5 rounded-lg border-2 transition-all ${filters.sortBy === "high-to-low"
                             ? "border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                            : "border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a2a2a] text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
+                            : "border-gray-200 dark:border-gray-700 bg-white dark:bg-[#3A271C] text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
                             }`}
                         >
                           Price - high to low
@@ -3201,7 +3201,7 @@ function RestaurantDetailsContent() {
                             }
                             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 transition-all flex-1 ${filters.vegNonVeg === "veg"
                               ? "border-green-600 dark:border-green-500 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                              : "border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a2a2a] text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
+                              : "border-gray-200 dark:border-gray-700 bg-white dark:bg-[#3A271C] text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
                               }`}
                           >
                             <div className="h-4 w-4 rounded-full bg-green-600 dark:bg-green-500" />
@@ -3217,7 +3217,7 @@ function RestaurantDetailsContent() {
                               }
                               className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 transition-all flex-1 ${filters.vegNonVeg === "non-veg"
                                 ? "border-red-600 dark:border-red-600 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-gray-300"
-                                : "border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a2a2a] text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
+                                : "border-gray-200 dark:border-gray-700 bg-white dark:bg-[#3A271C] text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
                                 }`}
                             >
                               <div className="h-4 w-4 rounded-full bg-red-600" />
@@ -3232,7 +3232,7 @@ function RestaurantDetailsContent() {
                   </div>
 
                   {/* Bottom Action Bar */}
-                  <div className="border-t border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between bg-white dark:bg-[#1a1a1a]">
+                  <div className="border-t border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between bg-white dark:bg-[#2A1A11]">
                     <button
                       onClick={() => {
                         setFilters({
@@ -3278,7 +3278,7 @@ function RestaurantDetailsContent() {
 
                 {/* Bottom Sheet */}
                 <motion.div
-                  className="fixed left-0 right-0 bottom-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 z-[10000] bg-white dark:bg-[#1a1a1a] rounded-t-3xl md:rounded-3xl shadow-2xl h-[75vh] md:h-auto md:max-h-[90vh] md:max-w-xl w-full md:w-auto flex flex-col"
+                  className="fixed left-0 right-0 bottom-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 z-[10000] bg-white dark:bg-[#2A1A11] rounded-t-3xl md:rounded-3xl shadow-2xl h-[75vh] md:h-auto md:max-h-[90vh] md:max-w-xl w-full md:w-auto flex flex-col"
                   initial={{ y: "100%" }}
                   animate={{ y: 0 }}
                   exit={{ y: "100%" }}
@@ -3303,10 +3303,10 @@ function RestaurantDetailsContent() {
                         {restaurant.outlets.map((outlet) => (
                           <div
                             key={outlet?.id || Math.random()}
-                            className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a2a2a]"
+                            className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#3A271C]"
                           >
                             {outlet?.isNearest && (
-                              <div className="flex items-center gap-1.5 mb-2 px-2 py-1 bg-[#F9F9FB] dark:bg-primary/20 rounded-md">
+                              <div className="flex items-center gap-1.5 mb-2 px-2 py-1 bg-[#FFF9F0] dark:bg-primary/20 rounded-md">
                                 <Zap className="h-3.5 w-3.5 text-primary dark:text-primary fill-primary dark:fill-primary" />
                                 <span className="text-xs font-semibold text-primary dark:text-primary">
                                   Nearest available outlet
@@ -3364,7 +3364,7 @@ function RestaurantDetailsContent() {
 
                   {/* Footer */}
                   {restaurant?.outlets && Array.isArray(restaurant.outlets) && restaurant.outlets.length > 5 && (
-                    <div className="border-t border-gray-200 dark:border-gray-800 px-4 py-3 bg-white dark:bg-[#1a1a1a]">
+                    <div className="border-t border-gray-200 dark:border-gray-800 px-4 py-3 bg-white dark:bg-[#2A1A11]">
                       <button className="flex items-center justify-center gap-2 text-red-600 dark:text-red-400 font-medium text-sm w-full">
                         <span>See all {restaurant.outlets.length} outlets</span>
                         <ChevronDown className="h-4 w-4" />
@@ -3396,7 +3396,7 @@ function RestaurantDetailsContent() {
 
                 {/* Manage Collections Bottom Sheet */}
                 <motion.div
-                  className="fixed left-0 right-0 bottom-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 z-[10000] bg-white dark:bg-[#1a1a1a] rounded-t-3xl md:rounded-3xl shadow-2xl md:max-w-lg w-full md:w-auto"
+                  className="fixed left-0 right-0 bottom-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 z-[10000] bg-white dark:bg-[#2A1A11] rounded-t-3xl md:rounded-3xl shadow-2xl md:max-w-lg w-full md:w-auto"
                   initial={{ y: "100%" }}
                   animate={{ y: 0 }}
                   exit={{ y: "100%" }}
@@ -3507,7 +3507,7 @@ function RestaurantDetailsContent() {
 
                 {/* Item Detail Bottom Sheet */}
                 <motion.div
-                  className="fixed left-0 right-0 bottom-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 z-[10000] bg-white dark:bg-[#1a1a1a] rounded-t-3xl md:rounded-3xl shadow-2xl max-h-[90vh] md:max-w-2xl lg:max-w-3xl w-full md:w-auto flex flex-col"
+                  className="fixed left-0 right-0 bottom-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 z-[10000] bg-white dark:bg-[#2A1A11] rounded-t-3xl md:rounded-3xl shadow-2xl max-h-[90vh] md:max-w-2xl lg:max-w-3xl w-full md:w-auto flex flex-col"
                   initial={{ y: "100%" }}
                   animate={{ y: 0 }}
                   exit={{ y: "100%" }}
@@ -3550,7 +3550,7 @@ function RestaurantDetailsContent() {
                         }}
                         className={`h-10 w-10 rounded-full border flex items-center justify-center transition-all duration-300 ${isDishFavorite(selectedItem.id || selectedItem._id, restaurant?.restaurantId || restaurant?._id || restaurant?.id)
                           ? "border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400"
-                          : "border-white dark:border-gray-800 bg-white/90 dark:bg-[#1a1a1a]/90 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-[#2a2a2a]"
+                          : "border-white dark:border-gray-800 bg-white/90 dark:bg-[#2A1A11]/90 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-[#3A271C]"
                           }`}
                       >
                         <Bookmark
@@ -3558,7 +3558,7 @@ function RestaurantDetailsContent() {
                             }`}
                         />
                       </button>
-                      <button className="h-10 w-10 rounded-full border border-white dark:border-gray-800 bg-white/90 dark:bg-[#1a1a1a]/90 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-[#2a2a2a] flex items-center justify-center transition-colors">
+                      <button className="h-10 w-10 rounded-full border border-white dark:border-gray-800 bg-white/90 dark:bg-[#2A1A11]/90 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-[#3A271C] flex items-center justify-center transition-colors">
                         <Share2 className="h-5 w-5" />
                       </button>
                     </div>
@@ -3613,7 +3613,7 @@ function RestaurantDetailsContent() {
                               onClick={() => setSelectedVariantId(variant.id)}
                               className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${String(selectedVariantId || "") === String(variant.id)
                                   ? "border-red-500 bg-red-50 text-red-600 dark:border-red-400 dark:bg-red-900/30 dark:text-red-200"
-                                  : "border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-[#2a2a2a] dark:text-gray-300"
+                                  : "border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-[#3A271C] dark:text-gray-300"
                                 }`}
                             >
                               {variant.name} · {RUPEE_SYMBOL}{Math.round(variant.price)}
@@ -3625,10 +3625,10 @@ function RestaurantDetailsContent() {
                   </div>
 
                   {/* Bottom Action Bar */}
-                  <div className="border-t border-gray-200 dark:border-gray-800 px-4 py-4 bg-white dark:bg-[#1a1a1a]">
+                  <div className="border-t border-gray-200 dark:border-gray-800 px-4 py-4 bg-white dark:bg-[#2A1A11]">
                     <div className="flex items-center gap-4">
                       {/* Quantity Selector */}
-                      <div className={`flex items-center gap-3 border-2 rounded-lg px-3 h-[44px] bg-white dark:bg-[#2a2a2a] ${shouldShowGrayscale
+                      <div className={`flex items-center gap-3 border-2 rounded-lg px-3 h-[44px] bg-white dark:bg-[#3A271C] ${shouldShowGrayscale
                         ? 'border-gray-300 dark:border-gray-700 opacity-50'
                         : 'border-gray-300 dark:border-gray-700'
                         }`}>
@@ -3764,7 +3764,7 @@ function RestaurantDetailsContent() {
 
                 {/* Schedule Bottom Sheet */}
                 <motion.div
-                  className="fixed left-0 right-0 bottom-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 z-[10000] bg-white dark:bg-[#1a1a1a] rounded-t-3xl md:rounded-3xl shadow-2xl max-h-[60vh] md:max-h-[90vh] md:max-w-lg w-full md:w-auto flex flex-col"
+                  className="fixed left-0 right-0 bottom-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 z-[10000] bg-white dark:bg-[#2A1A11] rounded-t-3xl md:rounded-3xl shadow-2xl max-h-[60vh] md:max-h-[90vh] md:max-w-lg w-full md:w-auto flex flex-col"
                   initial={{ y: "100%" }}
                   animate={{ y: 0 }}
                   exit={{ y: "100%" }}
@@ -3837,7 +3837,7 @@ function RestaurantDetailsContent() {
                             onClick={() => setSelectedTimeSlot(slot)}
                             className={`w-full text-left px-4 py-2.5 rounded-lg transition-all ${isSelected
                               ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600"
-                              : "bg-white dark:bg-[#2a2a2a] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border border-transparent"
+                              : "bg-white dark:bg-[#3A271C] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border border-transparent"
                               }`}
                           >
                             <span className="text-sm font-medium">{slot}</span>
@@ -3884,7 +3884,7 @@ function RestaurantDetailsContent() {
 
                 {/* Offers Bottom Sheet */}
                 <motion.div
-                  className="fixed left-0 right-0 bottom-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 z-[10000] bg-white dark:bg-[#1a1a1a] rounded-t-3xl md:rounded-3xl shadow-2xl max-h-[85vh] md:max-h-[90vh] md:max-w-lg w-full md:w-auto flex flex-col"
+                  className="fixed left-0 right-0 bottom-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 z-[10000] bg-white dark:bg-[#2A1A11] rounded-t-3xl md:rounded-3xl shadow-2xl max-h-[85vh] md:max-h-[90vh] md:max-w-lg w-full md:w-auto flex flex-col"
                   initial={{ y: "100%" }}
                   animate={{ y: 0 }}
                   exit={{ y: "100%" }}
@@ -3975,7 +3975,7 @@ function RestaurantDetailsContent() {
                   </div>
 
                   {/* Close Button */}
-                  <div className="border-t border-gray-200 dark:border-gray-800 px-4 py-4 bg-white dark:bg-[#1a1a1a]">
+                  <div className="border-t border-gray-200 dark:border-gray-800 px-4 py-4 bg-white dark:bg-[#2A1A11]">
                     <Button
                       className="w-full bg-primary hover:bg-secondary text-white border-0 flex items-center justify-center gap-2 py-6 rounded-xl font-bold transition-all shadow-lg text-sm"
                       onClick={() => setShowOffersSheet(false)}
@@ -4009,7 +4009,7 @@ function RestaurantDetailsContent() {
 
                 {/* Menu Options Bottom Sheet */}
                 <motion.div
-                  className="fixed left-0 right-0 bottom-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 z-[10000] bg-white dark:bg-[#1a1a1a] rounded-t-3xl md:rounded-3xl shadow-2xl max-h-[70vh] md:max-h-[90vh] md:max-w-lg w-full md:w-auto flex flex-col"
+                  className="fixed left-0 right-0 bottom-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 z-[10000] bg-white dark:bg-[#2A1A11] rounded-t-3xl md:rounded-3xl shadow-2xl max-h-[70vh] md:max-h-[90vh] md:max-w-lg w-full md:w-auto flex flex-col"
                   initial={{ y: "100%" }}
                   animate={{ y: 0 }}
                   exit={{ y: "100%" }}
@@ -4104,7 +4104,7 @@ function RestaurantDetailsContent() {
                   onClick={() => setShowShareModal(false)}
                 />
                 <motion.div
-                  className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[10021] w-[92vw] max-w-md bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-2xl"
+                  className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[10021] w-[92vw] max-w-md bg-white dark:bg-[#2A1A11] rounded-2xl shadow-2xl"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}

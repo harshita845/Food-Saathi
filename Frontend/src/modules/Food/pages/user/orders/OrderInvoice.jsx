@@ -61,7 +61,7 @@ export default function OrderInvoice() {
 
   if (loading) {
     return (
-      <AnimatedPage className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a] p-4">
+      <AnimatedPage className="min-h-screen bg-[#FBF3EA] dark:bg-[#1A0F09] p-4">
         <div className="max-w-4xl mx-auto text-center py-20">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-muted-foreground">Generating invoice...</p>
@@ -72,7 +72,7 @@ export default function OrderInvoice() {
 
   if (error || !order) {
     return (
-      <AnimatedPage className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a] p-4">
+      <AnimatedPage className="min-h-screen bg-[#FBF3EA] dark:bg-[#1A0F09] p-4">
         <div className="max-w-4xl mx-auto text-center py-20">
           <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-4">{error || 'Order Not Found'}</h1>
           <Link to="/user/orders">
@@ -156,7 +156,7 @@ export default function OrderInvoice() {
   const totalRounded = Math.round(order.total || 0);
 
   return (
-    <AnimatedPage className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] p-4">
+    <AnimatedPage className="min-h-screen bg-gray-50 dark:bg-[#1A0F09] p-4">
       <div className="max-w-[800px] mx-auto space-y-6">
         <ScrollReveal>
           <div className="flex items-center justify-between no-print">

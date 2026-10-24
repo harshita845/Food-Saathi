@@ -57,10 +57,10 @@ function buildRiderInfoHtml(rider) {
 
   return `
     <div style="padding: 12px; min-width: 220px;">
-      <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #1e293b;">
+      <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #3E2A1F;">
         ${escapeHtml(rider?.name || "Delivery Partner")}
       </h3>
-      <div style="font-size: 13px; color: #64748b; line-height: 1.6;">
+      <div style="font-size: 13px; color: #8C705B; line-height: 1.6;">
         <div style="margin-bottom: 4px;">
           <strong>Phone:</strong> ${escapeHtml(rider?.phone || "N/A")}
         </div>
@@ -70,7 +70,7 @@ function buildRiderInfoHtml(rider) {
         </div>
         ${
           lastUpdate
-            ? `<div style="margin-top: 8px; font-size: 12px; color: #94a3b8;">
+            ? `<div style="margin-top: 8px; font-size: 12px; color: #B9A08A;">
                 Last updated: ${lastUpdate}
               </div>`
             : ""
@@ -104,7 +104,7 @@ function createRiderOverlayClass(google) {
 
       this.nameEl = document.createElement("div")
       this.nameEl.style.cssText =
-        "margin-top:4px;background:#1e293b;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.25);border:1px solid #fff;max-width:140px;overflow:hidden;text-overflow:ellipsis;"
+        "margin-top:4px;background:#3E2A1F;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.25);border:1px solid #fff;max-width:140px;overflow:hidden;text-overflow:ellipsis;"
 
       this.div.appendChild(this.dotEl)
       this.div.appendChild(this.nameEl)
@@ -416,8 +416,8 @@ export default function DeliveryBoyViewMap() {
     if (!zones?.length) return
 
     const colors = [
-      "#3b82f6", "#10b981", "#f59e0b", "#ef4444",
-      "#8b5cf6", "#ec4899", "#06b6d4", "#84cc16",
+      "#FF7A3D", "#10b981", "#f59e0b", "#ef4444",
+      "#FFA51F", "#F2541B", "#06b6d4", "#84cc16",
     ]
     const bounds = new google.maps.LatLngBounds()
 
@@ -457,10 +457,10 @@ export default function DeliveryBoyViewMap() {
       const infoWindow = new google.maps.InfoWindow({
         content: `
           <div style="padding: 12px; min-width: 200px;">
-            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #1e293b;">
+            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #3E2A1F;">
               ${escapeHtml(zone.name || "Unnamed Zone")}
             </h3>
-            <div style="font-size: 13px; color: #64748b; line-height: 1.6;">
+            <div style="font-size: 13px; color: #8C705B; line-height: 1.6;">
               <div><strong>Location:</strong> ${escapeHtml(zone.serviceLocation || "N/A")}</div>
               <div><strong>Status:</strong> ${zone.isActive ? "Active" : "Inactive"}</div>
             </div>

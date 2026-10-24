@@ -18,11 +18,11 @@ export default function QuickSection() {
   return (
     <div className="relative min-h-[400px] bg-transparent pt-2 pb-10">
       {/* "Coming Soon" Overlay */}
-      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-background/60 dark:bg-[#0A0A0A]/60 backdrop-blur-[2px]">
+      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-background/60 dark:bg-[#1A0F09]/60 backdrop-blur-[2px]">
         <motion.div 
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-[#ef4f5f] text-white px-8 py-3 rounded-2xl shadow-2xl flex flex-col items-center gap-1 border-4 border-white/20"
+          className="bg-[#FF6A2C] text-white px-8 py-3 rounded-2xl shadow-2xl flex flex-col items-center gap-1 border-4 border-white/20"
         >
           <Zap className="h-8 w-8 fill-white" />
           <span className="text-xl font-black uppercase tracking-tighter italic">Coming Soon</span>
@@ -46,7 +46,7 @@ export default function QuickSection() {
           <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-4 scrollbar-hide px-1">
             {quickCategories.map((cat, idx) => (
               <div key={idx} className="flex flex-col items-center gap-1.5 snap-start min-w-[72px] animate-pulse" style={{ animationDelay: `${idx * 100}ms` }}>
-                <div className="w-[72px] aspect-square bg-gray-50 dark:bg-[#141414] rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 flex items-center justify-center p-1">
+                <div className="w-[72px] aspect-square bg-gray-50 dark:bg-[#22150D] rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 flex items-center justify-center p-1">
                   <OptimizedImage src={cat.image} alt={cat.name} className="w-full h-full object-contain rounded-lg" />
                 </div>
                 <span className="text-[9px] font-bold text-gray-600 dark:text-gray-400 text-center leading-tight">

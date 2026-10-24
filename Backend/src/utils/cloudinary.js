@@ -53,14 +53,15 @@ const ensureConfigured = () => {
 };
 
 /**
- * Streams a buffer to the Cloudinary root (no folder, no subfolders).
+ * Streams a buffer into the Food Saathi Cloudinary folder (CLOUDINARY_FOLDER, default "foodsaathi").
  * Returns { url, publicId }.
  */
 export const uploadBufferToCloudinary = (buffer, { resourceType = 'image', format } = {}) => {
     ensureConfigured();
+    const folder = (process.env.CLOUDINARY_FOLDER || 'foodsaathi').trim();
     return new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
-            { resource_type: resourceType, ...(format ? { format } : {}) },
+            { resource_type: resourceType, ...(folder ? { folder } : {}), ...(format ? { format } : {}) },
             (err, result) => {
                 if (err) return reject(err);
                 resolve({ url: result.secure_url, publicId: result.public_id });

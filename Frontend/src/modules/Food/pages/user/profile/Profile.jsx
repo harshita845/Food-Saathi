@@ -384,7 +384,7 @@ export default function Profile() {
         }
 
         const tokenSeed = String(voipToken || fcmToken || "").trim().slice(-16);
-        deviceId = tokenSeed ? ["tuggo", "user", devicePlatform || "unknown", tokenSeed].join(":") : null;
+        deviceId = tokenSeed ? ["foodsaathi", "user", devicePlatform || "unknown", tokenSeed].join(":") : null;
 
         if (deviceId || fcmToken || voipToken) {
           try {
@@ -525,7 +525,7 @@ export default function Profile() {
   };
 
   return (
-    <AnimatedPage className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a]">
+    <AnimatedPage className="min-h-screen bg-[#FBF3EA] dark:bg-[#1A0F09]">
       <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 py-4 sm:py-6 md:py-8 lg:py-10 pb-20 sm:pb-24">
         {/* Header: Back Arrow */}
         <div className="flex items-center mb-4">
@@ -537,7 +537,7 @@ export default function Profile() {
         </div>
 
         {/* Profile Info Card */}
-        <Card className="bg-white dark:bg-[#1a1a1a] rounded-2xl py-0 pt-1 shadow-sm mb-0 border-0 dark:border-gray-800 overflow-hidden">
+        <Card className="bg-white dark:bg-[#2A1A11] rounded-2xl py-0 pt-1 shadow-sm mb-0 border-0 dark:border-gray-800 overflow-hidden">
           <CardContent className="p-4 py-0 pt-2">
             <div className="flex items-start gap-4 mb-4">
               <motion.div
@@ -595,7 +595,7 @@ export default function Profile() {
             <motion.div
               whileHover={{ x: 4, scale: 1.01 }}
               transition={{ duration: 0.2, type: "spring", stiffness: 300 }}>
-              <Card className="bg-white dark:bg-[#1a1a1a] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
+              <Card className="bg-white dark:bg-[#2A1A11] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
                 <CardContent className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <motion.div
@@ -627,7 +627,7 @@ export default function Profile() {
             <motion.div
               whileHover={{ x: 4, scale: 1.01 }}
               transition={{ duration: 0.2, type: "spring", stiffness: 300 }}>
-              <Card className="bg-white dark:bg-[#1a1a1a] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
+              <Card className="bg-white dark:bg-[#2A1A11] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
                 <CardContent className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <motion.div
@@ -654,7 +654,7 @@ export default function Profile() {
             <motion.div
               whileHover={{ x: 4, scale: 1.01 }}
               transition={{ duration: 0.2, type: "spring", stiffness: 300 }}>
-              <Card className="bg-white dark:bg-[#1a1a1a] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
+              <Card className="bg-white dark:bg-[#2A1A11] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
                 <CardContent className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <motion.div
@@ -681,7 +681,7 @@ export default function Profile() {
             <motion.div
               whileHover={{ x: 4, scale: 1.01 }}
               transition={{ duration: 0.2, type: "spring", stiffness: 300 }}>
-            <Card className="bg-white dark:bg-[#1a1a1a] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800">
+            <Card className="bg-white dark:bg-[#2A1A11] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
@@ -728,7 +728,7 @@ export default function Profile() {
             whileHover={{ x: 4, scale: 1.01 }}
             transition={{ duration: 0.2, type: "spring", stiffness: 300 }}>
             <Card
-              className="bg-white dark:bg-[#1a1a1a] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer"
+              className="bg-white dark:bg-[#2A1A11] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer"
               onClick={openLocationSelector}>
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
@@ -765,7 +765,7 @@ export default function Profile() {
             <motion.div
               whileHover={{ x: 4, scale: 1.01 }}
               transition={{ duration: 0.2, type: "spring", stiffness: 300 }}>
-              <Card className="bg-white dark:bg-[#1a1a1a] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
+              <Card className="bg-white dark:bg-[#2A1A11] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
                 <CardContent className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <motion.div
@@ -803,7 +803,7 @@ export default function Profile() {
             whileHover={{ x: 4, scale: 1.01 }}
             transition={{ duration: 0.2, type: "spring", stiffness: 300 }}>
             <Card
-              className="bg-white dark:bg-[#1a1a1a] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer"
+              className="bg-white dark:bg-[#2A1A11] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer"
               onClick={() => setVegModeOpen(true)}>
               <CardContent className="p-4  flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -838,7 +838,7 @@ export default function Profile() {
             whileHover={{ x: 4, scale: 1.01 }}
             transition={{ duration: 0.2, type: "spring", stiffness: 300 }}>
             <Card
-              className="bg-white dark:bg-[#1a1a1a] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer"
+              className="bg-white dark:bg-[#2A1A11] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer"
               onClick={() => setAppearanceOpen(true)}>
               <CardContent className="p-4  flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -882,7 +882,7 @@ export default function Profile() {
             <motion.div
               whileHover={{ x: 4, scale: 1.01 }}
               transition={{ duration: 0.2, type: "spring", stiffness: 300 }}>
-              <Card className="bg-white dark:bg-[#1a1a1a] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
+              <Card className="bg-white dark:bg-[#2A1A11] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
                 <CardContent className="p-4  flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <motion.div
@@ -918,7 +918,7 @@ export default function Profile() {
             <motion.div
               whileHover={{ x: 4, scale: 1.01 }}
               transition={{ duration: 0.2, type: "spring", stiffness: 300 }}>
-              <Card className="bg-white dark:bg-[#1a1a1a] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
+              <Card className="bg-white dark:bg-[#2A1A11] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
                 <CardContent className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <motion.div
@@ -959,7 +959,7 @@ export default function Profile() {
               <motion.div
                 whileHover={{ x: 4, scale: 1.01 }}
                 transition={{ duration: 0.2, type: "spring", stiffness: 300 }}>
-                <Card className="bg-white dark:bg-[#1a1a1a] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
+                <Card className="bg-white dark:bg-[#2A1A11] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <motion.div
@@ -997,7 +997,7 @@ export default function Profile() {
               <motion.div
                 whileHover={{ x: 4, scale: 1.01 }}
                 transition={{ duration: 0.2, type: "spring", stiffness: 300 }}>
-                <Card className="bg-white dark:bg-[#1a1a1a] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
+                <Card className="bg-white dark:bg-[#2A1A11] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <motion.div
@@ -1024,7 +1024,7 @@ export default function Profile() {
               <motion.div
                 whileHover={{ x: 4, scale: 1.01 }}
                 transition={{ duration: 0.2, type: "spring", stiffness: 300 }}>
-                <Card className="bg-white dark:bg-[#1a1a1a] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
+                <Card className="bg-white dark:bg-[#2A1A11] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <motion.div
@@ -1051,7 +1051,7 @@ export default function Profile() {
               <motion.div
                 whileHover={{ x: 4, scale: 1.01 }}
                 transition={{ duration: 0.2, type: "spring", stiffness: 300 }}>
-                <Card className="bg-white dark:bg-[#1a1a1a] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
+                <Card className="bg-white dark:bg-[#2A1A11] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <motion.div
@@ -1079,7 +1079,7 @@ export default function Profile() {
               whileHover={{ x: 4, scale: 1.01 }}
               transition={{ duration: 0.2, type: "spring", stiffness: 300 }}>
               <Card
-                className="bg-white dark:bg-[#1a1a1a] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-white dark:bg-[#2A1A11] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleTestNotification}>
                 <CardContent className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -1108,7 +1108,7 @@ export default function Profile() {
               whileHover={{ x: 4, scale: 1.01 }}
               transition={{ duration: 0.2, type: "spring", stiffness: 300 }}>
               <Card
-                className="bg-white dark:bg-[#1a1a1a] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-white dark:bg-[#2A1A11] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleLogoutClick}>
                 <CardContent className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -1138,7 +1138,7 @@ export default function Profile() {
               whileHover={{ x: 4, scale: 1.01 }}
               transition={{ duration: 0.2, type: "spring", stiffness: 300 }}>
               <Card
-                className="bg-white dark:bg-[#1a1a1a] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer"
+                className="bg-white dark:bg-[#2A1A11] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer"
                 onClick={() => { setDeleteStep(1); setDeleteCaptcha(""); setDeleteAccountOpen(true); }}>
                 <CardContent className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -1212,7 +1212,7 @@ export default function Profile() {
                 setVegModeOpen(false);
               }}
               className={`w-full p-3 rounded-xl border-2 transition-all flex items-center justify-between ${!vegMode
-                  ? "border-secondary bg-[#fdfafc] dark:bg-[#3c0f3d]/10"
+                  ? "border-secondary bg-[#FFFAF4] dark:bg-[#3A1C10]/10"
                   : "border-gray-200 dark:border-gray-800 bg-white hover:border-gray-300"
                 }`}>
               <div className="flex items-center gap-3">
@@ -1236,7 +1236,7 @@ export default function Profile() {
       {/* Logout Confirmation Popup */}
       {logoutConfirmOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-[#1a1a1a] p-5 shadow-2xl border border-gray-200 dark:border-gray-800">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-[#2A1A11] p-5 shadow-2xl border border-gray-200 dark:border-gray-800">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
               Log out?
             </h3>
@@ -1255,7 +1255,7 @@ export default function Profile() {
               </Button>
               <Button
                 type="button"
-                className="flex-1 rounded-xl bg-secondary hover:bg-[#3c0f3d] text-white"
+                className="flex-1 rounded-xl bg-secondary hover:bg-[#3A1C10] text-white"
                 onClick={() => {
                   setLogoutConfirmOpen(false);
                   handleLogout();
@@ -1271,7 +1271,7 @@ export default function Profile() {
 
       {/* Appearance Popup */}
       <Dialog open={appearanceOpen} onOpenChange={setAppearanceOpen}>
-        <DialogContent className="max-w-sm md:max-w-md lg:max-w-lg w-[calc(100%-2rem)] rounded-2xl p-0 overflow-hidden bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-gray-800">
+        <DialogContent className="max-w-sm md:max-w-md lg:max-w-lg w-[calc(100%-2rem)] rounded-2xl p-0 overflow-hidden bg-white dark:bg-[#2A1A11] border-gray-200 dark:border-gray-800">
           <DialogHeader className="p-5 pb-3">
             <DialogTitle className="text-lg font-bold text-gray-900 dark:text-white">
               Appearance
@@ -1287,12 +1287,12 @@ export default function Profile() {
                 setAppearanceOpen(false);
               }}
               className={`w-full p-3 rounded-xl border-2 transition-all flex items-center gap-3 ${appearance === "light"
-                  ? "border-primary bg-[#fdfafc] dark:border-[#b18da5] dark:bg-[#3c0f3d]/20"
+                  ? "border-primary bg-[#FFFAF4] dark:border-[#F4A47A] dark:bg-[#3A1C10]/20"
                   : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600"
                 }`}>
               <div
                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${appearance === "light"
-                    ? "border-primary bg-primary dark:border-[#b18da5] dark:bg-[#b18da5]"
+                    ? "border-primary bg-primary dark:border-[#F4A47A] dark:bg-[#F4A47A]"
                     : "border-gray-300 dark:border-gray-600"
                   }`}>
                 {appearance === "light" && (
@@ -1315,12 +1315,12 @@ export default function Profile() {
                 setAppearanceOpen(false);
               }}
               className={`w-full p-3 rounded-xl border-2 transition-all flex items-center gap-3 ${appearance === "dark"
-                  ? "border-primary dark:border-[#b18da5] bg-[#fdfafc] dark:bg-[#3c0f3d]/20"
+                  ? "border-primary dark:border-[#F4A47A] bg-[#FFFAF4] dark:bg-[#3A1C10]/20"
                   : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600"
                 }`}>
               <div
                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${appearance === "dark"
-                    ? "border-primary bg-primary dark:border-[#b18da5] dark:bg-[#b18da5]"
+                    ? "border-primary bg-primary dark:border-[#F4A47A] dark:bg-[#F4A47A]"
                     : "border-gray-300 dark:border-gray-600"
                   }`}>
                 {appearance === "dark" && (
@@ -1347,7 +1347,7 @@ export default function Profile() {
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="w-full max-w-sm rounded-2xl bg-white dark:bg-[#1a1a1a] shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+            className="w-full max-w-sm rounded-2xl bg-white dark:bg-[#2A1A11] shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
 
             {deleteStep === 1 && (
               <div className="p-5">

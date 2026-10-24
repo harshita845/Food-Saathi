@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react"
+import { logoMark } from "@/shared/components/brand/FoodSaathiLogo"
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@food/components/ui/button"
@@ -34,7 +35,7 @@ const carouselData = [
 
 export default function RestaurantWelcome() {
   const navigate = useNavigate()
-  const companyName = useCompanyName() || "CityFood"
+  const companyName = useCompanyName() || "Food Saathi"
   const [currentIndex, setCurrentIndex] = useState(0)
   const [direction, setDirection] = useState(0) // 1 for next, -1 for previous
   const [touchStart, setTouchStart] = useState(null)
@@ -219,28 +220,22 @@ export default function RestaurantWelcome() {
                   />
 
                   {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/80" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#3A1C10]/40 to-[#2C1A11]/90" />
 
                   {/* Text Overlay */}
                   <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 pb-16">
-                    {/* CityFood Brand */}
+                    {/* Food Saathi Brand */}
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.2, duration: 0.5 }}
                       className="mb-3"
                     >
-                      <h1
-                        className="text-3xl italic md:text-4xl tracking-wide font-extrabold text-white"
-                        style={{
-                          WebkitTextStroke: "0.5px white",
-                          textStroke: "0.5px white"
-                        }}
-                      >
-                        {companyName.toLowerCase()}
+                      <h1 className="font-display text-4xl md:text-5xl tracking-tight font-extrabold">
+                        <span className="text-white">Food</span><span className="text-[#FFC93C]">Saathi</span>
                       </h1>
-
-                      <div className="w-12 h-[0.1px] bg-white mt-0 mb-3" />
+                      <p className="font-script text-white/85 text-lg">Restaurant Partner</p>
+                      <div className="w-16 h-[3px] rounded-full bg-[#F2541B] mt-1 mb-3" />
                       {/* <p className="text-sm md:text-base text-white/90 font-medium">
                         restaurant partner
                       </p> */}
@@ -283,13 +278,14 @@ export default function RestaurantWelcome() {
 
       {/* Bottom Section - 30% height */}
       <div
-        className="bg-black px-6 py-6 md:py-8 flex flex-col justify-center gap-4"
+        className="relative overflow-hidden bg-[#2C1A11] px-6 py-6 md:py-8 flex flex-col justify-center gap-4"
         style={{ height: "30vh", minHeight: "240px" }}
       >
+        <img src={logoMark} alt="" aria-hidden="true" className="pointer-events-none absolute -right-6 -top-2 h-28 w-auto opacity-20" />
         {/* Login Button */}
         <Button
           onClick={handleLogin}
-          className="w-full bg-primary hover:bg-[#6a2f56] text-white font-bold py-6 md:py-7 text-base md:text-lg rounded-lg transition-colors shadow-lg"
+          className="fs-shine relative w-full fs-gradient hover:brightness-105 text-white font-bold py-6 md:py-7 text-base md:text-lg rounded-2xl transition-all fs-shadow"
         >
           Login
         </Button>
@@ -300,7 +296,7 @@ export default function RestaurantWelcome() {
           variant="outline"
           className="w-full border-2 border-primary text-primary hover:bg-primary hover:text-white font-bold py-6 md:py-7 text-base md:text-lg rounded-lg transition-all shadow-lg bg-transparent"
         >
-          Partner with CityFood
+          Partner with Food Saathi
         </Button> */}
 
         {/* Terms and Conditions */}

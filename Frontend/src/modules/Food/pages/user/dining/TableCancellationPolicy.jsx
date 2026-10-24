@@ -16,7 +16,7 @@ export default function TableCancellationPolicy() {
     };
 
     return (
-        <AnimatedPage className="min-h-screen bg-[#f8f9fa] pb-20">
+        <AnimatedPage className="min-h-screen bg-[#FFFAF4] pb-20">
             {/* Header */}
             <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100">
                 <div className="max-w-lg mx-auto px-4 h-16 flex items-center gap-4">
@@ -82,7 +82,7 @@ export default function TableCancellationPolicy() {
                         I Understand
                     </button>
                     <p className="text-center text-[10px] text-slate-400 font-bold mt-6 uppercase tracking-widest leading-loose">
-                        By using CityFood dining, you agree to our <br />
+                        By using Food Saathi dining, you agree to our <br />
                         <span className="text-slate-900 underline underline-offset-4">Terms of Service</span>
                     </p>
                 </div>

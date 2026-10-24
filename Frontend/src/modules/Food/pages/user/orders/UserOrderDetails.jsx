@@ -99,7 +99,7 @@ export default function UserOrderDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-[#1A0F09] flex items-center justify-center">
         <p className="text-gray-600 dark:text-gray-400 text-sm">Loading order details...</p>
       </div>
     )
@@ -107,7 +107,7 @@ export default function UserOrderDetails() {
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-[#1A0F09] flex items-center justify-center">
         <div className="text-center space-y-3">
           <p className="text-gray-700 dark:text-gray-300 text-sm font-medium">Order not found</p>
           <button
@@ -241,7 +241,7 @@ export default function UserOrderDetails() {
         debugWarn("Could not load business settings", err);
       }
 
-      const companyName = settings.companyName || "CityFood"
+      const companyName = settings.companyName || "Food Saathi"
 
       const primaryColor = [220, 38, 38]; // Red #DC2626
       const secondaryColor = [71, 85, 105]; // Slate 600
@@ -493,9 +493,9 @@ export default function UserOrderDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] pb-24 font-sans relative">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#1A0F09] pb-24 font-sans relative">
       {/* Header */}
-      <div className="bg-white dark:bg-[#121212] p-4 flex items-center sticky top-0 z-20 shadow-sm border-b dark:border-gray-800">
+      <div className="bg-white dark:bg-[#1E120B] p-4 flex items-center sticky top-0 z-20 shadow-sm border-b dark:border-gray-800">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -511,7 +511,7 @@ export default function UserOrderDetails() {
       {/* Scrollable Content */}
       <div className="p-4 space-y-4">
         {/* Status Card */}
-        <div className="bg-white dark:bg-[#121212] p-4 rounded-xl flex items-center gap-3 shadow-sm border dark:border-gray-800">
+        <div className="bg-white dark:bg-[#1E120B] p-4 rounded-xl flex items-center gap-3 shadow-sm border dark:border-gray-800">
           <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
             <ShoppingBag className="w-6 h-6 text-gray-600 dark:text-gray-400" />
           </div>
@@ -536,7 +536,7 @@ export default function UserOrderDetails() {
         </div>
 
         {/* Restaurant Info Card */}
-        <div className="bg-white dark:bg-[#121212] p-4 rounded-xl shadow-sm border dark:border-gray-800">
+        <div className="bg-white dark:bg-[#1E120B] p-4 rounded-xl shadow-sm border dark:border-gray-800">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <img
@@ -645,7 +645,7 @@ export default function UserOrderDetails() {
         </div>
 
         {/* Bill Summary Card */}
-        <div className="bg-white dark:bg-[#121212] rounded-xl shadow-sm overflow-hidden border dark:border-gray-800">
+        <div className="bg-white dark:bg-[#1E120B] rounded-xl shadow-sm overflow-hidden border dark:border-gray-800">
           <div className="p-4 flex justify-between items-center border-b border-gray-100 dark:border-gray-800">
             <div className="flex items-center gap-2">
               <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -736,7 +736,7 @@ export default function UserOrderDetails() {
         </div>
 
         {/* User & Delivery Details */}
-        <div className="bg-white dark:bg-[#121212] p-4 rounded-xl shadow-sm space-y-5 border dark:border-gray-800">
+        <div className="bg-white dark:bg-[#1E120B] p-4 rounded-xl shadow-sm space-y-5 border dark:border-gray-800">
           {/* User */}
           <div className="flex gap-3">
             <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
@@ -796,7 +796,7 @@ export default function UserOrderDetails() {
       </div>
 
       {/* Fixed Bottom Buttons */}
-      <div className="fixed bottom-0 w-full bg-white dark:bg-[#121212] border-t border-gray-200 dark:border-gray-800 p-4 flex gap-3 z-20">
+      <div className="fixed bottom-0 w-full bg-white dark:bg-[#1E120B] border-t border-gray-200 dark:border-gray-800 p-4 flex gap-3 z-20">
         <button
           type="button"
           onClick={() => handleReorder(order)}
@@ -808,7 +808,7 @@ export default function UserOrderDetails() {
         <button
           type="button"
           onClick={handleDownloadSummary}
-          className="flex-1 bg-white dark:bg-[#1a1a1a] border border-primary text-primary py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-primary/5 transition-colors"
+          className="flex-1 bg-white dark:bg-[#2A1A11] border border-primary text-primary py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-primary/5 transition-colors"
         >
           <Download className="w-4 h-4" />
           Invoice

@@ -7,6 +7,8 @@ import { toast } from "sonner"
 import { restaurantAPI } from "@food/api"
 import { useAppLogo } from "@food/hooks/useAppLogo"
 import logoNew from "@/assets/logo.png"
+import { SaathiWordmark, logoMark } from "@/shared/components/brand/FoodSaathiLogo"
+import { FloatingFoods } from "@/shared/components/brand/Motion"
 
 const DEFAULT_COUNTRY_CODE = "+91"
 
@@ -73,10 +75,12 @@ export default function RestaurantLogin() {
     }
   }
 
-  const primaryColor = "#7e3866"
+  const primaryColor = "#F2541B"
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col relative overflow-hidden font-['Poppins']">
+    <div className="min-h-screen fs-cream-bg dark:bg-[#1A0F09] flex flex-col relative overflow-hidden font-['Poppins']">
+      <div className="absolute inset-0 fs-dots opacity-50 pointer-events-none" />
+      <FloatingFoods items={["🍳", "🧑‍🍳", "🍲", "🥘"]} className="opacity-60" />
       {/* iOS Keyboard Push-up Fix */}
       <style>{`
         @supports (-webkit-touch-callout: none) {
@@ -116,36 +120,32 @@ export default function RestaurantLogin() {
         >
           {/* Logo & Header */}
           <div className="text-center mb-8">
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 200, damping: 20 }}
-              className="relative w-32 h-32 md:w-36 md:h-36 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden border-4 border-white mx-auto mb-4 bg-white"
-              style={{ borderRadius: '50%', WebkitMaskImage: '-webkit-radial-gradient(white, black)' }}
-            >
-              <img
-                src={logoUrl}
-                alt="Restaurant Logo"
-                className="w-full h-full object-contain p-2"
-              />
-            </motion.div>
+            <motion.img
+              src={logoUrl === logoNew ? logoMark : logoUrl}
+              alt="Food Saathi"
+              initial={{ x: -220, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 70, damping: 13 }}
+              className="mx-auto h-32 md:h-36 w-auto object-contain animate-fs-ride"
+            />
+            <div className="mt-1 flex justify-center"><SaathiWordmark size="text-4xl" /></div>
 
             <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="text-gray-400 dark:text-gray-500 font-bold text-xs uppercase tracking-[0.3em]"
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#3A1C10] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-[#FFC93C]"
             >
-              RESTAURANT PARTNER
+              <Store className="h-3 w-3" /> Restaurant Partner
             </motion.p>
           </div>
 
           {/* Login Card */}
-          <div className="bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-2xl rounded-[3rem] p-8 sm:p-12 shadow-[0_40px_80px_-20px_rgba(126,56,102,0.2)] dark:shadow-none border border-white/20 dark:border-gray-800 relative overflow-hidden">
+          <div className="bg-white/80 dark:bg-[#2A1A11]/80 backdrop-blur-2xl rounded-[3rem] p-8 sm:p-12 shadow-[0_40px_80px_-30px_rgba(201,60,14,0.35)] dark:shadow-none border border-white/20 dark:border-gray-800 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
 
             <div className="mb-10 text-center sm:text-left">
-              <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2 font-['Outfit'] tracking-tight">
+              <h2 className="font-display text-3xl font-extrabold text-gray-900 dark:text-white mb-2 tracking-tight">
                 Partner Login
               </h2>
               <div className="h-1 w-10 bg-primary rounded-full mb-3 hidden sm:block" />
@@ -169,7 +169,7 @@ export default function RestaurantLogin() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                     maxLength={10}
-                    className="block w-full pl-16 pr-6 py-4 bg-gray-50 dark:bg-gray-900/50 text-gray-900 dark:text-white border-2 border-transparent focus:border-primary/50 rounded-2xl outline-none transition-all placeholder:text-gray-300 font-bold text-lg shadow-sm"
+                    className="block w-full pl-16 pr-6 py-4 bg-[#FFF9F0] dark:bg-gray-900/50 text-gray-900 dark:text-white border-2 border-[#F1E2D0] focus:border-primary/50 rounded-2xl outline-none transition-all placeholder:text-gray-300 font-bold text-lg shadow-sm"
                     placeholder="00000 00000"
                   />
                 </div>
@@ -178,13 +178,13 @@ export default function RestaurantLogin() {
               <button
                 type="submit"
                 disabled={loading || phone.length < 10}
-                className="w-full py-4.5 bg-primary hover:bg-[#6a2f56] disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400 text-white rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group overflow-hidden relative"
+                className="fs-shine w-full py-4.5 fs-gradient hover:brightness-105 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group overflow-hidden relative"
               >
                 {loading ? (
                   <Loader2 className="w-6 h-6 animate-spin" />
                 ) : (
                   <>
-                    <span>Get Start</span>
+                    <span>Get Started</span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
@@ -199,7 +199,7 @@ export default function RestaurantLogin() {
 
           <div className="mt-8 text-center">
             <p className="text-[11px] text-gray-400 font-medium leading-relaxed max-w-[320px] mx-auto">
-              By continuing, you agree to CityFood's <br />
+              By continuing, you agree to Food Saathi's <br />
               <Link to="/food/restaurant/profile/terms" className="text-gray-900 dark:text-white font-bold hover:text-primary transition-colors">Terms of Service</Link> & <Link to="/food/restaurant/profile/privacy" className="text-gray-900 dark:text-white font-bold hover:text-primary transition-colors">Privacy Policy</Link>
             </p>
           </div>

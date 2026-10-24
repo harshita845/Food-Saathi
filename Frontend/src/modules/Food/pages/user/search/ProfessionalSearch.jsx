@@ -394,7 +394,7 @@ export default function ProfessionalSearch() {
                        </div>
                        <div className="flex-1 min-w-0 py-1 flex flex-col justify-between">
                           <div>
-                            <div className="text-[#a05485] text-[9px] font-black uppercase tracking-wider mb-1 px-2 py-0.5 bg-primary/5 rounded-full w-fit">
+                            <div className="text-[#E0470F] text-[9px] font-black uppercase tracking-wider mb-1 px-2 py-0.5 bg-primary/5 rounded-full w-fit">
                                {r.restaurantName}
                             </div>
                             <h3 className="text-base font-black text-gray-900 dark:text-white line-clamp-1 group-hover:text-primary transition-colors">{r.matchedDish || query}</h3>
@@ -475,7 +475,7 @@ export default function ProfessionalSearch() {
                                }
                             </div>
                          </div>
-                         <div className="text-[10px] font-black text-white bg-gradient-to-r from-primary to-[#a05485] px-3 py-1.5 rounded-full uppercase tracking-widest shadow-lg shadow-primary/20">
+                         <div className="text-[10px] font-black text-white bg-gradient-to-r from-primary to-[#E0470F] px-3 py-1.5 rounded-full uppercase tracking-widest shadow-lg shadow-primary/20">
                             View Menu
                          </div>
                       </div>
@@ -644,7 +644,7 @@ export default function ProfessionalSearch() {
                 </div>
 
                 {/* Center Button */}
-                <div className="relative z-10 w-36 h-36 rounded-full bg-gradient-to-b from-[#2a2a2a] to-[#0a0a0a] border-[4px] border-[#111] shadow-[0_0_0_2px_rgba(220,38,38,0.8),0_0_60px_rgba(220,38,38,0.3)] flex items-center justify-center">
+                <div className="relative z-10 w-36 h-36 rounded-full bg-gradient-to-b from-[#3A271C] to-[#1A0F09] border-[4px] border-[#111] shadow-[0_0_0_2px_rgba(220,38,38,0.8),0_0_60px_rgba(220,38,38,0.3)] flex items-center justify-center">
                   <motion.div
                     animate={{ scale: [1, 1.15, 1] }}
                     transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}

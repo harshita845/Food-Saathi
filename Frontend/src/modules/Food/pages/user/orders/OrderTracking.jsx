@@ -48,7 +48,7 @@ import { RESTAURANT_PIN_SVG, CUSTOMER_PIN_SVG, RIDER_BIKE_SVG } from "@food/cons
 // Fallback definitions in case imports fail at runtime or are shadowed
 const DEFAULT_CUSTOMER_PIN = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="#10B981"><path d="M12 2C8.13 2 5 5.13 5 9c0 4.17 4.42 9.92 6.24 12.11.4.48 1.08.48 1.52 0C14.58 18.92 19 13.17 19 9c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/><circle cx="12" cy="9" r="3" fill="#FFFFFF"/></svg>`;
 const SAFE_CUSTOMER_PIN = typeof CUSTOMER_PIN_SVG !== 'undefined' ? CUSTOMER_PIN_SVG : DEFAULT_CUSTOMER_PIN;
-const DEFAULT_RESTAURANT_PIN = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="#FF6B35"><path d="M12 2C8.13 2 5 5.13 5 9c0 4.17 4.42 9.92 6.24 12.11.4.48 1.08.48 1.52 0C14.58 18.92 19 13.17 19 9c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/><circle cx="12" cy="9" r="3" fill="#FFFFFF"/></svg>`;
+const DEFAULT_RESTAURANT_PIN = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="#FF6A2C"><path d="M12 2C8.13 2 5 5.13 5 9c0 4.17 4.42 9.92 6.24 12.11.4.48 1.08.48 1.52 0C14.58 18.92 19 13.17 19 9c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/><circle cx="12" cy="9" r="3" fill="#FFFFFF"/></svg>`;
 const SAFE_RESTAURANT_PIN = typeof RESTAURANT_PIN_SVG !== 'undefined' ? RESTAURANT_PIN_SVG : DEFAULT_RESTAURANT_PIN;
 
 const debugLog = (...args) => console.log('[OrderTracking]', ...args)
@@ -179,7 +179,7 @@ const DeliveryMap = memo(({ orderId, order, isVisible, fallbackCustomerCoords = 
   if (!isVisible || !orderId || !order || !effectiveRestaurantCoords || !effectiveCustomerCoords) {
     return (
       <div
-        className="relative h-[300px] sm:h-[450px] bg-gradient-to-b from-gray-100 to-gray-200 dark:from-[#0a0a0a] dark:to-[#1a1a1a]"
+        className="relative h-[300px] sm:h-[450px] bg-gradient-to-b from-gray-100 to-gray-200 dark:from-[#1A0F09] dark:to-[#2A1A11]"
       />
     );
   }
@@ -1424,7 +1424,7 @@ export default function OrderTracking() {
   // Loading state (moved after hooks)
   if (loading) {
     return (
-      <AnimatedPage className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] p-4">
+      <AnimatedPage className="min-h-screen bg-gray-50 dark:bg-[#1A0F09] p-4">
         <div className="max-w-lg mx-auto text-center py-20">
           <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600 dark:text-gray-400">Loading order details...</p>
@@ -1436,7 +1436,7 @@ export default function OrderTracking() {
   // Error state (moved after hooks)
   if (error || !order) {
     return (
-      <AnimatedPage className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] p-4">
+      <AnimatedPage className="min-h-screen bg-gray-50 dark:bg-[#1A0F09] p-4">
         <div className="max-w-lg mx-auto text-center py-20">
           <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 dark:text-gray-100">Order Not Found</h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">{error || 'The order you\'re looking for doesn\'t exist.'}</p>
@@ -1534,7 +1534,7 @@ export default function OrderTracking() {
     Boolean(order?.deliveredAt)
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-[#0a0a0a]">
+    <div className="min-h-screen bg-gray-100 dark:bg-[#1A0F09]">
       {/* Order Confirmed Modal */}
       <AnimatePresence>
         {showConfirmation && (
@@ -1542,7 +1542,7 @@ export default function OrderTracking() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-white dark:bg-[#1a1a1a] flex flex-col items-center justify-center"
+            className="fixed inset-0 z-50 bg-white dark:bg-[#2A1A11] flex flex-col items-center justify-center"
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
@@ -1717,7 +1717,7 @@ export default function OrderTracking() {
 
         {/* Dynamic Status Card */}
         <motion.div
-          className="bg-white dark:bg-[#1a1a1a] rounded-xl p-3 sm:p-4 shadow-sm"
+          className="bg-white dark:bg-[#2A1A11] rounded-xl p-3 sm:p-4 shadow-sm"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
@@ -1789,7 +1789,7 @@ export default function OrderTracking() {
         {/* Rating Logic: Show rating card after delivery */}
         {orderStatus === 'delivered' && !isOrderRated && (
           <motion.div
-            className="bg-white dark:bg-[#1a1a1a] rounded-xl p-6 shadow-sm border-2 border-primary/10 relative overflow-hidden group"
+            className="bg-white dark:bg-[#2A1A11] rounded-xl p-6 shadow-sm border-2 border-primary/10 relative overflow-hidden group"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.45 }}
@@ -1819,7 +1819,7 @@ export default function OrderTracking() {
         {/* Rating Summary: Show what the user rated */}
         {orderStatus === 'delivered' && isOrderRated && (
           <motion.div
-            className="bg-white dark:bg-[#1a1a1a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800"
+            className="bg-white dark:bg-[#2A1A11] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -1887,7 +1887,7 @@ export default function OrderTracking() {
         {/* Delivery Partner Info */}
         {order?.deliveryPartnerId && (
           <motion.div
-            className="bg-white dark:bg-[#1a1a1a] rounded-xl shadow-sm overflow-hidden"
+            className="bg-white dark:bg-[#2A1A11] rounded-xl shadow-sm overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.55 }}
@@ -1947,7 +1947,7 @@ export default function OrderTracking() {
 
         {/* Contact & Address Section */}
         <motion.div
-          className="bg-white dark:bg-[#1a1a1a] rounded-xl shadow-sm overflow-hidden"
+          className="bg-white dark:bg-[#2A1A11] rounded-xl shadow-sm overflow-hidden"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
@@ -2035,7 +2035,7 @@ export default function OrderTracking() {
 
         {/* Restaurant Section */}
         <motion.div
-          className="bg-white dark:bg-[#1a1a1a] rounded-xl shadow-sm overflow-hidden"
+          className="bg-white dark:bg-[#2A1A11] rounded-xl shadow-sm overflow-hidden"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.75 }}
@@ -2199,7 +2199,7 @@ export default function OrderTracking() {
 
       {/* Order Details Dialog */}
       <Dialog open={showOrderDetails} onOpenChange={setShowOrderDetails}>
-        <DialogContent className="max-w-[calc(100vw-32px)] sm:max-w-md bg-white dark:bg-[#1a1a1a] rounded-2xl p-0 overflow-hidden border-none outline-none">
+        <DialogContent className="max-w-[calc(100vw-32px)] sm:max-w-md bg-white dark:bg-[#2A1A11] rounded-2xl p-0 overflow-hidden border-none outline-none">
           <DialogHeader className="p-6 pb-4 border-b border-gray-100 dark:border-gray-800 pr-12">
             <div className="flex items-center justify-between">
               <DialogTitle className="text-xl font-bold text-gray-900">Order Details</DialogTitle>
@@ -2238,7 +2238,7 @@ export default function OrderTracking() {
               <div className="bg-orange-50/50 rounded-xl p-4 border border-orange-100 flex gap-3">
                 <MessageSquare className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-xs text-#55254b font-bold uppercase tracking-wider mb-1">Delivery Instructions</p>
+                  <p className="text-xs text-#C93C0E font-bold uppercase tracking-wider mb-1">Delivery Instructions</p>
                   <p className="text-sm text-gray-800 leading-relaxed font-medium capitalize">
                     {order.note}
                   </p>
@@ -2343,9 +2343,9 @@ export default function OrderTracking() {
 
       {/* Delivery Instructions Modal */}
       <Dialog open={isInstructionsModalOpen} onOpenChange={setIsInstructionsModalOpen}>
-        <DialogContent className="sm:max-w-md w-[95vw] rounded-3xl p-6 border-0 shadow-2xl bg-white dark:bg-[#1a1a1a] max-h-[90vh] overflow-y-auto z-[200]">
+        <DialogContent className="sm:max-w-md w-[95vw] rounded-3xl p-6 border-0 shadow-2xl bg-white dark:bg-[#2A1A11] max-h-[90vh] overflow-y-auto z-[200]">
           <DialogHeader className="mb-2">
-            <DialogTitle className="text-xl font-bold bg-gradient-to-r from-#55254b to-orange-400 bg-clip-text text-transparent">
+            <DialogTitle className="text-xl font-bold bg-gradient-to-r from-#C93C0E to-orange-400 bg-clip-text text-transparent">
               Delivery Instructions
             </DialogTitle>
           </DialogHeader>
@@ -2362,7 +2362,7 @@ export default function OrderTracking() {
             <Button 
               onClick={handleUpdateInstructions} 
               disabled={isUpdatingInstructions}
-              className="w-full bg-gradient-to-r from-primary to-amber-500 hover:from-#55254b hover:to-amber-600 text-white font-bold h-12 rounded-xl border-none"
+              className="w-full bg-gradient-to-r from-primary to-amber-500 hover:from-#C93C0E hover:to-amber-600 text-white font-bold h-12 rounded-xl border-none"
             >
               {isUpdatingInstructions ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Save Instructions"}
             </Button>
@@ -2372,7 +2372,7 @@ export default function OrderTracking() {
 
       {/* Rating & Feedback Modal */}
       <Dialog open={showRatingModal} onOpenChange={setShowRatingModal}>
-        <DialogContent className="sm:max-w-md w-[95vw] rounded-3xl p-6 border-0 shadow-2xl bg-white dark:bg-[#1a1a1a] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-md w-[95vw] rounded-3xl p-6 border-0 shadow-2xl bg-white dark:bg-[#2A1A11] max-h-[90vh] overflow-y-auto">
           <DialogHeader className="mb-2">
             <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <Star className="w-6 h-6 text-primary fill-primary" />

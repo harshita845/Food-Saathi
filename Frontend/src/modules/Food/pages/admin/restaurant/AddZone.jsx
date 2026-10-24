@@ -288,7 +288,7 @@ export default function AddZone() {
           icon: {
             path: google.maps.SymbolPath.CIRCLE,
             scale: 8,
-            fillColor: "#9333ea",
+            fillColor: "#C93C0E",
             fillOpacity: 1,
             strokeColor: "#ffffff",
             strokeWeight: 2,
@@ -319,9 +319,9 @@ export default function AddZone() {
     if (ordered.length >= 2) {
       polygonRef.current = new google.maps.Polygon({
         paths: ordered,
-        fillColor: "#9333ea",
+        fillColor: "#C93C0E",
         fillOpacity: 0.35,
-        strokeColor: "#9333ea",
+        strokeColor: "#C93C0E",
         strokeWeight: 2,
         clickable: false,
         editable: false,
@@ -352,10 +352,10 @@ export default function AddZone() {
 
     const polygon = new google.maps.Polygon({
       paths: path,
-      strokeColor: "#9333ea",
+      strokeColor: "#C93C0E",
       strokeOpacity: 0.8,
       strokeWeight: 3,
-      fillColor: "#9333ea",
+      fillColor: "#C93C0E",
       fillOpacity: 0.35,
       editable: true,
       draggable: false,
@@ -545,10 +545,10 @@ export default function AddZone() {
 
       const polygon = new google.maps.Polygon({
         paths: path,
-        strokeColor: "#3b82f6",
+        strokeColor: "#FF7A3D",
         strokeOpacity: 0.6,
         strokeWeight: 2,
-        fillColor: "#3b82f6",
+        fillColor: "#FF7A3D",
         fillOpacity: 0.15,
         editable: false,
         draggable: false,

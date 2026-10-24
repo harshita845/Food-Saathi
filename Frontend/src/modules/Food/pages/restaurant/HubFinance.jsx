@@ -462,7 +462,7 @@ export default function HubFinance() {
             border: 1px solid #000;
           }
           .orders-table th {
-            background-color: #f2f2f2;
+            background-color: #F8EEE3;
             padding: 12px 8px;
             text-align: left;
             border: 1px solid #000;

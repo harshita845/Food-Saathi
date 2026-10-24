@@ -87,7 +87,7 @@ export default function VerificationPending() {
   }, [navigate, isRejected])
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] px-6 py-10 font-['Poppins']">
+    <div className="min-h-screen bg-[#FFFAF4] px-6 py-10 font-['Poppins']">
       <div className="mx-auto flex min-h-[calc(100vh-80px)] max-w-md flex-col justify-center">
         <div className="rounded-[3rem] border border-slate-200 bg-white p-10 shadow-[0_40px_100px_rgba(15,23,42,0.1)]">
           <div className="mb-8 flex items-center justify-center">
@@ -162,7 +162,7 @@ export default function VerificationPending() {
               </Button>
             ) : (
               <Button
-                className="h-14 w-full rounded-2xl bg-primary text-white font-bold text-base shadow-xl shadow-primary/20 hover:bg-[#6a2f56] transition-all active:scale-[0.98]"
+                className="h-14 w-full rounded-2xl bg-primary text-white font-bold text-base shadow-xl shadow-primary/20 hover:bg-[#C93C0E] transition-all active:scale-[0.98]"
                 onClick={() => {
                   clearRestaurantPendingPhone()
                   navigate("/food/restaurant/login", { replace: true })

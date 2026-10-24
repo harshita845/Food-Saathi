@@ -258,7 +258,7 @@ export default function ProductDetail() {
 
   if (!product) {
     return (
-      <AnimatedPage className="min-h-screen bg-gradient-to-b from-yellow-50/30 via-white to-orange-50/20 dark:from-[#0a0a0a] dark:via-[#0a0a0a] dark:to-[#0a0a0a]">
+      <AnimatedPage className="min-h-screen bg-gradient-to-b from-yellow-50/30 via-white to-orange-50/20 dark:from-[#1A0F09] dark:via-[#1A0F09] dark:to-[#1A0F09]">
         <div className="max-w-4xl mx-auto px-4 py-20 text-center">
           <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
           <Link to="/user">
@@ -270,7 +270,7 @@ export default function ProductDetail() {
   }
 
   return (
-    <AnimatedPage className="min-h-screen bg-gradient-to-b from-yellow-50/30 via-white to-orange-50/20 dark:from-[#0a0a0a] dark:via-[#0a0a0a] dark:to-[#0a0a0a]">
+    <AnimatedPage className="min-h-screen bg-gradient-to-b from-yellow-50/30 via-white to-orange-50/20 dark:from-[#1A0F09] dark:via-[#1A0F09] dark:to-[#1A0F09]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12">
 
         {/* Hero Image Section */}
@@ -301,7 +301,7 @@ export default function ProductDetail() {
           </div>
 
           {/* Product Info Card Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-[#1a1a1a] rounded-t-3xl p-4 sm:p-5 md:p-6 lg:p-8">
+          <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-[#2A1A11] rounded-t-3xl p-4 sm:p-5 md:p-6 lg:p-8">
             <div className="flex items-start gap-4 md:gap-6 lg:gap-8">
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between mb-2 md:mb-3">
@@ -364,7 +364,7 @@ export default function ProductDetail() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-10 w-10 hover:bg-[#F9F9FB]"
+                      className="h-10 w-10 hover:bg-[#FFF9F0]"
                       onClick={handleDecrease}
                     >
                       <Minus className="h-5 w-5" />
@@ -375,7 +375,7 @@ export default function ProductDetail() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-10 w-10 hover:bg-[#F9F9FB]"
+                      className="h-10 w-10 hover:bg-[#FFF9F0]"
                       onClick={handleIncrease}
                     >
                       <Plus className="h-5 w-5" />
@@ -586,7 +586,7 @@ export default function ProductDetail() {
                       </Button>
                       <Button
                         type="submit"
-                        className="flex-1 bg-gradient-to-r bg-primary hover:from-yellow-600 hover:to-#55254b"
+                        className="flex-1 bg-gradient-to-r bg-primary hover:from-yellow-600 hover:to-#C93C0E"
                       >
                         <Send className="h-4 w-4 mr-2" />
                         Submit Review

@@ -8,7 +8,7 @@ function RestaurantGridSkeleton() {
     <>
       {Array.from({ length: 6 }).map((_, index) => (
         <div key={`skel-card-${index}`} className="h-full">
-          <div className="overflow-hidden gap-0 border-0 dark:border-gray-800 bg-white dark:bg-[#1a1a1a] rounded-[28px] flex flex-col h-full w-full relative shadow-sm border border-orange-50 dark:border-orange-900/10 shadow-[0_4px_20px_rgba(249,115,22,0.04)]">
+          <div className="overflow-hidden gap-0 border-0 dark:border-gray-800 bg-white dark:bg-[#2A1A11] rounded-[28px] flex flex-col h-full w-full relative shadow-sm border border-orange-50 dark:border-orange-900/10 shadow-[0_4px_20px_rgba(249,115,22,0.04)]">
             <div className="relative h-48 sm:h-56 md:h-60 lg:h-64 xl:h-72 bg-[#f7f5f2] dark:bg-zinc-800 animate-pulse flex flex-col items-center justify-center">
               <ShopPlaceholder />
             </div>
@@ -67,7 +67,7 @@ function RestaurantGrid({
         ))}
       </div>
 
-      {/* End of list CityFood branding */}
+      {/* End of list Food Saathi branding */}
       <div className="pt-10 pb-4 flex flex-col items-center justify-center select-none">
         <div className="flex items-center gap-4 w-full max-w-xs sm:max-w-sm">
           <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 dark:via-zinc-800 to-gray-300 dark:to-zinc-700" />
@@ -75,7 +75,7 @@ function RestaurantGrid({
             <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-white dark:bg-zinc-900 border border-gray-200/90 dark:border-zinc-800 shadow-sm flex items-center justify-center p-2.5 overflow-hidden ring-4 ring-gray-100 dark:ring-zinc-800/60 transition-transform duration-300 hover:scale-105">
               <img
                 src={logoUrl}
-                alt="CityFood"
+                alt="Food Saathi"
                 className="h-full w-full object-contain"
                 onError={(e) => {
                   e.currentTarget.src = "/logo.png";

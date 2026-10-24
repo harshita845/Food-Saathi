@@ -7,7 +7,7 @@ import './shared/styles/global.css'
 
 const NATIVE_LAST_ROUTE_KEY = 'native_last_route'
 
-// ─── Quick-spicy Food Module Initialization ───────────────────────────────────
+// ─── Food Saathi Module Initialization ───────────────────────────────────
 
 // Load food module business settings (favicon, title) — non-critical
 import('./modules/Food/utils/businessSettings.js')
@@ -19,12 +19,12 @@ import('./modules/Food/utils/themeSettings.js')
   .then(({ applyDynamicTheme }) => applyDynamicTheme())
   .catch(() => { /* Silently fail */ })
 
-// Apply saved theme (Default to dark for User App)
+// Apply saved theme (Food Saathi defaults to the light cream theme everywhere)
 const isUserApp = !window.location.pathname.includes('/admin') && !window.location.pathname.includes('/restaurant') && !window.location.pathname.includes('/delivery');
 if (isUserApp) {
   document.documentElement.classList.add('user-app');
 }
-const defaultTheme = isUserApp ? 'dark' : 'light';
+const defaultTheme = 'light';
 const savedTheme = localStorage.getItem('appTheme') || defaultTheme;
 if (savedTheme === 'dark') {
   document.documentElement.classList.add('dark')

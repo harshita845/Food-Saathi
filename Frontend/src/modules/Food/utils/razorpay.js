@@ -74,7 +74,7 @@ export const initRazorpayPayment = async (options) => {
       amount: options.amount,
       currency: options.currency || 'INR',
       order_id: options.order_id,
-      name: options.name || 'CityFood',
+      name: options.name || 'Food Saathi',
       description: options.description || 'Order Payment',
       image: options.image || `${window.location.origin}/logo.png`,
       prefill: {
@@ -84,7 +84,7 @@ export const initRazorpayPayment = async (options) => {
       },
       notes: options.notes || {},
       theme: {
-        color: '#E23744'
+        color: '#F2541B'
       },
       handler: function(response) {
         if (options.handler) {

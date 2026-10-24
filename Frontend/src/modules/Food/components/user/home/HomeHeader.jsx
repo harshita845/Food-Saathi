@@ -117,9 +117,13 @@ export default function HomeHeader({
             className="flex items-center gap-2 cursor-pointer group min-w-0 flex-1"
             onClick={handleLocationClick}
           >
-            <div className="flex-shrink-0 flex items-center justify-center">
-              <MapPin className="h-[26px] w-[26px] text-[#e11d48]" strokeWidth={2.5} />
-            </div>
+            <motion.div
+              className="flex-shrink-0 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/25"
+              animate={{ y: [0, -2, 0] }}
+              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <MapPin className="h-[22px] w-[22px] text-[#FFC93C] fill-[#FFC93C]/30" strokeWidth={2.5} />
+            </motion.div>
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1">
                 <span className="text-[15px] sm:text-[16px] font-bold text-white truncate tracking-tight">
@@ -182,10 +186,10 @@ export default function HomeHeader({
  
             <Popover>
               <PopoverTrigger asChild>
-                <div className="h-8 w-8 relative flex items-center justify-center rounded-full bg-white/20 backdrop-blur-md border border-white/20 cursor-pointer active:scale-90 transition-all">
-                  <Bell className="h-4 w-4 text-white" />
+                <div className="h-10 w-10 relative flex items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/25 cursor-pointer active:scale-90 transition-all">
+                  <Bell className="h-[18px] w-[18px] text-white" />
                   {unreadCount > 0 && (
-                    <span className={`absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full border animate-pulse ${vegMode ? 'bg-orange-400 border-[#00b09b]' : 'bg-orange-400 border-primary'}`} />
+                    <span className={`absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full border animate-pulse ${vegMode ? 'bg-[#FFC93C] border-[#00b09b]' : 'bg-[#FFC93C] border-primary'}`} />
                   )}
                 </div>
               </PopoverTrigger>
@@ -237,11 +241,11 @@ export default function HomeHeader({
       </div>
 
       {/* Sticky Search Bar and Veg Toggle */}
-      <div id="home-header-search-row" className={`relative sticky z-[60] px-1 pb-2 transition-all duration-300 pointer-events-none ${pushSearchDown ? 'mt-[252px] sm:mt-[258px]' : 'mt-2 sm:mt-3'} ${isCategoryStuck ? 'top-0 pt-2 bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-2xl' : 'top-2 pt-2 bg-transparent'}`}>
+      <div id="home-header-search-row" className={`relative sticky z-[60] px-1 pb-2 transition-all duration-300 pointer-events-none ${pushSearchDown ? 'mt-[252px] sm:mt-[258px]' : 'mt-2 sm:mt-3'} ${isCategoryStuck ? 'top-0 pt-2 bg-white/95 dark:bg-[#1A0F09]/95 backdrop-blur-2xl' : 'top-2 pt-2 bg-transparent'}`}>
         <div className="flex items-center gap-2.5 w-[96%] mx-auto pointer-events-auto">
           {/* Search Bar */}
           <div
-            className="relative bg-white/70 dark:bg-[#1a1a1a]/70 backdrop-blur-md rounded-2xl flex items-center px-3 shadow-[0_8px_24px_rgba(0,0,0,0.08)] border border-white/50 dark:border-white/10 cursor-pointer active:scale-[0.98] transition-all duration-300 flex-1 h-11"
+            className="relative bg-white/95 dark:bg-[#2A1A11]/80 backdrop-blur-md rounded-2xl flex items-center px-3 shadow-[0_10px_28px_-12px_rgba(58,28,16,0.45)] border border-white/70 dark:border-white/10 cursor-pointer active:scale-[0.98] transition-all duration-300 flex-1 h-11"
             onClick={handleSearchFocus}
           >
             <Search className="h-[18px] w-[18px] text-primary mr-2 shrink-0" strokeWidth={2.5} />
@@ -275,7 +279,7 @@ export default function HomeHeader({
 
           {/* Veg Toggle (Stacked Pill Switch) */}
           <div 
-            className="flex flex-col items-center justify-center cursor-pointer active:scale-95 transition-transform duration-300 shrink-0 px-2 bg-white/70 dark:bg-[#1a1a1a]/70 backdrop-blur-md rounded-2xl py-1 shadow-[0_8px_24px_rgba(0,0,0,0.08)] border border-white/50 dark:border-white/10"
+            className="flex flex-col items-center justify-center cursor-pointer active:scale-95 transition-transform duration-300 shrink-0 px-2 bg-white/95 dark:bg-[#2A1A11]/80 backdrop-blur-md rounded-2xl py-1 shadow-[0_10px_28px_-12px_rgba(58,28,16,0.45)] border border-white/50 dark:border-white/10"
             onClick={() => handleVegModeChange?.(!vegMode)}
           >
             <div className="text-[9px] font-black leading-tight text-gray-700 dark:text-gray-200 tracking-wider text-center drop-shadow-sm">

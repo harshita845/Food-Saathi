@@ -1,25 +1,24 @@
-@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@500;600;700;800&family=Sora:wght@600;700&display=swap");
 
 :root {
-  --dv-primary: #15498b;
-  --dv-primary-strong: #000000;
-  --dv-primary-soft: #e7effa;
-  --dv-accent: #000000;
+  --dv-primary: #F2541B;
+  --dv-primary-strong: #C93C0E;
+  --dv-primary-soft: #FFF1E6;
+  --dv-accent: #3A1C10;
   --dv-surface: #ffffff;
-  --dv-bg: #eef3fb;
-  --dv-text: #0f1724;
-  --dv-muted: #4f5f77;
-  --dv-border: #d1dceb;
+  --dv-bg: #FFF6EC;
+  --dv-text: #3A1C10;
+  --dv-muted: #7A5E4B;
+  --dv-border: #F1DCC6;
 }
 
 .delivery-v2-theme {
   background:
-    radial-gradient(900px 420px at 92% -5%, #d5e3f7 0%, transparent 52%),
-    radial-gradient(760px 360px at -8% 0%, #e7edf8 0%, transparent 58%),
-    linear-gradient(180deg, #f7faff 0%, #edf2fb 100%);
+    radial-gradient(900px 420px at 92% -5%, rgba(255, 165, 31, 0.22) 0%, transparent 52%),
+    radial-gradient(760px 360px at -8% 0%, rgba(242, 84, 27, 0.12) 0%, transparent 58%),
+    linear-gradient(180deg, #FFFAF3 0%, #FDF1E2 100%);
   min-height: 100vh;
   color: var(--dv-text);
-  font-family: "Nunito Sans", "Outfit", "Poppins", sans-serif;
+  font-family: "Poppins", "Outfit", sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -32,7 +31,7 @@
 .delivery-v2-theme .font-poppins,
 .delivery-v2-theme [class~="font-['Poppins']"],
 .delivery-v2-theme [class~="font-\[\'Poppins\'\]"] {
-  font-family: "Nunito Sans", "Outfit", sans-serif !important;
+  font-family: "Poppins", "Outfit", sans-serif !important;
 }
 
 .delivery-v2-theme h1,
@@ -41,7 +40,7 @@
 .delivery-v2-theme h4,
 .delivery-v2-theme .font-black,
 .delivery-v2-theme .font-extrabold {
-  font-family: "Sora", "Nunito Sans", sans-serif;
+  font-family: "Baloo 2", "Poppins", sans-serif;
   letter-spacing: 0.01em;
 }
 
@@ -53,7 +52,7 @@
 
 .delivery-v2-theme [class~="rounded-2xl"],
 .delivery-v2-theme [class~="rounded-3xl"] {
-  box-shadow: 0 10px 28px -18px rgba(17, 39, 67, 0.24);
+  box-shadow: 0 10px 28px -18px rgba(58, 28, 16, 0.22);
   border-color: var(--dv-border);
 }
 
@@ -63,12 +62,12 @@
   background-color: var(--dv-bg) !important;
 }
 
-.delivery-v2-theme [class~="bg-[#121212]"] {
+.delivery-v2-theme [class~="bg-[#1E120B]"] {
   background-color: var(--dv-primary) !important;
 }
 
 .delivery-v2-theme [class~="text-primary"],
-.delivery-v2-theme [class~="text-[#EB590E]"],
+.delivery-v2-theme [class~="text-[#F2541B]"],
 .delivery-v2-theme [class~="text-[#10B981]"],
 .delivery-v2-theme .text-blue-500,
 .delivery-v2-theme .text-blue-600,
@@ -113,7 +112,7 @@
 .delivery-v2-theme .hover\:bg-cyan-600:hover,
 .delivery-v2-theme .hover\:bg-indigo-600:hover,
 .delivery-v2-theme [class~="hover:bg-[#00A055]"]:hover,
-.delivery-v2-theme [class~="hover:bg-[#6a2f56]"]:hover {
+.delivery-v2-theme [class~="hover:bg-[#C93C0E]"]:hover {
   background-color: var(--dv-primary-strong) !important;
 }
 
@@ -198,19 +197,28 @@
   transition: all 0.2s ease;
 }
 
+.delivery-v2-theme input:not([class~="border-0"]),
+.delivery-v2-theme textarea,
+.delivery-v2-theme select {
+  border-color: var(--dv-border) !important;
+}
+
 .delivery-v2-theme input,
 .delivery-v2-theme textarea,
 .delivery-v2-theme select {
-  border-color: #e8dee7 !important;
   background-color: #fff !important;
   color: var(--dv-text) !important;
 }
 
-.delivery-v2-theme input:focus,
+.delivery-v2-theme input:not([class~="border-0"]):focus,
 .delivery-v2-theme textarea:focus,
 .delivery-v2-theme select:focus {
   border-color: color-mix(in srgb, var(--dv-primary) 55%, #fff) !important;
-  box-shadow: 0 0 0 4px rgb(21 73 139 / 0.15) !important;
+  box-shadow: 0 0 0 4px rgb(242 84 27 / 0.15) !important;
+}
+
+.delivery-v2-theme input[class~="border-0"]:focus {
+  box-shadow: none !important;
 }
 
 @media (max-width: 900px) {

@@ -11,7 +11,7 @@ const SERVICES = [
     image: "/super-app/food.png",
     path: "/food/user",
     icon: UtensilsCrossed,
-    color: "from-[#FF4D4D] to-[#CB202D]",
+    color: "from-[#FF4D4D] to-[#C93C0E]",
     badge: "Fast",
     badgeIcon: "⚡"
   },
@@ -84,7 +84,7 @@ export default function SuperAppPortal() {
               repeat: Infinity,
               ease: "linear"
             }}
-            className="absolute w-64 h-64 bg-[#CB202D]/5 rounded-full blur-3xl"
+            className="absolute w-64 h-64 bg-[#C93C0E]/5 rounded-full blur-3xl"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -117,7 +117,7 @@ export default function SuperAppPortal() {
           className="text-5xl md:text-7xl font-black text-[#1A202C] tracking-tight leading-none"
         >
           Welcome to <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-[#a64a85] to-primary bg-[length:200%_auto] animate-gradient block mt-2">CityFood</span>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-[#a64a85] to-primary bg-[length:200%_auto] animate-gradient block mt-2">Food Saathi</span>
         </motion.h1>
 
         <motion.p
@@ -244,7 +244,7 @@ export default function SuperAppPortal() {
       <div className="mt-16 flex flex-col items-center gap-3 opacity-50">
         <div className="flex items-center gap-1.5 grayscale">
           <ShieldCheck className="w-4 h-4" />
-          <span className="text-[10px] font-black uppercase tracking-widest">Secure by CityFood</span>
+          <span className="text-[10px] font-black uppercase tracking-widest">Secure by Food Saathi</span>
         </div>
       </div>
     </div>

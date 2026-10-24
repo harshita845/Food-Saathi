@@ -118,7 +118,7 @@ export default function ReferEarn() {
   };
 
   return (
-    <AnimatedPage className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a]">
+    <AnimatedPage className="min-h-screen bg-[#FBF3EA] dark:bg-[#1A0F09]">
       <div className="max-w-md mx-auto px-4 py-4 pb-24">
         <div className="flex items-center gap-3 mb-5">
           <Link to="/user/profile">
@@ -129,7 +129,7 @@ export default function ReferEarn() {
           <h1 className="text-xl font-bold text-black dark:text-white">Refer & Earn</h1>
         </div>
 
-        <Card className="bg-white dark:bg-[#1a1a1a] rounded-2xl border-0 dark:border-gray-800 shadow-sm mb-3">
+        <Card className="bg-white dark:bg-[#2A1A11] rounded-2xl border-0 dark:border-gray-800 shadow-sm mb-3">
           <CardContent className="p-4">
             <p className="text-sm text-gray-600 dark:text-gray-300">
               Invite friends and earn when they sign up.
@@ -150,7 +150,7 @@ export default function ReferEarn() {
               type="button"
               onClick={handleShare}
               disabled={!referralLink}
-              className="w-full mt-3 h-11 rounded-xl bg-primary hover:bg-[#d84f0a]"
+              className="w-full mt-3 h-11 rounded-xl bg-primary hover:bg-[#C93C0E]"
             >
               <Share2 className="h-4 w-4 mr-2" />
               Share Invite
@@ -159,7 +159,7 @@ export default function ReferEarn() {
         </Card>
 
         <div className="grid grid-cols-3 gap-2 mb-3">
-          <Card className="border-0 shadow-sm bg-white dark:bg-[#1a1a1a]">
+          <Card className="border-0 shadow-sm bg-white dark:bg-[#2A1A11]">
             <CardContent className="p-3">
               <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-[11px]">
                 <Users className="h-3.5 w-3.5" />
@@ -168,7 +168,7 @@ export default function ReferEarn() {
               <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">{stats.totalInvited}</p>
             </CardContent>
           </Card>
-          <Card className="border-0 shadow-sm bg-white dark:bg-[#1a1a1a]">
+          <Card className="border-0 shadow-sm bg-white dark:bg-[#2A1A11]">
             <CardContent className="p-3">
               <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-[11px]">
                 <CircleCheck className="h-3.5 w-3.5" />
@@ -177,7 +177,7 @@ export default function ReferEarn() {
               <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">{stats.creditedCount}</p>
             </CardContent>
           </Card>
-          <Card className="border-0 shadow-sm bg-white dark:bg-[#1a1a1a]">
+          <Card className="border-0 shadow-sm bg-white dark:bg-[#2A1A11]">
             <CardContent className="p-3">
               <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-[11px]">
                 <Wallet className="h-3.5 w-3.5" />
@@ -188,7 +188,7 @@ export default function ReferEarn() {
           </Card>
         </div>
 
-        <Card className="bg-white dark:bg-[#1a1a1a] rounded-2xl border-0 dark:border-gray-800 shadow-sm">
+        <Card className="bg-white dark:bg-[#2A1A11] rounded-2xl border-0 dark:border-gray-800 shadow-sm">
           <CardContent className="p-4">
             <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Invited Friends Status</h2>
 

@@ -79,12 +79,12 @@ export const exportRestaurantsToPDF = (restaurants, filename = "restaurants") =>
           }
           h1 { 
             text-align: center; 
-            color: #1e293b;
+            color: #3E2A1F;
             margin-bottom: 10px;
           }
           p { 
             text-align: center; 
-            color: #64748b;
+            color: #8C705B;
             margin-bottom: 20px;
           }
           table { 
@@ -99,15 +99,15 @@ export const exportRestaurantsToPDF = (restaurants, filename = "restaurants") =>
             text-align: left; 
           }
           th { 
-            background-color: #3b82f6; 
+            background-color: #FF7A3D; 
             color: white; 
             font-weight: bold; 
           }
           tr:nth-child(even) { 
-            background-color: #f9fafb; 
+            background-color: #FFFAF4; 
           }
           tr:hover { 
-            background-color: #f1f5f9; 
+            background-color: #FBF1E6; 
           }
           @media print { 
             body { 

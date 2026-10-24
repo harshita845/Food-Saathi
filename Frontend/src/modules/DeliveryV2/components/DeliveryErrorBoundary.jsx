@@ -22,7 +22,7 @@ class DeliveryErrorBoundary extends Component {
     if (!this.state.hasError) return this.props.children;
 
     return (
-      <div className="delivery-v2-theme flex min-h-screen items-center justify-center bg-[#f8f9fa] px-6 text-center">
+      <div className="delivery-v2-theme flex min-h-screen items-center justify-center bg-[#FFFAF4] px-6 text-center">
         <div className="w-full max-w-sm rounded-3xl bg-white p-7 shadow-xl">
           <h1 className="text-xl font-black text-gray-950">Delivery panel could not load</h1>
           <p className="mt-2 text-sm font-medium text-gray-500">

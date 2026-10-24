@@ -38,7 +38,7 @@ export default function PromoRow({ handleVegModeChange, navigate, isVegMode, tog
   ];
 
   return (
-    <div className="grid grid-cols-3 gap-3 px-4 pt-4 pb-6 bg-white dark:bg-[#0a0a0a]">
+    <div className="grid grid-cols-3 gap-3 px-4 pt-4 pb-6 bg-white dark:bg-[#1A0F09]">
       {promoCardsData.map((promo, idx) => (
         <div
           key={idx}

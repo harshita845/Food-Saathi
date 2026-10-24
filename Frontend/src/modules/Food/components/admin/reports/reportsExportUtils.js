@@ -79,7 +79,7 @@ export const exportReportsToPDF = (data, headers, filename = "report", title = "
         body { font-family: Arial, sans-serif; margin: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 10px; }
-        th { background-color: #f2f2f2; font-weight: bold; }
+        th { background-color: #F8EEE3; font-weight: bold; }
         tr:nth-child(even) { background-color: #f9f9f9; }
         h1 { text-align: center; }
       </style>
@@ -221,7 +221,7 @@ export const exportTransactionReportToPDF = (transactions, filename = "transacti
         body { font-family: Arial, sans-serif; margin: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 8px; }
         th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
-        th { background-color: #f2f2f2; font-weight: bold; }
+        th { background-color: #F8EEE3; font-weight: bold; }
         tr:nth-child(even) { background-color: #f9f9f9; }
         h1 { text-align: center; }
       </style>

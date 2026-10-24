@@ -96,7 +96,7 @@ export default function Cart() {
     debugError('? CartProvider not found. Make sure Cart component is rendered within UserLayout.');
     // Return early with error message
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f5f5f5] dark:bg-[#0a0a0a]">
+      <div className="min-h-screen flex items-center justify-center bg-[#FBF3EA] dark:bg-[#1A0F09]">
         <div className="text-center p-8">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Cart Error</h2>
           <p className="text-gray-600 dark:text-gray-400">
@@ -2137,8 +2137,8 @@ export default function Cart() {
   // Empty cart state - but don't show if order success or placing order modal is active
   if (cart.length === 0 && !showOrderSuccess && !showPlacingOrder && !showSavingsCongrats) {
     return (
-      <AnimatedPage className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a]">
-        <div className="bg-white dark:bg-[#1a1a1a] border-b dark:border-gray-800 sticky top-0 z-10">
+      <AnimatedPage className="min-h-screen bg-gray-50 dark:bg-[#1A0F09]">
+        <div className="bg-white dark:bg-[#2A1A11] border-b dark:border-gray-800 sticky top-0 z-10">
           <div className="flex items-center gap-3 px-4 py-3">
             <Button 
               variant="ghost" 
@@ -2166,9 +2166,9 @@ export default function Cart() {
   }
 
   return (
-    <div className="relative min-h-screen bg-slate-50 dark:bg-[#0a0a0a]">
+    <div className="relative min-h-screen bg-slate-50 dark:bg-[#1A0F09]">
       {/* Header - Sticky at top */}
-      <div className="bg-white dark:bg-[#1a1a1a] border-b dark:border-gray-800 sticky top-0 z-20 flex-shrink-0">
+      <div className="bg-white dark:bg-[#2A1A11] border-b dark:border-gray-800 sticky top-0 z-20 flex-shrink-0">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between px-3 md:px-6 py-2 md:py-3">
             <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -2218,7 +2218,7 @@ export default function Cart() {
             {/* Main Cart Content */}
             <div className="space-y-2 md:space-y-4">
               {/* Cart Items */}
-              <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-4 md:py-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800">
+              <div className="bg-white dark:bg-[#2A1A11] px-4 md:px-6 py-4 md:py-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800">
                 <div className="space-y-3 md:space-y-4">
                   <div className="space-y-6">
                     {cart.map((item, index) => {
@@ -2366,7 +2366,7 @@ export default function Cart() {
 
 
               {/* Note & Cutlery */}
-              <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-4 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 flex flex-col sm:flex-row gap-3">
+              <div className="bg-white dark:bg-[#2A1A11] px-4 md:px-6 py-4 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 flex flex-col sm:flex-row gap-3">
                 <div className="flex-1 flex flex-col gap-2">
                   <button
                     onClick={() => setShowRestaurantNoteInput(!showRestaurantNoteInput)}
@@ -2389,7 +2389,7 @@ export default function Cart() {
 
               {/* Restaurant Note Input */}
               {showRestaurantNoteInput && (
-                <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-3 md:py-4 rounded-lg md:rounded-xl border border-slate-100 dark:border-gray-800">
+                <div className="bg-white dark:bg-[#2A1A11] px-4 md:px-6 py-3 md:py-4 rounded-lg md:rounded-xl border border-slate-100 dark:border-gray-800">
                   <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
                     Restaurant instructions
                   </p>
@@ -2397,7 +2397,7 @@ export default function Cart() {
                     value={restaurantNote}
                     onChange={(e) => setRestaurantNote(e.target.value)}
                     placeholder="Eg. Don't add onions, make it extra spicy, etc."
-                     className="w-full border border-gray-200 dark:border-gray-700 rounded-lg md:rounded-xl p-3 md:p-4 text-sm md:text-base resize-none h-20 md:h-24 focus:outline-none focus:border-primary dark:focus:border-primary bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100"
+                     className="w-full border border-gray-200 dark:border-gray-700 rounded-lg md:rounded-xl p-3 md:p-4 text-sm md:text-base resize-none h-20 md:h-24 focus:outline-none focus:border-primary dark:focus:border-primary bg-white dark:bg-[#1A0F09] text-gray-900 dark:text-gray-100"
                     maxLength={240}
                   />
                   <div className="mt-2 flex items-center justify-between gap-3">
@@ -2413,7 +2413,7 @@ export default function Cart() {
 
               {/* Complete your meal section - Approved Addons */}
               {addons.length > 0 && (
-                <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
+                <div className="bg-white dark:bg-[#2A1A11] px-4 md:px-6 py-5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
                   <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
                     <div className="w-6 h-6 md:w-8 md:h-8 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
                        <Sparkles className="h-4 w-4 md:h-5 md:w-5 text-primary" />
@@ -2496,7 +2496,7 @@ export default function Cart() {
               )}
 
               {/* Coupon Section */}
-              <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl overflow-hidden border border-slate-100 dark:border-gray-800 shadow-sm flex flex-col">
+              <div className="bg-white dark:bg-[#2A1A11] rounded-2xl overflow-hidden border border-slate-100 dark:border-gray-800 shadow-sm flex flex-col">
                 {deliveryFee === 0 && (
                   <div className="px-4 py-3 md:px-6 md:py-4 border-b border-dashed border-gray-200 dark:border-gray-800 flex items-center gap-3 bg-[#f4fcf7] dark:bg-green-900/10">
                     <CheckCircle2 className="h-5 w-5 text-green-600 fill-green-600/20" />
@@ -2567,10 +2567,10 @@ export default function Cart() {
                             value={manualCouponCode}
                             onChange={(e) => setManualCouponCode(e.target.value.toUpperCase())}
                             placeholder="Enter coupon code"
-                             className="flex-1 h-9 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#0a0a0a] px-3 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-primary"
+                             className="flex-1 h-9 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1A0F09] px-3 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-primary"
                           />
                           <button
-                             className="bg-white dark:bg-[#1a1a1a] border border-primary text-primary rounded px-4 h-9 text-xs font-semibold uppercase hover:bg-[#7e386605] dark:hover:bg-[#7e386610]"
+                             className="bg-white dark:bg-[#2A1A11] border border-primary text-primary rounded px-4 h-9 text-xs font-semibold uppercase hover:bg-[#7e386605] dark:hover:bg-[#7e386610]"
                             onClick={handleApplyCouponCode}
                           >
                             APPLY
@@ -2609,7 +2609,7 @@ export default function Cart() {
               </div>
 
               {/* Delivery Time */}
-              <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
+              <div className="bg-white dark:bg-[#2A1A11] px-4 md:px-6 py-5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
                 <div className="flex items-start gap-3 md:gap-4">
                   <div className="mt-0.5">
                     <Zap className="h-5 w-5 text-green-600 fill-green-600/20" />
@@ -2646,7 +2646,7 @@ export default function Cart() {
                         max={new Date(Date.now() + 86400000).toLocaleDateString('en-CA')}
                         value={scheduledDate}
                         onChange={(e) => setScheduledDate(e.target.value)}
-                        className="w-full text-sm p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-[#0a0a0a] text-gray-800 dark:text-gray-200 focus:outline-none focus:border-primary"
+                        className="w-full text-sm p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-[#1A0F09] text-gray-800 dark:text-gray-200 focus:outline-none focus:border-primary"
                       />
                     </div>
                     <div className="flex-1">
@@ -2656,7 +2656,7 @@ export default function Cart() {
                           <select
                             value={scheduledTime}
                             onChange={(e) => setScheduledTime(e.target.value)}
-                             className="w-full text-sm p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-[#0a0a0a] text-gray-800 dark:text-gray-200 focus:outline-none focus:border-primary appearance-none pr-8"
+                             className="w-full text-sm p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-[#1A0F09] text-gray-800 dark:text-gray-200 focus:outline-none focus:border-primary appearance-none pr-8"
                           >
                             {availableTimeSlots.map(slot => (
                               <option key={slot.value} value={slot.value}>{slot.label}</option>
@@ -2675,7 +2675,7 @@ export default function Cart() {
               </div>
 
               {/* Delivery Address */}
-              <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
+              <div className="bg-white dark:bg-[#2A1A11] px-4 md:px-6 py-5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
                 <div className="flex items-start justify-between w-full text-left">
                   <div className="flex items-start gap-4 flex-1">
                      <div className="bg-[#7e386605] dark:bg-[#7e386610] p-2 rounded-xl mt-0.5">
@@ -2797,7 +2797,7 @@ export default function Cart() {
               </div>
 
               {/* Contact */}
-              <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-4 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
+              <div className="bg-white dark:bg-[#2A1A11] px-4 md:px-6 py-4 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
                     <Phone className="h-4 w-4 md:h-5 md:w-5 text-gray-500 dark:text-gray-400 mt-0.5" />
@@ -2862,7 +2862,7 @@ export default function Cart() {
                 )}
               </div>
 {/* Bill Details */}
-              <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
+              <div className="bg-white dark:bg-[#2A1A11] px-4 md:px-6 py-5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
                 <button
                   onClick={() => setShowBillDetails(!showBillDetails)}
                   className="flex items-center justify-between w-full"
@@ -2984,7 +2984,7 @@ export default function Cart() {
               </div>
 
               {/* Cancellation Policy */}
-              <div className="bg-gray-50 dark:bg-[#1a1a1a]/30 px-4 md:px-6 py-4 rounded-2xl text-left">
+              <div className="bg-gray-50 dark:bg-[#2A1A11]/30 px-4 md:px-6 py-4 rounded-2xl text-left">
                 <h3 className="text-[15px] font-bold text-gray-400 dark:text-gray-500 mb-0.5 tracking-tight">
                   Cancellation policy:
                 </h3>
@@ -3000,7 +3000,7 @@ export default function Cart() {
 
       {/* Bottom Sticky - Place Order */}
       <div
-        className="bg-white dark:bg-[#1a1a1a] border-t dark:border-gray-800 shadow-lg z-30 flex-shrink-0 fixed bottom-0 left-0 right-0"
+        className="bg-white dark:bg-[#2A1A11] border-t dark:border-gray-800 shadow-lg z-30 flex-shrink-0 fixed bottom-0 left-0 right-0"
         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4">
@@ -3211,7 +3211,7 @@ export default function Cart() {
 
                 {/* Items breakdown */}
                 {congratsSavingsItems.length > 0 && (
-                  <div className="mt-8 max-w-sm bg-white dark:bg-[#1a1a1a] rounded-lg p-4 border border-green-200 dark:border-green-900/50">
+                  <div className="mt-8 max-w-sm bg-white dark:bg-[#2A1A11] rounded-lg p-4 border border-green-200 dark:border-green-900/50">
                     <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 text-center">Savings on your items:</p>
                     <div className="space-y-2">
                       {congratsSavingsItems.slice(0, 3).map((item, idx) => (
@@ -3230,7 +3230,7 @@ export default function Cart() {
           {/* Order Success Celebration Page */}
           {showOrderSuccess && (
             <div
-              className="fixed inset-0 z-[70] bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center h-screen w-screen overflow-hidden"
+              className="fixed inset-0 z-[70] bg-white dark:bg-[#1A0F09] flex flex-col items-center justify-center h-screen w-screen overflow-hidden"
               style={{ animation: 'fadeIn 0.3s ease-out' }}
             >
               {/* Confetti Background */}
@@ -3243,7 +3243,7 @@ export default function Cart() {
                     style={{
                       left: `${Math.random() * 100}%`,
                       top: `-10%`,
-                      backgroundColor: ['#7e3866', '#3b82f6', '#f59e0b', '#ef4444', '#55254b', '#ec4899'][Math.floor(Math.random() * 6)],
+                      backgroundColor: ['#F2541B', '#FF7A3D', '#f59e0b', '#ef4444', '#C93C0E', '#F2541B'][Math.floor(Math.random() * 6)],
                       animation: `confettiFall ${2 + Math.random() * 2}s linear ${Math.random() * 2}s infinite`,
                       transform: `rotate(${Math.random() * 360}deg)`,
                     }}
@@ -3321,10 +3321,10 @@ export default function Cart() {
                   className="mt-12 text-center"
                   style={{ animation: 'slideUp 0.5s ease-out 0.8s both' }}
                 >
-                  <h3 className="text-3xl font-bold text-primary dark:text-[#a65d8a] mb-2">Order Placed!</h3>
+                  <h3 className="text-3xl font-bold text-primary dark:text-[#E0470F] mb-2">Order Placed!</h3>
                   <p className="text-gray-600 dark:text-gray-300">Your delicious food is on its way</p>
                   {orderSuccessSavingsAmount > 0 && (
-                    <p className="mt-2 text-sm text-primary dark:text-[#a65d8a]">
+                    <p className="mt-2 text-sm text-primary dark:text-[#E0470F]">
                       You save approx {RUPEE_SYMBOL}{orderSuccessSavingsAmount.toFixed(0)} on this order
                     </p>
                   )}
@@ -3384,7 +3384,7 @@ export default function Cart() {
                   animate={{ y: 0 }}
                   exit={{ y: "100%" }}
                   transition={{ type: "spring", damping: 30, stiffness: 350 }}
-                  className="fixed bottom-0 left-0 right-0 bg-white dark:bg-[#1a1a1a] rounded-t-[2rem] z-[101] shadow-2xl overflow-hidden max-h-[82vh] md:max-h-[60vh] flex flex-col"
+                  className="fixed bottom-0 left-0 right-0 bg-white dark:bg-[#2A1A11] rounded-t-[2rem] z-[101] shadow-2xl overflow-hidden max-h-[82vh] md:max-h-[60vh] flex flex-col"
                   style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
                 >
                   <div className="p-5 md:p-6 flex flex-col h-full min-h-0">
@@ -3431,7 +3431,7 @@ export default function Cart() {
                           name: 'Cash on Delivery',
                           description: 'Pay when order arrives',
                           icon: <Banknote className="w-5 h-5" />,
-                          color: 'bg-orange-50 text-#55254b dark:bg-orange-900/40 dark:text-orange-400',
+                          color: 'bg-orange-50 text-#C93C0E dark:bg-orange-900/40 dark:text-orange-400',
                           selectedColor: 'bg-primary text-white',
                           hidden: isCodHidden
                         }
@@ -3506,7 +3506,7 @@ export default function Cart() {
                     </div>
 
                     <div
-                      className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center gap-4 bg-white dark:bg-[#1a1a1a]"
+                      className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center gap-4 bg-white dark:bg-[#2A1A11]"
                       style={{ paddingBottom: "max(0.25rem, env(safe-area-inset-bottom, 0px))" }}
                     >
                       <div className="flex-shrink-0">
@@ -3623,7 +3623,7 @@ export default function Cart() {
                   onClick={() => setShowGstModal(false)}
                 />
                 <motion.div
-                  className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[10021] w-[90vw] max-w-[320px] bg-white dark:bg-[#1a1a1a] rounded-xl shadow-2xl overflow-hidden"
+                  className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[10021] w-[90vw] max-w-[320px] bg-white dark:bg-[#2A1A11] rounded-xl shadow-2xl overflow-hidden"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
@@ -3696,7 +3696,7 @@ export default function Cart() {
                   onClick={() => setShowShareModal(false)}
                 />
                 <motion.div
-                  className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[10021] w-[92vw] max-w-md bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-2xl"
+                  className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[10021] w-[92vw] max-w-md bg-white dark:bg-[#2A1A11] rounded-2xl shadow-2xl"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}

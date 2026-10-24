@@ -151,7 +151,7 @@ export const exportToExcel = (orders, filename = "orders") => {
             text-align: left; 
           }
           th { 
-            background-color: #3b82f6; 
+            background-color: #FF7A3D; 
             color: white; 
             font-weight: bold; 
             text-align: center;
@@ -160,7 +160,7 @@ export const exportToExcel = (orders, filename = "orders") => {
             white-space: nowrap; 
           }
           tr:nth-child(even) {
-            background-color: #f9fafb;
+            background-color: #FFFAF4;
           }
         </style>
       </head>

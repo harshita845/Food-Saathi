@@ -153,7 +153,7 @@ export default function SubAdminForm({ subAdmin, onClose }) {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#11b5b8]"
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F2541B]"
                   placeholder="John Doe"
                   required
                 />
@@ -168,7 +168,7 @@ export default function SubAdminForm({ subAdmin, onClose }) {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#11b5b8]"
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F2541B]"
                   placeholder="john@example.com"
                   required
                   disabled={isEditing}
@@ -184,7 +184,7 @@ export default function SubAdminForm({ subAdmin, onClose }) {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#11b5b8]"
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F2541B]"
                   placeholder="+1 234 567 890"
                 />
               </div>
@@ -199,14 +199,14 @@ export default function SubAdminForm({ subAdmin, onClose }) {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#11b5b8] pr-10"
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F2541B] pr-10"
                     placeholder={isEditing ? "•••••••• (Encrypted)" : "Enter password"}
                     required={!isEditing}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-[#11b5b8]"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-[#F2541B]"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -222,7 +222,7 @@ export default function SubAdminForm({ subAdmin, onClose }) {
                     checked={formData.isActive}
                     onChange={handleChange}
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#11b5b8]"></div>
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#F2541B]"></div>
                 </label>
                 <span className="text-sm font-medium text-gray-700">
                   Account Active
@@ -248,7 +248,7 @@ export default function SubAdminForm({ subAdmin, onClose }) {
                       setAccessibleModules(allLabels);
                     }
                   }}
-                  className="text-sm text-[#11b5b8] hover:text-teal-700 font-medium"
+                  className="text-sm text-[#F2541B] hover:text-teal-700 font-medium"
                 >
                   {accessibleModules.length > 0 && accessibleModules.length === menuItems.filter(i => i.type === 'item').length
                     ? "Deselect All"
@@ -289,7 +289,7 @@ export default function SubAdminForm({ subAdmin, onClose }) {
                           checked={isChecked}
                           readOnly
                         />
-                        <div className={`w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all ${isSubItem ? "peer-checked:bg-teal-500 scale-90" : "peer-checked:bg-[#11b5b8]"}`}></div>
+                        <div className={`w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all ${isSubItem ? "peer-checked:bg-teal-500 scale-90" : "peer-checked:bg-[#F2541B]"}`}></div>
                       </div>
                     </div>
                   );
@@ -310,7 +310,7 @@ export default function SubAdminForm({ subAdmin, onClose }) {
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center gap-2 bg-[#11b5b8] text-white px-6 py-2 rounded-lg hover:bg-teal-700 font-medium transition-colors disabled:opacity-70"
+            className="flex items-center gap-2 bg-[#F2541B] text-white px-6 py-2 rounded-lg hover:bg-teal-700 font-medium transition-colors disabled:opacity-70"
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

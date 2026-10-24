@@ -123,7 +123,7 @@ export default function Restaurants() {
   const hasRestaurants = useMemo(() => restaurants.length > 0, [restaurants.length])
 
   return (
-    <AnimatedPage className="min-h-screen bg-gradient-to-b from-yellow-50/30 dark:from-[#0a0a0a] via-white dark:via-[#0a0a0a] to-orange-50/20 dark:to-[#0a0a0a]">
+    <AnimatedPage className="min-h-screen bg-gradient-to-b from-yellow-50/30 dark:from-[#1A0F09] via-white dark:via-[#1A0F09] to-orange-50/20 dark:to-[#1A0F09]">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 py-4 sm:py-6 md:py-8 lg:py-10 space-y-4 sm:space-y-6 lg:space-y-8">
         <ScrollReveal>
           <div className="flex items-center gap-3 sm:gap-4 lg:gap-5 mb-4 lg:mb-6">
@@ -178,7 +178,7 @@ export default function Restaurants() {
                 return (
                   <ScrollReveal key={restaurant.id} delay={index * 0.05}>
                     <CardWrapper {...cardWrapperProps}>
-                      <Card className={`overflow-hidden border border-gray-200 dark:border-gray-800 group bg-white dark:bg-[#1a1a1a] pb-1 sm:pb-2 lg:pb-3 flex flex-col h-full w-full transition-all duration-300 ${
+                      <Card className={`overflow-hidden border border-gray-200 dark:border-gray-800 group bg-white dark:bg-[#2A1A11] pb-1 sm:pb-2 lg:pb-3 flex flex-col h-full w-full transition-all duration-300 ${
                         restaurant.isBanned 
                           ? "grayscale opacity-75 cursor-not-allowed select-none" 
                           : "cursor-pointer hover:shadow-lg dark:hover:shadow-xl dark:hover:shadow-gray-900/50"
@@ -254,7 +254,7 @@ export default function Restaurants() {
               })}
             </div>
 
-            {/* End of list CityFood branding */}
+            {/* End of list Food Saathi branding */}
             <div className="pt-10 pb-6 flex flex-col items-center justify-center select-none">
               <div className="flex items-center gap-4 w-full max-w-xs sm:max-w-sm">
                 <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 dark:via-zinc-800 to-gray-300 dark:to-zinc-700" />
@@ -262,7 +262,7 @@ export default function Restaurants() {
                   <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-white dark:bg-zinc-900 border border-gray-200/90 dark:border-zinc-800 shadow-sm flex items-center justify-center p-2.5 overflow-hidden ring-4 ring-gray-100 dark:ring-zinc-800/60 transition-transform duration-300 hover:scale-105">
                     <img
                       src={logoUrl}
-                      alt="CityFood"
+                      alt="Food Saathi"
                       className="h-full w-full object-contain"
                       onError={(e) => {
                         e.currentTarget.src = "/logo.png";

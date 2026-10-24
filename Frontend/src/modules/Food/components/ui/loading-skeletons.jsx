@@ -107,7 +107,7 @@ function ExploreGridSkeleton({ count = 4, className }) {
 function RestaurantCardSkeleton({ className, compact = false }) {
   return (
     <div className={cn("h-full", className)}>
-      <div className="h-full overflow-hidden rounded-[24px] border border-[#efe2d4] bg-white shadow-[0_18px_40px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-[#141414]">
+      <div className="h-full overflow-hidden rounded-[24px] border border-[#efe2d4] bg-white shadow-[0_18px_40px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-[#22150D]">
         <div className={cn("relative overflow-hidden", compact ? "h-40 sm:h-44" : "h-44 sm:h-48 lg:h-52")}>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(235,89,14,0.2),transparent_25%),linear-gradient(135deg,#fff7ee_0%,#ffe7cf_100%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(255,153,102,0.14),transparent_25%),linear-gradient(135deg,#262626_0%,#181818_100%)]" />
           <Skeleton className="absolute left-4 top-4 h-8 w-20 rounded-full bg-white/60 dark:bg-white/10" />
@@ -152,7 +152,7 @@ function RestaurantGridSkeleton({ count = DEFAULT_CARD_COUNT, className, compact
 
 function TableSkeleton({ rows = 8, columns = 6, className }) {
   return (
-    <div className={cn("overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#121212]", className)}>
+    <div className={cn("overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#1E120B]", className)}>
       <div className="border-b border-slate-200 bg-slate-50 px-6 py-4 dark:border-white/10 dark:bg-white/5">
         <div
           className="grid gap-4"
@@ -189,7 +189,7 @@ function TableSkeleton({ rows = 8, columns = 6, className }) {
 function OrdersDashboardSkeleton({ className }) {
   return (
     <LoadingSkeletonRegion label="Loading orders dashboard" className={cn("space-y-6", className)}>
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#121212]">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#1E120B]">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-3">
             <Skeleton className="h-8 w-60 rounded-full" />
@@ -232,7 +232,7 @@ function WalletSkeleton({ className }) {
         {Array.from({ length: 6 }, (_, index) => (
           <div
             key={`wallet-item-${index}`}
-            className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#141414]"
+            className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#22150D]"
           >
             <div className="flex items-center gap-4">
               <Skeleton className="h-12 w-12 rounded-2xl" />
@@ -254,14 +254,14 @@ function WalletSkeleton({ className }) {
 
 function ContentPageSkeleton({ className, hero = true }) {
   return (
-    <LoadingSkeletonRegion label="Loading page" className={cn("min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-[#0a0a0a] dark:to-[#151515]", className)}>
+    <LoadingSkeletonRegion label="Loading page" className={cn("min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-[#1A0F09] dark:to-[#151515]", className)}>
       <div className="mx-auto max-w-4xl px-4 py-6 md:px-6 md:py-8 lg:px-8">
         <div className="mb-8 flex items-center gap-4">
           <Skeleton className="h-10 w-10 rounded-full" />
           <Skeleton className="h-8 w-40 rounded-full" />
         </div>
         {hero ? (
-          <div className="mb-6 rounded-[28px] border border-white/50 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#141414]">
+          <div className="mb-6 rounded-[28px] border border-white/50 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#22150D]">
             <div className="flex flex-col items-center gap-5 text-center">
               <Skeleton className="h-20 w-20 rounded-full" />
               <Skeleton className="h-8 w-56 rounded-full" />
@@ -269,7 +269,7 @@ function ContentPageSkeleton({ className, hero = true }) {
             </div>
           </div>
         ) : null}
-        <div className="space-y-4 rounded-[28px] border border-white/60 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#141414]">
+        <div className="space-y-4 rounded-[28px] border border-white/60 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#22150D]">
           <Skeleton className="h-6 w-48 rounded-full" />
           <SkeletonLines lines={5} />
           <Skeleton className="h-44 w-full rounded-[24px]" />
@@ -282,7 +282,7 @@ function ContentPageSkeleton({ className, hero = true }) {
 
 function RestaurantDetailSkeleton({ className }) {
   return (
-    <LoadingSkeletonRegion label="Loading restaurant details" className={cn("min-h-screen bg-white dark:bg-[#0a0a0a]", className)}>
+    <LoadingSkeletonRegion label="Loading restaurant details" className={cn("min-h-screen bg-white dark:bg-[#1A0F09]", className)}>
       <div className="mx-auto max-w-6xl px-4 pb-10 pt-3">
         <div className="flex items-center justify-between">
           <Skeleton className="h-11 w-11 rounded-full" />
@@ -293,7 +293,7 @@ function RestaurantDetailSkeleton({ className }) {
         </div>
         <div className="mt-5 space-y-5">
           <HeroBannerSkeleton compact className="h-56 rounded-[30px] sm:h-64" />
-          <div className="rounded-[30px] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#141414]">
+          <div className="rounded-[30px] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#22150D]">
             <div className="space-y-3">
               <Skeleton className="h-8 w-3/4 rounded-full" />
               <div className="flex flex-wrap gap-2">
@@ -309,7 +309,7 @@ function RestaurantDetailSkeleton({ className }) {
             {Array.from({ length: 5 }, (_, index) => (
               <div
                 key={`detail-item-${index}`}
-                className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#141414]"
+                className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#22150D]"
               >
                 <div className="flex items-start gap-4">
                   <div className="min-w-0 flex-1 space-y-3">
@@ -339,7 +339,7 @@ function AppShellSkeleton({ className }) {
             <Skeleton className="h-11 w-11 rounded-full" />
           </div>
         </div>
-        <div className="rounded-[28px] border border-white/50 bg-white/70 p-4 shadow-sm dark:border-white/10 dark:bg-[#141414]">
+        <div className="rounded-[28px] border border-white/50 bg-white/70 p-4 shadow-sm dark:border-white/10 dark:bg-[#22150D]">
           <Skeleton className="h-48 w-full rounded-[22px] sm:h-56" />
         </div>
         <div className="space-y-5">

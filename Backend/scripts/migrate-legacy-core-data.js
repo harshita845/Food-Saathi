@@ -20,7 +20,7 @@ const LEGACY_DIR = path.join(REPO_ROOT, 'Tuggo Food Delivery data');
 const OUTPUT_ROOT = path.join(REPO_ROOT, 'migration-output', 'legacy-core');
 
 const VALID_SCOPES = ['users', 'restaurants', 'drivers', 'categories', 'products'];
-const LEGACY_DEFAULT_ZONE_NAME = 'Samana';
+const LEGACY_DEFAULT_ZONE_NAME = process.env.LEGACY_DEFAULT_ZONE_NAME || 'Indore';
 
 function parseArgs(argv = []) {
     const args = {
@@ -718,7 +718,7 @@ async function migrateRestaurants({ rows, lookups, apply, outputDir }) {
     const stats = buildStats('restaurants');
     const defaultZone = apply ? await resolveLegacyDefaultZone() : null;
     if (apply && !defaultZone?._id) {
-        throw new Error(`Legacy default zone "${LEGACY_DEFAULT_ZONE_NAME}" not found. Create the Samana zone first.`);
+        throw new Error(`Legacy default zone "${LEGACY_DEFAULT_ZONE_NAME}" not found. Create that zone first.`);
     }
     const idMap = {};
     const skipped = [];

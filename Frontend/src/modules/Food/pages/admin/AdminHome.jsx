@@ -95,7 +95,7 @@ export default function AdminHome() {
   const getOrderStats = () => {
     if (!dashboardData?.orders?.byStatus) {
       return [
-        { label: "Delivered", value: 0, color: "#0ea5e9" },
+        { label: "Delivered", value: 0, color: "#FFA51F" },
         { label: "Cancelled", value: 0, color: "#ef4444" },
         { label: "Processing", value: 0, color: "#f59e0b" },
         { label: "Pending", value: 0, color: "#10b981" },
@@ -104,7 +104,7 @@ export default function AdminHome() {
 
     const byStatus = dashboardData.orders.byStatus
     return [
-      { label: "Delivered", value: byStatus.delivered || 0, color: "#0ea5e9" },
+      { label: "Delivered", value: byStatus.delivered || 0, color: "#FFA51F" },
       { label: "Cancelled", value: byStatus.cancelled || 0, color: "#ef4444" },
       { label: "Processing", value: byStatus.processing || 0, color: "#f59e0b" },
       { label: "Pending", value: byStatus.pending || 0, color: "#10b981" },
@@ -396,27 +396,27 @@ export default function AdminHome() {
                     <AreaChart data={monthlyData}>
                       <defs>
                         <linearGradient id="revFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.25} />
-                          <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#FFA51F" stopOpacity={0.25} />
+                          <stop offset="95%" stopColor="#FFA51F" stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="comFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#a855f7" stopOpacity={0.25} />
-                          <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#FF7A3D" stopOpacity={0.25} />
+                          <stop offset="95%" stopColor="#FF7A3D" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="month" stroke="#6b7280" />
-                      <YAxis stroke="#6b7280" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#F1E2D0" />
+                      <XAxis dataKey="month" stroke="#8C705B" />
+                      <YAxis stroke="#8C705B" />
                       <Tooltip
-                        contentStyle={{ background: "#ffffff", border: "1px solid #e5e7eb", borderRadius: 12 }}
-                        labelStyle={{ color: "#111827" }}
-                        itemStyle={{ color: "#111827" }}
+                        contentStyle={{ background: "#ffffff", border: "1px solid #F1E2D0", borderRadius: 12 }}
+                        labelStyle={{ color: "#2C1A11" }}
+                        itemStyle={{ color: "#2C1A11" }}
                       />
                       <Legend />
                       <Area
                         type="monotone"
                         dataKey="revenue"
-                        stroke="#0ea5e9"
+                        stroke="#FFA51F"
                         fillOpacity={1}
                         fill="url(#revFill)"
                         name="Gross revenue"
@@ -424,7 +424,7 @@ export default function AdminHome() {
                       <Area
                         type="monotone"
                         dataKey="commission"
-                        stroke="#a855f7"
+                        stroke="#FF7A3D"
                         fillOpacity={1}
                         fill="url(#comFill)"
                         name="Commission"
@@ -469,12 +469,12 @@ export default function AdminHome() {
                         ))}
                       </Pie>
                       <Tooltip
-                        contentStyle={{ background: "#ffffff", border: "1px solid #e5e7eb", borderRadius: 12 }}
-                        labelStyle={{ color: "#111827" }}
-                        itemStyle={{ color: "#111827" }}
+                        contentStyle={{ background: "#ffffff", border: "1px solid #F1E2D0", borderRadius: 12 }}
+                        labelStyle={{ color: "#2C1A11" }}
+                        itemStyle={{ color: "#2C1A11" }}
                       />
                       <Legend
-                        formatter={(value) => <span style={{ color: "#111827", fontSize: 12 }}>{value}</span>}
+                        formatter={(value) => <span style={{ color: "#2C1A11", fontSize: 12 }}>{value}</span>}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -516,17 +516,17 @@ export default function AdminHome() {
                 <div className="h-64 w-full min-w-0">
                   <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                     <BarChart data={monthlyData.slice(-6)}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="month" stroke="#6b7280" />
-                      <YAxis stroke="#6b7280" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#F1E2D0" />
+                      <XAxis dataKey="month" stroke="#8C705B" />
+                      <YAxis stroke="#8C705B" />
                       <Tooltip
-                        contentStyle={{ background: "#ffffff", border: "1px solid #e5e7eb", borderRadius: 12 }}
-                        labelStyle={{ color: "#111827" }}
-                        itemStyle={{ color: "#111827" }}
+                        contentStyle={{ background: "#ffffff", border: "1px solid #F1E2D0", borderRadius: 12 }}
+                        labelStyle={{ color: "#2C1A11" }}
+                        itemStyle={{ color: "#2C1A11" }}
                       />
                       <Legend />
-                      <Bar dataKey="orders" fill="#0ea5e9" radius={[8, 8, 0, 0]} name="Orders" />
-                      <Bar dataKey="commission" fill="#a855f7" radius={[8, 8, 0, 0]} name="Commission" />
+                      <Bar dataKey="orders" fill="#FFA51F" radius={[8, 8, 0, 0]} name="Orders" />
+                      <Bar dataKey="commission" fill="#FF7A3D" radius={[8, 8, 0, 0]} name="Commission" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

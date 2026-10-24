@@ -5,8 +5,12 @@ import authMiddleware from '../middleware/auth.js';
 
 const router = Router();
 
-// Routes for generic file uploads
+// Routes for generic file uploads. The apps call /image, /video and /file by media type;
+// all of them share the same handler (Cloudinary or local uploads/ per the admin setting).
 router.post('/single', authMiddleware, genericUpload.single('file'), uploadSingle);
+router.post('/image', authMiddleware, genericUpload.single('file'), uploadSingle);
+router.post('/video', authMiddleware, genericUpload.single('file'), uploadSingle);
+router.post('/file', authMiddleware, genericUpload.single('file'), uploadSingle);
 router.post('/multiple', authMiddleware, genericUpload.array('files', 20), uploadMultiple);
 
 export default router;

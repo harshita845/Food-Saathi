@@ -141,13 +141,13 @@ function loadFirebaseWebConfig() {
   }
 
   return {
-    apiKey: "AIzaSyAC_N9ZTat6Pt_1mh78Q92KJDp20FOHor8",
-    authDomain: "demotuggo.firebaseapp.com",
-    projectId: "demotuggo",
-    storageBucket: "demotuggo.firebasestorage.app",
-    messagingSenderId: "841927628612",
-    appId: "1:841927628612:web:1634e9e4f4faa8e7472911",
-    measurementId: "G-PZG4TFCQLW",
+    apiKey: "AIzaSyBi2T0qPgwJTfGTb1p9-IaaKWTwwcrIEBY",
+    authDomain: "foodsaathi-12ae8.firebaseapp.com",
+    projectId: "foodsaathi-12ae8",
+    storageBucket: "foodsaathi-12ae8.firebasestorage.app",
+    messagingSenderId: "717594731653",
+    appId: "1:717594731653:web:103c3375b74e4633b175ec",
+    measurementId: "G-040ZQZ50J1",
   };
 }
 

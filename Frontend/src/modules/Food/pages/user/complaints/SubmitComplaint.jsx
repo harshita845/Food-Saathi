@@ -139,7 +139,7 @@ export default function SubmitComplaint() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-[#1A0F09] flex items-center justify-center">
         <p className="text-gray-600 dark:text-gray-400 text-sm">Loading...</p>
       </div>
     )
@@ -150,9 +150,9 @@ export default function SubmitComplaint() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] pb-24">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#1A0F09] pb-24">
       {/* Header */}
-      <div className="bg-white dark:bg-[#121212] p-4 flex items-center sticky top-0 z-20 shadow-sm border-b dark:border-gray-800">
+      <div className="bg-white dark:bg-[#1E120B] p-4 flex items-center sticky top-0 z-20 shadow-sm border-b dark:border-gray-800">
         <button
           type="button"
           onClick={goBack}
@@ -171,7 +171,7 @@ export default function SubmitComplaint() {
       </div>
 
       {/* Order Info */}
-      <div className="bg-white dark:bg-[#121212] mx-4 mt-4 p-4 rounded-xl shadow-sm border border-transparent dark:border-gray-800">
+      <div className="bg-white dark:bg-[#1E120B] mx-4 mt-4 p-4 rounded-xl shadow-sm border border-transparent dark:border-gray-800">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
             <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -211,7 +211,7 @@ export default function SubmitComplaint() {
           <select
             value={formData.complaintType}
             onChange={(e) => setFormData({ ...formData, complaintType: e.target.value })}
-            className="w-full px-4 py-3 bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="w-full px-4 py-3 bg-white dark:bg-[#2A1A11] text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             required
           >
             <option value="">Select complaint type</option>
@@ -233,7 +233,7 @@ export default function SubmitComplaint() {
             value={formData.subject}
             onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
             placeholder="Brief description of your complaint"
-            className="w-full px-4 py-3 bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="w-full px-4 py-3 bg-white dark:bg-[#2A1A11] text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             required
             maxLength={200}
           />
@@ -249,7 +249,7 @@ export default function SubmitComplaint() {
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             placeholder="Please provide detailed information about your complaint..."
             rows={6}
-            className="w-full px-4 py-3 bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+            className="w-full px-4 py-3 bg-white dark:bg-[#2A1A11] text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
             required
             maxLength={1000}
           />
@@ -270,7 +270,7 @@ export default function SubmitComplaint() {
         </div>
 
         {/* Submit Button */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-[#121212] border-t border-gray-200 dark:border-gray-800 p-4 z-20">
+        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-[#1E120B] border-t border-gray-200 dark:border-gray-800 p-4 z-20">
           <button
             type="submit"
             disabled={submitting}

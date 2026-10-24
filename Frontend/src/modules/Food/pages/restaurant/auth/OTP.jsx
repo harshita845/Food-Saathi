@@ -21,7 +21,7 @@ export default function RestaurantOTP() {
   const inputRefs = useRef([])
   const hasSubmittedRef = useRef(false)
 
-  const primaryColor = "#7e3866"
+  const primaryColor = "#F2541B"
 
   useEffect(() => {
     const stored = sessionStorage.getItem("restaurantAuthData")
@@ -244,7 +244,7 @@ export default function RestaurantOTP() {
   if (!authData) return null
 
   return (
-    <div className="min-h-[100dvh] bg-[#F7F7F7] dark:bg-[#0A0A0A] flex flex-col relative overflow-hidden font-['Poppins']">
+    <div className="min-h-[100dvh] bg-[#F7F7F7] dark:bg-[#1A0F09] flex flex-col relative overflow-hidden font-['Poppins']">
       {/* iOS Keyboard Push-up Fix */}
       <style>{`
         @supports (-webkit-touch-callout: none) {
@@ -272,7 +272,7 @@ export default function RestaurantOTP() {
           whileHover={{ x: -4 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => navigate("/food/restaurant/login")}
-          className="p-3 bg-white dark:bg-[#1a1a1a] shadow-xl shadow-primary/10 rounded-2xl text-primary border border-primary/5 outline-none"
+          className="p-3 bg-white dark:bg-[#2A1A11] shadow-xl shadow-primary/10 rounded-2xl text-primary border border-primary/5 outline-none"
         >
           <ArrowLeft className="w-5 h-5" />
         </motion.button>
@@ -305,7 +305,7 @@ export default function RestaurantOTP() {
           </div>
 
           {/* OTP Input Card */}
-          <div className="bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-2xl rounded-[3rem] p-10 shadow-[0_40px_80px_-20px_rgba(126,56,102,0.2)] border border-white/20 dark:border-gray-800">
+          <div className="bg-white/80 dark:bg-[#2A1A11]/80 backdrop-blur-2xl rounded-[3rem] p-10 shadow-[0_40px_80px_-20px_rgba(126,56,102,0.2)] border border-white/20 dark:border-gray-800">
             <div className="grid grid-cols-6 gap-3 mb-10">
               {otp.map((digit, index) => (
                 <div key={index} className="relative group">
@@ -331,7 +331,7 @@ export default function RestaurantOTP() {
             <button
               onClick={() => handleVerify()}
               disabled={isLoading || !isOtpComplete}
-              className="w-full py-4.5 bg-primary hover:bg-[#6a2f56] disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400 text-white rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 mb-8"
+              className="w-full py-4.5 bg-primary hover:bg-[#C93C0E] disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400 text-white rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 mb-8"
             >
               {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Verify & Continue"}
             </button>
@@ -356,7 +356,7 @@ export default function RestaurantOTP() {
           </div>
 
           <p className="mt-12 text-[10px] font-black text-gray-300 dark:text-gray-600 text-center uppercase tracking-[0.3em]">
-            Secure Verification &bull; CityFood Partner
+            Secure Verification &bull; Food Saathi Partner
           </p>
         </motion.div>
       </div>

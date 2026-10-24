@@ -16,9 +16,9 @@ const resolveMongoUri = () => {
         return process.env.MONGO_URI_PRODUCTION || process.env.MONGODB_URI;
     }
     if (mongoEnv === 'local' || mongoEnv === 'dev') {
-        return process.env.MONGO_URI_LOCAL || 'mongodb://127.0.0.1:27017/tuggo';
+        return process.env.MONGO_URI_LOCAL || 'mongodb://127.0.0.1:27017/foodsaathi';
     }
-    return process.env.MONGO_URI || process.env.MONGODB_URI || process.env.MONGO_URI_LOCAL || 'mongodb://127.0.0.1:27017/tuggo';
+    return process.env.MONGO_URI || process.env.MONGODB_URI || process.env.MONGO_URI_LOCAL || 'mongodb://127.0.0.1:27017/foodsaathi';
 };
 
 export const config = {

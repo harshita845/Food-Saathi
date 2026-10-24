@@ -2282,7 +2282,7 @@ export default function OrdersMain() {
           
           <div class="center" style="margin-top: 15px;">
             <p class="bold">Thank you for ordering!</p>
-            <p style="font-size: 10px;">Powered by ${settings.companyName || "CityFood"}</p>
+            <p style="font-size: 10px;">Powered by ${settings.companyName || "Food Saathi"}</p>
           </div>
         </body>
         </html>
@@ -3578,7 +3578,7 @@ function OrderCard({
   const normalizedStatus = String(status || "").toLowerCase();
   const isReady = normalizedStatus === "ready";
   const isPreparing = normalizedStatus === "preparing";
-  const brandColor = "#7e3866";
+  const brandColor = "#F2541B";
 
   let statusLabel = String(status || "")
     .replace(/_/g, " ")

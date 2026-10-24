@@ -28,10 +28,10 @@ const mapOptions = {
   rotateControl: true,
   fullscreenControl: false,
   styles: [
-    { elementType: "geometry", stylers: [{ color: "#f5f5f5" }] },
+    { elementType: "geometry", stylers: [{ color: "#FBF3EA" }] },
     { elementType: "labels.icon", stylers: [{ visibility: "off" }] },
     { elementType: "labels.text.fill", stylers: [{ color: "#616161" }] },
-    { elementType: "labels.text.stroke", stylers: [{ color: "#f5f5f5" }] },
+    { elementType: "labels.text.stroke", stylers: [{ color: "#FBF3EA" }] },
     { featureType: "administrative.land_parcel", elementType: "labels.text.fill", stylers: [{ color: "#bdbdbd" }] },
     { featureType: "poi", elementType: "geometry", stylers: [{ color: "#eeeeee" }] },
     { featureType: "road", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
@@ -406,7 +406,7 @@ const LiveMapWithApiKey = ({ googleMapsApiKey, onMapClick, onMapLoad, onPathRece
           <Polyline 
             path={traveledPath} 
             options={{ 
-              strokeColor: '#9ca3af', 
+              strokeColor: '#B9A08A', 
               strokeOpacity: 0.5, 
               strokeWeight: 4, 
               zIndex: 10,
@@ -423,7 +423,7 @@ const LiveMapWithApiKey = ({ googleMapsApiKey, onMapClick, onMapLoad, onPathRece
           <Polyline 
             path={remainingPath} 
             options={{ 
-              strokeColor: '#3b82f6', 
+              strokeColor: '#FF7A3D', 
               strokeOpacity: 0.9, 
               strokeWeight: 8, 
               zIndex: 12 

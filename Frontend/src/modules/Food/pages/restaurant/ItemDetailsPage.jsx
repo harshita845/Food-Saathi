@@ -567,7 +567,7 @@ export default function ItemDetailsPage() {
             let uploadResponse
             try {
               uploadResponse = await uploadAPI.uploadMedia(file, {
-                folder: 'tuggo/restaurant/menu-items'
+                folder: 'foodsaathi/restaurant/menu-items'
               })
             } catch (folderUploadError) {
               // Fallback: retry without folder in case provider/account rejects custom folder.

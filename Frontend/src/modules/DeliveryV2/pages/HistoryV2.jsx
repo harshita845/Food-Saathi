@@ -121,7 +121,7 @@ export const HistoryV2 = () => {
   return (
     <div className="min-h-screen bg-white font-poppins pb-32">
        {/* 1. Header (Premium V2 Styled) */}
-       <div className="bg-[#121212] border-b border-white/10 px-6 py-3 flex items-center justify-between sticky top-0 z-[100] backdrop-blur-2xl">
+       <div className="bg-[#1E120B] border-b border-white/10 px-6 py-3 flex items-center justify-between sticky top-0 z-[100] backdrop-blur-2xl">
           <div className="flex items-center gap-4">
             <button onClick={goBack} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white border border-white/10 active:scale-90 transition-all">
                <ArrowLeft className="w-5 h-5" />
@@ -159,14 +159,14 @@ export const HistoryV2 = () => {
        <div className="bg-white px-4 py-4 flex gap-3 sticky top-[118px] z-[80]">
           <button 
              onClick={() => { setShowDatePicker(!showDatePicker); setShowTripTypePicker(false); }}
-             className="flex-1 px-4 py-3 bg-[#f8f9fa] border border-gray-100 rounded-xl flex items-center justify-between text-gray-800"
+             className="flex-1 px-4 py-3 bg-[#FFFAF4] border border-gray-100 rounded-xl flex items-center justify-between text-gray-800"
           >
              <span className="text-sm font-medium">{formatDateDisplay(selectedDate)}</span>
              <ChevronDown className={`w-4 h-4 text-gray-400 transform transition-transform ${showDatePicker ? 'rotate-180' : ''}`} />
           </button>
           <button 
              onClick={() => { setShowTripTypePicker(!showTripTypePicker); setShowDatePicker(false); }}
-             className="w-[140px] px-4 py-3 bg-[#f8f9fa] border border-gray-100 rounded-xl flex items-center justify-between text-gray-800"
+             className="w-[140px] px-4 py-3 bg-[#FFFAF4] border border-gray-100 rounded-xl flex items-center justify-between text-gray-800"
           >
              <span className="text-sm font-medium">{selectedTripType}</span>
              <ChevronDown className={`w-4 h-4 text-gray-400 transform transition-transform ${showTripTypePicker ? 'rotate-180' : ''}`} />

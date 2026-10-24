@@ -11,6 +11,7 @@ import AppIntroSplash from "./AppIntroSplash"
 import { LocationProvider } from "@food/context/LocationProvider"
 import { useAppLocation } from "@food/hooks/useAppLocation"
 import LocationGuard from "./LocationGuard"
+import { motion } from "framer-motion"
 
 const debugWarn = (...args) => {}
 
@@ -124,7 +125,15 @@ function UserLayoutShell() {
       </div>
       <LocationGuard>
         <main className={`${showBottomNav ? "md:pt-40 pb-[calc(76px+max(env(safe-area-inset-bottom,0px),10px))] md:pb-0" : ""}`}>
-          <Outlet />
+          {/* Enter-only page transition (no exit) so nested routes never wait on unmount */}
+          <motion.div
+            key={normalizedPath}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <Outlet />
+          </motion.div>
         </main>
       </LocationGuard>
       {showBottomNav && <BottomNavigation />}
@@ -142,7 +151,7 @@ export default function UserLayout() {
   })
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-[#f5f5f5] dark:bg-[#0a0a0a] transition-colors duration-200 box-border">
+    <div className="min-h-screen min-h-[100dvh] bg-[#FFF9F0] dark:bg-[#1A0F09] transition-colors duration-200 box-border">
       {!introFinished && (
         <AppIntroSplash onComplete={() => setIntroFinished(true)} />
       )}

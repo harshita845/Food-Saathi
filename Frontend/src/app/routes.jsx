@@ -5,7 +5,7 @@ import { AppShellSkeleton } from '@food/components/ui/loading-skeletons'
 
 const NATIVE_LAST_ROUTE_KEY = 'native_last_route'
 
-// Lazy load the Food service module (Quick-spicy app)
+// Lazy load the Food service module (Food Saathi app)
 const FoodApp = lazy(() => import('../modules/Food/routes'))
 const AuthApp = lazy(() => import('../modules/auth/routes'))
 import ProtectedRoute from '@food/components/ProtectedRoute'
@@ -25,9 +25,9 @@ const PageLoader = () => {
 }
 
 /**
- * FoodAppWrapper — Quick-spicy App. को /food prefix के साथ render करता है.
+ * FoodAppWrapper — Food Saathi App. को /food prefix के साथ render करता है.
  * 
- * Quick-spicy की App.jsx में routes /restaurant, /usermain, /admin, /delivery
+ * Food Saathi की App.jsx में routes /restaurant, /usermain, /admin, /delivery
  * जैसे hain (bina /food prefix ke). Yahan hum useLocation se /food ke baad wala
  * path nikalne ke baad FoodApp render karte hain. FoodApp internally BrowserRouter
  * nahi use karta (sirf Routes use karta hai), isliye ye directly kaam karta hai.

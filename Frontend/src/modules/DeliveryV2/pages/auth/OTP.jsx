@@ -496,7 +496,7 @@ export default function DeliveryOTP() {
   }
 
   return (
-    <AnimatedPage className="min-h-screen bg-[#FFF9F2] dark:bg-[#0a0a0a] flex flex-col relative overflow-hidden font-['Poppins']">
+    <AnimatedPage className="min-h-screen bg-[#FFF9F2] dark:bg-[#1A0F09] flex flex-col relative overflow-hidden font-['Poppins']">
       {/* iOS Keyboard Push-up Fix */}
       <style>{`
         @supports (-webkit-touch-callout: none) {
@@ -515,7 +515,7 @@ export default function DeliveryOTP() {
       
       {/* Soft Ambient Background Elements */}
       <div className="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] rounded-full bg-[#FFE4C4]/40 dark:bg-primary/5 blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-[#E0F7FA]/50 dark:bg-blue-900/10 blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-[#FFF4EC]/50 dark:bg-blue-900/10 blur-[100px] pointer-events-none" />
 
       {/* Header */}
       <div className="relative flex items-center justify-center py-6 px-4 z-20">
@@ -530,16 +530,16 @@ export default function DeliveryOTP() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col justify-center px-6 pb-12 pt-4 relative z-10 w-full max-w-md mx-auto">
-        <div className="bg-white/70 dark:bg-[#1a1a1a]/80 backdrop-blur-2xl rounded-[3rem] p-8 sm:p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-white/50 dark:border-gray-800 relative overflow-hidden w-full space-y-8">
+        <div className="bg-white/70 dark:bg-[#2A1A11]/80 backdrop-blur-2xl rounded-[3rem] p-8 sm:p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-white/50 dark:border-gray-800 relative overflow-hidden w-full space-y-8">
           
-          <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-[#4CB8C4]/40 to-transparent" />
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-[#FF7A2F]/40 to-transparent" />
 
           {/* Message */}
           <div className="text-center space-y-3">
             <h2 className="text-2xl font-black text-gray-900 dark:text-white font-['Outfit'] tracking-tight">
               {showNameInput ? "Almost there!" : "Verify your number"}
             </h2>
-            <div className="h-1 w-12 bg-gradient-to-r from-[#4CB8C4] to-[#3CD3AD] rounded-full mx-auto" />
+            <div className="h-1 w-12 bg-gradient-to-r from-[#FF7A2F] to-[#FFA51F] rounded-full mx-auto" />
             <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
               {showNameInput
                 ? "Please tell us your name to complete registration."
@@ -628,7 +628,7 @@ export default function DeliveryOTP() {
                     disabled={isLoading}
                     autoComplete="off"
                     autoFocus={false}
-                    className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl font-black p-0 border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus-visible:ring-0 focus-visible:border-[#4CB8C4] bg-white/80 dark:bg-gray-900/50 shadow-sm transition-all text-gray-900 dark:text-white"
+                    className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl font-black p-0 border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus-visible:ring-0 focus-visible:border-[#FF7A2F] bg-white/80 dark:bg-gray-900/50 shadow-sm transition-all text-gray-900 dark:text-white"
                   />
                 ))}
               </div>
@@ -640,14 +640,14 @@ export default function DeliveryOTP() {
                 </p>
                 {resendTimer > 0 ? (
                   <p className="text-sm font-bold text-gray-500 bg-gray-100/50 dark:bg-gray-800/50 py-2 px-4 rounded-full inline-block">
-                    Resend SMS in <span className="text-[#4CB8C4]">{resendTimer}s</span>
+                    Resend SMS in <span className="text-[#FF7A2F]">{resendTimer}s</span>
                   </p>
                 ) : (
                   <button
                     type="button"
                     onClick={handleResend}
                     disabled={isLoading}
-                    className="text-sm font-bold text-[#4CB8C4] hover:text-[#3BA0AB] transition-colors disabled:opacity-50 py-2 px-4 rounded-full bg-[#4CB8C4]/10 hover:bg-[#4CB8C4]/20 inline-block"
+                    className="text-sm font-bold text-[#FF7A2F] hover:text-[#E0470F] transition-colors disabled:opacity-50 py-2 px-4 rounded-full bg-[#FF7A2F]/10 hover:bg-[#FF7A2F]/20 inline-block"
                   >
                     Resend SMS
                   </button>
@@ -673,7 +673,7 @@ export default function DeliveryOTP() {
                   disabled={isLoading}
                   placeholder="Enter your name"
                   className={`h-14 rounded-2xl bg-white/80 dark:bg-gray-900/50 border-2 font-semibold text-gray-900 dark:text-white px-5 shadow-sm transition-all ${
-                    nameError ? "border-red-400 focus-visible:border-red-500" : "border-gray-200 dark:border-gray-700 focus-visible:border-[#4CB8C4]"
+                    nameError ? "border-red-400 focus-visible:border-red-500" : "border-gray-200 dark:border-gray-700 focus-visible:border-[#FF7A2F]"
                   }`}
                 />
                 {nameError && (
@@ -686,7 +686,7 @@ export default function DeliveryOTP() {
               <button
                 onClick={handleSubmitName}
                 disabled={isLoading}
-                className="w-full py-4 bg-gradient-to-r from-[#4CB8C4] to-[#3CD3AD] hover:from-[#3BA0AB] hover:to-[#2BB896] text-white rounded-2xl font-bold text-lg shadow-[0_15px_30px_-10px_rgba(76,184,196,0.5)] transition-all active:scale-[0.98] disabled:opacity-70 disabled:scale-100 flex justify-center items-center"
+                className="w-full py-4 bg-gradient-to-r from-[#FF7A2F] to-[#FFA51F] hover:from-[#E0470F] hover:to-[#2BB896] text-white rounded-2xl font-bold text-lg shadow-[0_15px_30px_-10px_rgba(76,184,196,0.5)] transition-all active:scale-[0.98] disabled:opacity-70 disabled:scale-100 flex justify-center items-center"
               >
                 {isLoading ? "Continuing..." : "Continue"}
               </button>
@@ -696,7 +696,7 @@ export default function DeliveryOTP() {
           {/* Loading Spinner */}
           {isLoading && !showNameInput && (
             <div className="flex justify-center pt-4">
-              <Loader2 className="h-8 w-8 text-[#4CB8C4] animate-spin" />
+              <Loader2 className="h-8 w-8 text-[#FF7A2F] animate-spin" />
             </div>
           )}
         </div>

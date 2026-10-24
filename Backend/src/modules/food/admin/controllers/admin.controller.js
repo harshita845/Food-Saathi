@@ -1662,7 +1662,7 @@ export async function processRefund(req, res, next) {
                 {
                     title: 'Refund Processed! 💸',
                     body: `Your refund of ₹${refundAmount || order.totalAmount || order.total || 0} for Order #${order.orderId} has been processed successfully.`,
-                    image: 'https://i.ibb.co/3m2Yh7r/Tuggo-Brand-Image.png',
+                    image: 'https://res.cloudinary.com/dxuuamva/image/upload/foodsaathi/brand/foodsaathi-logo.png',
                     data: {
                         type: 'refund_processed',
                         orderId: String(order.orderId),

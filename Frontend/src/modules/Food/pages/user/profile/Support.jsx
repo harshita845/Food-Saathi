@@ -173,7 +173,7 @@ export default function Support() {
   }
 
   const TicketList = () => (
-    <Card className="bg-white dark:bg-[#1a1a1a] rounded-xl shadow-sm border border-slate-200 dark:border-gray-800">
+    <Card className="bg-white dark:bg-[#2A1A11] rounded-xl shadow-sm border border-slate-200 dark:border-gray-800">
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-base font-semibold text-gray-900 dark:text-white">My Tickets</h3>
@@ -213,7 +213,7 @@ export default function Support() {
   )
 
   return (
-    <AnimatedPage className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a]">
+    <AnimatedPage className="min-h-screen bg-[#FBF3EA] dark:bg-[#1A0F09]">
       <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 py-4 sm:py-6 md:py-8 pb-20">
         <div className="mb-4">
           {step === "pick" ? (
@@ -229,14 +229,14 @@ export default function Support() {
           )}
         </div>
 
-        <Card className="bg-white dark:bg-[#1a1a1a] rounded-xl shadow-sm border border-slate-200 dark:border-gray-800 mb-3">
+        <Card className="bg-white dark:bg-[#2A1A11] rounded-xl shadow-sm border border-slate-200 dark:border-gray-800 mb-3">
           <CardContent className="p-4">
             <h1 className="text-xl font-bold text-slate-900 dark:text-white">Help & Support</h1>
             <p className="text-sm text-slate-500 mt-1">Raise a support ticket and track updates in one place.</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-[#1a1a1a] rounded-xl shadow-sm border border-slate-200 dark:border-gray-800 mb-3">
+        <Card className="bg-white dark:bg-[#2A1A11] rounded-xl shadow-sm border border-slate-200 dark:border-gray-800 mb-3">
           <CardContent className="p-4 space-y-4">
             {step === "pick" && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

@@ -546,10 +546,10 @@ function TimeSelector({ label, value, onChange }) {
                 fontSize: "12px",
                 backgroundColor: "white",
                 "& fieldset": {
-                  borderColor: "#e5e7eb",
+                  borderColor: "#F1E2D0",
                 },
                 "&:hover fieldset": {
-                  borderColor: "#d1d5db",
+                  borderColor: "#E0CBB4",
                 },
                 "&.Mui-focused fieldset": {
                   borderColor: "#000",

@@ -176,7 +176,7 @@ export default function DiningRestaurantDetails() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#f6f7fb]">
+      <div className="flex min-h-screen items-center justify-center bg-[#FFF9F0]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
@@ -184,8 +184,8 @@ export default function DiningRestaurantDetails() {
 
   if (error || !restaurant) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#f6f7fb] px-4 text-center">
-        <h2 className="text-2xl font-bold text-[#23180f]">Restaurant not found</h2>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#FFF9F0] px-4 text-center">
+        <h2 className="text-2xl font-bold text-[#3A1C10]">Restaurant not found</h2>
         <Button onClick={goBack} variant="outline">
           Go Back
         </Button>
@@ -221,7 +221,7 @@ export default function DiningRestaurantDetails() {
   const handleShare = async () => {
     const shareData = {
       title: restaurantName,
-      text: `Check out ${restaurantName} on CityFood!`,
+      text: `Check out ${restaurantName} on Food Saathi!`,
       url: window.location.href,
     }
 
@@ -289,8 +289,8 @@ export default function DiningRestaurantDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f6f7fb] dark:bg-slate-950 pb-28 transition-colors">
-      <section className="mx-auto max-w-md bg-[#f6f7fb] dark:bg-slate-950 uppercase-fix">
+    <div className="min-h-screen bg-[#FFF9F0] dark:bg-slate-950 pb-28 transition-colors">
+      <section className="mx-auto max-w-md bg-[#FFF9F0] dark:bg-slate-950 uppercase-fix">
         <div className="relative h-[392px] overflow-hidden">
           {heroImage ? (
             <img src={heroImage} alt={restaurantName} className="h-full w-full object-cover" />
@@ -393,7 +393,7 @@ export default function DiningRestaurantDetails() {
       <div className="mx-auto max-w-md px-4 pt-4">
         <section id="restaurant-prebook">
           <div>
-            <h2 className="text-[29px] font-black leading-none text-[#23180f] dark:text-slate-100">Pre-book offers</h2>
+            <h2 className="text-[29px] font-black leading-none text-[#3A1C10] dark:text-slate-100">Pre-book offers</h2>
             <p className="mt-1 text-[15px] text-primary dark:text-purple-400">Limited slots with extra offers</p>
           </div>
 
@@ -413,10 +413,10 @@ export default function DiningRestaurantDetails() {
           </div>
         </section>
 
-        <section id="restaurant-menu" className="mt-5 border-t border-[#e8e8ef] dark:border-slate-800 pt-4">
+        <section id="restaurant-menu" className="mt-5 border-t border-[#F1E2D0] dark:border-slate-800 pt-4">
           <div className="flex items-end justify-between gap-3">
             <div>
-              <h2 className="text-[28px] font-black leading-none text-[#23180f] dark:text-slate-100">Menu</h2>
+              <h2 className="text-[28px] font-black leading-none text-[#3A1C10] dark:text-slate-100">Menu</h2>
               <p className="mt-2 text-[13px] text-[#e19135] dark:text-orange-400">Last updated a month ago</p>
             </div>
             <div className="rounded-full bg-[#fff3e6] dark:bg-orange-950/30 px-3 py-1 text-xs font-semibold text-[#e58a2c] dark:text-orange-300">
@@ -450,8 +450,8 @@ export default function DiningRestaurantDetails() {
           </div>
         </section>
 
-        <section id="restaurant-photos" className="mt-5 border-t border-[#e8e8ef] dark:border-slate-800 pt-4">
-          <h2 className="text-[28px] font-black leading-none text-[#23180f] dark:text-slate-100">Photos</h2>
+        <section id="restaurant-photos" className="mt-5 border-t border-[#F1E2D0] dark:border-slate-800 pt-4">
+          <h2 className="text-[28px] font-black leading-none text-[#3A1C10] dark:text-slate-100">Photos</h2>
           <div className="mt-4 grid grid-cols-2 gap-3">
             {(imageGallery.length > 0 ? imageGallery.slice(0, 4) : menuPreviewImages.slice(0, 2)).map((image, index) => (
               <div
@@ -469,8 +469,8 @@ export default function DiningRestaurantDetails() {
           </div>
         </section>
 
-        <section id="restaurant-about" className="mt-5 border-t border-[#e8e8ef] dark:border-slate-800 pt-4">
-          <h2 className="text-[28px] font-black leading-none text-[#23180f] dark:text-slate-100">About the restaurant</h2>
+        <section id="restaurant-about" className="mt-5 border-t border-[#F1E2D0] dark:border-slate-800 pt-4">
+          <h2 className="text-[28px] font-black leading-none text-[#3A1C10] dark:text-slate-100">About the restaurant</h2>
           <div className="mt-4 rounded-[18px] border border-[#ececf4] dark:border-slate-800 bg-[#fafbff] dark:bg-slate-900 p-4 transition-colors">
             <div className="space-y-4 text-[14px] text-[#5f6474] dark:text-slate-400">
               <div className="flex items-start gap-3">
@@ -489,8 +489,8 @@ export default function DiningRestaurantDetails() {
               </div>
             </div>
 
-            <div className="mt-5 border-t border-[#e8e8ef] dark:border-slate-800 pt-4">
-              <h3 className="text-[20px] font-semibold text-[#23180f] dark:text-slate-100">Featured In</h3>
+            <div className="mt-5 border-t border-[#F1E2D0] dark:border-slate-800 pt-4">
+              <h3 className="text-[20px] font-semibold text-[#3A1C10] dark:text-slate-100">Featured In</h3>
               <div className="mt-3 overflow-hidden rounded-[16px] bg-white dark:bg-slate-800 shadow-sm">
                 <div className="aspect-[1.2] bg-[#efe8df] dark:bg-slate-700">
                   {heroImage ? (
@@ -505,8 +505,8 @@ export default function DiningRestaurantDetails() {
               </div>
             </div>
 
-            <div className="mt-5 border-t border-[#e8e8ef] dark:border-slate-800 pt-4">
-              <h3 className="text-[20px] font-semibold text-[#23180f] dark:text-slate-100">Facilities</h3>
+            <div className="mt-5 border-t border-[#F1E2D0] dark:border-slate-800 pt-4">
+              <h3 className="text-[20px] font-semibold text-[#3A1C10] dark:text-slate-100">Facilities</h3>
               <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3">
                 {facilities.slice(0, 6).map((facility) => (
                   <div key={facility} className="flex items-center gap-2 text-[14px] text-[#5f6474] dark:text-slate-400">
@@ -526,7 +526,7 @@ export default function DiningRestaurantDetails() {
             onClick={() => isDiningEnabled && setIsBookingSheetOpen(true)}
             disabled={!isDiningEnabled}
             className={`h-12 w-full rounded-2xl border text-[17px] font-medium transition-all ${isDiningEnabled
-                ? "border-[#b18da5] bg-white dark:bg-slate-900 text-primary dark:text-purple-400 hover:bg-[#fdfafc] dark:hover:bg-slate-800"
+                ? "border-[#F4A47A] bg-white dark:bg-slate-900 text-primary dark:text-purple-400 hover:bg-[#FFFAF4] dark:hover:bg-slate-800"
                 : "cursor-not-allowed border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 text-gray-400 dark:text-slate-600 opacity-80"
               }`}
           >
@@ -548,7 +548,7 @@ export default function DiningRestaurantDetails() {
 
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <h3 className="text-xl font-black text-[#23180f] dark:text-slate-100">Select number of guests</h3>
+                <h3 className="text-xl font-black text-[#3A1C10] dark:text-slate-100">Select number of guests</h3>
                 <p className="mt-1 text-sm text-[#7b6651] dark:text-slate-400">
                   {remainingSeats > 0
                     ? `Only ${remainingSeats} out of ${maxCapacity} seats available now.`
@@ -557,7 +557,7 @@ export default function DiningRestaurantDetails() {
               </div>
               <button
                 onClick={() => setIsBookingSheetOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f5f5f5] dark:bg-slate-800 text-[#5b5b5b] dark:text-slate-300"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FBF3EA] dark:bg-slate-800 text-[#5b5b5b] dark:text-slate-300"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -575,12 +575,12 @@ export default function DiningRestaurantDetails() {
                     disabled={isBooked || isTooLarge}
                     onClick={() => setSelectedGuests(count)}
                     className={`relative rounded-2xl border px-3 py-4 text-sm font-bold transition-all ${selectedGuests === count
-                        ? "border-primary bg-[#fdfafc] dark:bg-purple-950/30 text-primary scale-[1.02] shadow-sm"
+                        ? "border-primary bg-[#FFFAF4] dark:bg-purple-950/30 text-primary scale-[1.02] shadow-sm"
                         : isBooked
                           ? "border-red-100 dark:border-red-900/30 bg-red-50 dark:bg-red-950/20 text-red-400 cursor-not-allowed opacity-70"
                           : isTooLarge
                             ? "border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950 text-gray-300 dark:text-slate-600 cursor-not-allowed"
-                            : "border-[#ece7de] dark:border-slate-800 bg-white dark:bg-slate-800 text-[#23180f] dark:text-slate-100 hover:border-primary/30"
+                            : "border-[#ece7de] dark:border-slate-800 bg-white dark:bg-slate-800 text-[#3A1C10] dark:text-slate-100 hover:border-primary/30"
                       }`}
                   >
                     {isBooked ? (

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "@food/api";
 import { Loader2, ChevronRight } from "lucide-react";
 import { getMediaUrl } from "@/shared/utils/media";
+import ScooterLoader from "@/shared/components/brand/ScooterLoader";
 
 const safeGetIntroSeen = () => {
   try { return sessionStorage.getItem("appIntroSeen"); } catch (e) { return null; }
@@ -70,8 +71,8 @@ export default function AppIntroSplash({ onComplete }) {
   if (safeGetIntroSeen()) return null;
   if (loading) {
     return (
-      <div className="fixed inset-0 z-[100000] bg-white flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="fixed inset-0 z-[100000] fs-cream-bg flex items-center justify-center">
+        <ScooterLoader size={90} />
       </div>
     );
   }

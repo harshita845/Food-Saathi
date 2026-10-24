@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback, memo } from "react";
+import { isModuleAuthenticated } from "@food/utils/auth";
 import { useNavigate } from "react-router-dom";
 import { UtensilsCrossed, ChevronRight, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -147,6 +148,11 @@ function OrderTrackingCardInner({ hasBottomNav = true }) {
   const [invalidOrderIds, setInvalidOrderIds] = useState(new Set());
 
   const fetchOrders = useCallback(async () => {
+    // Guests have no orders to track; skip the call instead of collecting a 401
+    if (!isModuleAuthenticated("user")) {
+      setHasFetchedApi(true);
+      return;
+    }
     try {
       const response = await orderAPI.getOrders({ limit: 10, page: 1 });
       let nextOrders = [];
@@ -384,7 +390,7 @@ function OrderTrackingCardInner({ hasBottomNav = true }) {
           
           <button 
              onClick={(e) => { e.stopPropagation(); setDismissedKey(currentOrderKey); }}
-             className="absolute top-2 right-2 p-1.5 rounded-full bg-orange-50/80 text-orange-400 hover:text-#55254b hover:bg-orange-100/80 transition-colors z-20 shadow-sm"
+             className="absolute top-2 right-2 p-1.5 rounded-full bg-orange-50/80 text-orange-400 hover:text-#C93C0E hover:bg-orange-100/80 transition-colors z-20 shadow-sm"
           >
             <X className="w-3.5 h-3.5 pointer-events-none" />
           </button>

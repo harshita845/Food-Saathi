@@ -117,7 +117,7 @@
 
 .instruction-text {
   font-size: 14px;
-  color: #6b7280;
+  color: #8C705B;
   line-height: 1.4;
 }
 
@@ -165,7 +165,7 @@
 
 .eta-time {
   margin: 2px 0;
-  color: #e03d4e;
+  color: #E0470F;
   font-size: 22px;
   font-weight: bold;
   line-height: 1.2;
@@ -191,7 +191,7 @@
   border-radius: 50%;
   object-fit: cover;
   margin-bottom: 4px;
-  border: 2px solid #e03d4e;
+  border: 2px solid #E0470F;
 }
 
 .delivery-boy-name {

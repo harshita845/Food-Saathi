@@ -51,7 +51,7 @@ function formatCurrency(value) {
 
 function KpiCard({ title, value, subtitle, icon: Icon, trend, accent = "primary" }) {
   const accentClasses = {
-    primary: "from-[#B80B3D]/10 to-[#66001D]/5 text-[#B80B3D]",
+    primary: "from-[#F2541B]/10 to-[#C93C0E]/5 text-[#F2541B]",
     green: "from-emerald-50 to-emerald-100/50 text-emerald-700",
     amber: "from-amber-50 to-amber-100/50 text-amber-700",
     blue: "from-blue-50 to-blue-100/50 text-blue-700",
@@ -93,7 +93,7 @@ function KpiCard({ title, value, subtitle, icon: Icon, trend, accent = "primary"
 
 const chartTooltipStyle = {
   background: "#ffffff",
-  border: "1px solid #e5e7eb",
+  border: "1px solid #F1E2D0",
   borderRadius: 12,
   boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
 }
@@ -152,7 +152,7 @@ export default function RestaurantDashboard() {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-[#B80B3D] border-t-transparent" />
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-[#F2541B] border-t-transparent" />
           <p className="mt-4 text-sm font-medium text-gray-500">Loading dashboard...</p>
         </div>
       </div>
@@ -163,7 +163,7 @@ export default function RestaurantDashboard() {
     <RestaurantPageShell className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-[#B80B3D]">
+          <p className="text-xs font-bold uppercase tracking-widest text-[#F2541B]">
             Restaurant overview
           </p>
           <h1 className="text-2xl md:text-3xl font-black text-gray-900 mt-1">
@@ -268,26 +268,26 @@ export default function RestaurantDashboard() {
                 <AreaChart data={revenueTrend}>
                   <defs>
                     <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#B80B3D" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#B80B3D" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#F2541B" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#F2541B" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#9ca3af" />
-                  <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" />
+                  <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#B9A08A" />
+                  <YAxis tick={{ fontSize: 11 }} stroke="#B9A08A" />
                   <Tooltip contentStyle={chartTooltipStyle} />
                   <Legend />
                   <Area
                     type="monotone"
                     dataKey="revenue"
-                    stroke="#B80B3D"
+                    stroke="#F2541B"
                     fill="url(#revGrad)"
                     name="Revenue (₹)"
                   />
                   <Line
                     type="monotone"
                     dataKey="orders"
-                    stroke="#66001D"
+                    stroke="#C93C0E"
                     strokeWidth={2}
                     dot={false}
                     name="Orders"
@@ -371,12 +371,12 @@ export default function RestaurantDashboard() {
               <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                 <BarChart data={monthlyTrend}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="#9ca3af" />
-                  <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" />
+                  <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="#B9A08A" />
+                  <YAxis tick={{ fontSize: 11 }} stroke="#B9A08A" />
                   <Tooltip contentStyle={chartTooltipStyle} />
                   <Legend />
-                  <Bar dataKey="orders" fill="#B80B3D" radius={[6, 6, 0, 0]} name="Orders" />
-                  <Bar dataKey="revenue" fill="#66001D" radius={[6, 6, 0, 0]} name="Revenue (₹)" />
+                  <Bar dataKey="orders" fill="#F2541B" radius={[6, 6, 0, 0]} name="Orders" />
+                  <Bar dataKey="revenue" fill="#C93C0E" radius={[6, 6, 0, 0]} name="Revenue (₹)" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -389,7 +389,7 @@ export default function RestaurantDashboard() {
               <CardTitle className="text-lg font-bold text-gray-900">Top dishes</CardTitle>
               <p className="text-xs text-gray-500">Best sellers in selected period</p>
             </div>
-            <Package className="h-5 w-5 text-[#B80B3D]" />
+            <Package className="h-5 w-5 text-[#F2541B]" />
           </CardHeader>
           <CardContent className="space-y-3">
             {topItems.length === 0 ? (
@@ -401,7 +401,7 @@ export default function RestaurantDashboard() {
                   className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 px-4 py-3"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#fdf2f5] text-xs font-black text-[#B80B3D]">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#FFF4EC] text-xs font-black text-[#F2541B]">
                       {idx + 1}
                     </span>
                     <span className="truncate text-sm font-semibold text-gray-900">
@@ -427,7 +427,7 @@ export default function RestaurantDashboard() {
             <button
               type="button"
               onClick={() => navigate("/food/restaurant/orders/all")}
-              className="inline-flex items-center gap-1 text-xs font-bold text-[#B80B3D] hover:underline"
+              className="inline-flex items-center gap-1 text-xs font-bold text-[#F2541B] hover:underline"
             >
               View all
               <ArrowUpRight className="h-3.5 w-3.5" />

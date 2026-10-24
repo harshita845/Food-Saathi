@@ -120,14 +120,14 @@ export default function DiningCategory() {
   }, [openLocationSelector])
 
   return (
-    <AnimatedPage className="min-h-screen bg-[#fffaf4] pb-24 dark:bg-[#0a0a0a]">
+    <AnimatedPage className="min-h-screen bg-[#fffaf4] pb-24 dark:bg-[#1A0F09]">
       <div className="sticky top-0 z-30 border-b border-[#efe2d2] bg-[rgba(255,250,244,0.95)] backdrop-blur-xl dark:border-gray-800 dark:bg-[rgba(10,10,10,0.95)]">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-4 sm:px-6">
           <Button
             variant="ghost"
             size="icon"
             onClick={goBack}
-            className="h-10 w-10 rounded-full border border-[#e7d8c5] bg-white text-[#2f2215] hover:bg-[#fff1df] dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white dark:hover:bg-gray-800"
+            className="h-10 w-10 rounded-full border border-[#e7d8c5] bg-white text-[#2f2215] hover:bg-[#fff1df] dark:border-gray-700 dark:bg-[#2A1A11] dark:text-white dark:hover:bg-gray-800"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -135,7 +135,7 @@ export default function DiningCategory() {
           <Button
             variant="ghost"
             onClick={handleLocationClick}
-            className="h-auto rounded-full border border-[#e7d8c5] bg-white px-4 py-2 text-left hover:bg-[#fff3e6] dark:border-gray-700 dark:bg-[#1a1a1a] dark:hover:bg-gray-800"
+            className="h-auto rounded-full border border-[#e7d8c5] bg-white px-4 py-2 text-left hover:bg-[#fff3e6] dark:border-gray-700 dark:bg-[#2A1A11] dark:hover:bg-gray-800"
           >
             <div className="flex items-center gap-2">
               <FaLocationDot className="h-4 w-4 text-primary" />
@@ -149,16 +149,16 @@ export default function DiningCategory() {
       </div>
 
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-        <div className="mb-6 rounded-[28px] border border-[#f0dfca] bg-gradient-to-br from-[#fff4e7] via-white to-[#fff9f3] p-6 shadow-[0_18px_60px_rgba(90,55,20,0.08)] dark:border-gray-800 dark:bg-gradient-to-br dark:from-[#161616] dark:via-[#101010] dark:to-[#1a1a1a] dark:shadow-[0_18px_60px_rgba(0,0,0,0.35)]">
+        <div className="mb-6 rounded-[28px] border border-[#f0dfca] bg-gradient-to-br from-[#fff4e7] via-white to-[#fff9f3] p-6 shadow-[0_18px_60px_rgba(90,55,20,0.08)] dark:border-gray-800 dark:bg-gradient-to-br dark:from-[#161616] dark:via-[#101010] dark:to-[#2A1A11] dark:shadow-[0_18px_60px_rgba(0,0,0,0.35)]">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.34em] text-[#c07a3a] dark:text-orange-300">Dining Category</p>
-              <h1 className="text-3xl font-black tracking-tight text-[#23180f] sm:text-4xl dark:text-white">{heading}</h1>
+              <h1 className="text-3xl font-black tracking-tight text-[#3A1C10] sm:text-4xl dark:text-white">{heading}</h1>
               <p className="mt-2 max-w-2xl text-sm text-[#6b5641] dark:text-gray-300">
                 Explore all restaurants linked to this dining category, check their timings, preview the menu, and jump straight into table booking.
               </p>
             </div>
-            <div className="inline-flex items-center gap-2 self-start rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#6b5641] shadow-sm dark:border dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-gray-300">
+            <div className="inline-flex items-center gap-2 self-start rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#6b5641] shadow-sm dark:border dark:border-gray-700 dark:bg-[#2A1A11] dark:text-gray-300">
               <MapPin className="h-4 w-4 text-primary" />
               <span>{restaurants.length} places found</span>
             </div>
@@ -170,7 +170,7 @@ export default function DiningCategory() {
         ) : error ? (
           <div className="py-20 text-center text-red-600">{error}</div>
         ) : restaurants.length === 0 ? (
-          <div className="rounded-[24px] border border-dashed border-[#e8d9c5] bg-white px-6 py-16 text-center text-[#7f6850] dark:border-gray-800 dark:bg-[#141414] dark:text-gray-400">
+          <div className="rounded-[24px] border border-dashed border-[#e8d9c5] bg-white px-6 py-16 text-center text-[#7f6850] dark:border-gray-800 dark:bg-[#22150D] dark:text-gray-400">
             No restaurants are linked to this dining category yet.
           </div>
         ) : (
@@ -202,7 +202,7 @@ export default function DiningCategory() {
                   to={`/food/user/dining/${category}/${restaurant.slug}`}
                   state={{ restaurant }}
                 >
-                  <Card className="group overflow-hidden rounded-[30px] border border-[#f0dfca] bg-white py-0 shadow-[0_18px_60px_rgba(17,24,39,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_80px_rgba(17,24,39,0.14)] dark:border-gray-800 dark:bg-[#141414] dark:shadow-[0_18px_60px_rgba(0,0,0,0.35)] dark:hover:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
+                  <Card className="group overflow-hidden rounded-[30px] border border-[#f0dfca] bg-white py-0 shadow-[0_18px_60px_rgba(17,24,39,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_80px_rgba(17,24,39,0.14)] dark:border-gray-800 dark:bg-[#22150D] dark:shadow-[0_18px_60px_rgba(0,0,0,0.35)] dark:hover:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
                     <div className="relative h-64 overflow-hidden">
                       <img
                         src={restaurant.image}
@@ -238,7 +238,7 @@ export default function DiningCategory() {
                     <CardContent className="space-y-4 p-5">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <h2 className="truncate text-[22px] font-black leading-tight text-[#23180f] dark:text-white">{restaurant.name}</h2>
+                          <h2 className="truncate text-[22px] font-black leading-tight text-[#3A1C10] dark:text-white">{restaurant.name}</h2>
                           <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#6b5641] dark:text-gray-300">{restaurant.address}</p>
                         </div>
                         <div className="inline-flex items-center gap-1 rounded-2xl bg-emerald-600 px-2.5 py-1.5 text-sm font-bold text-white">

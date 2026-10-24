@@ -220,7 +220,7 @@ export default function OutletInfo() {
               <div className="flex gap-2.5">
                 <button 
                   disabled={uploadingImage}
-                  className="bg-[#111827] text-white px-4 py-2.5 rounded-xl text-[13px] font-bold disabled:opacity-70 shadow-sm transition-colors" 
+                  className="bg-[#2C1A11] text-white px-4 py-2.5 rounded-xl text-[13px] font-bold disabled:opacity-70 shadow-sm transition-colors" 
                   onClick={() => handleImageClick('profile', profileImageInputRef, "Update Profile Photo")}
                 >
                   {uploadingImage && imageType === 'profile' ? 'Uploading...' : 'Change Logo'}
@@ -239,18 +239,18 @@ export default function OutletInfo() {
 
         {/* Ratings */}
         <div className="px-4 py-4 border-b border-gray-100 flex items-center gap-3.5">
-          <div className="bg-[#E91E63] px-2 py-1 rounded-[6px] flex items-center gap-1 shadow-sm">
+          <div className="bg-[#F2541B] px-2 py-1 rounded-[6px] flex items-center gap-1 shadow-sm">
             <span className="text-white font-black text-sm">{restaurantData?.rating?.toFixed(1) || "5.0"}</span>
             <Star className="w-3.5 h-3.5 text-white fill-white mb-[1px]" />
           </div>
-          <div className="flex items-center text-[#E91E63] font-black text-sm uppercase tracking-wide cursor-pointer hover:underline" onClick={() => navigate("/food/restaurant/feedback")}>
+          <div className="flex items-center text-[#F2541B] font-black text-sm uppercase tracking-wide cursor-pointer hover:underline" onClick={() => navigate("/food/restaurant/feedback")}>
             {restaurantData?.totalRatings || 1} DELIVERY REVIEWS
             <ChevronRight className="w-4 h-4 ml-0.5" />
           </div>
         </div>
       </div>
 
-      <div className="p-4 bg-[#F8F9FA]">
+      <div className="p-4 bg-[#FFFAF4]">
         <div className="mb-4">
           <h2 className="text-[17px] font-bold text-gray-900 tracking-tight">Restaurant Information</h2>
           <p className="text-[13px] text-gray-500 mt-1 font-medium">All onboarding and profile details at one place.</p>
@@ -263,9 +263,9 @@ export default function OutletInfo() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <p className="text-[13px] text-gray-500 font-semibold">Restaurant name</p>
-                  <span className="px-2.5 py-0.5 bg-[#FFEAF0] text-[#E91E63] rounded-full text-[10px] font-bold tracking-wide">{capitalize(restaurantData?.status || 'Approved')}</span>
+                  <span className="px-2.5 py-0.5 bg-[#FFF1E6] text-[#F2541B] rounded-full text-[10px] font-bold tracking-wide">{capitalize(restaurantData?.status || 'Approved')}</span>
                 </div>
-                <button onClick={() => handleEditClick('restaurantName')} className="text-[#2563EB] text-sm font-bold hover:underline">Edit</button>
+                <button onClick={() => handleEditClick('restaurantName')} className="text-[#E0470F] text-sm font-bold hover:underline">Edit</button>
               </div>
             </div>
             <p className="text-base font-black text-gray-900 mt-0.5">{restaurantName || "N/A"}</p>
@@ -277,9 +277,9 @@ export default function OutletInfo() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <p className="text-base font-bold text-gray-900">Basic details</p>
-                  <span className="px-2.5 py-0.5 bg-[#FFEAF0] text-[#E91E63] rounded-full text-[10px] font-bold tracking-wide">{capitalize(restaurantData?.status || 'Approved')}</span>
+                  <span className="px-2.5 py-0.5 bg-[#FFF1E6] text-[#F2541B] rounded-full text-[10px] font-bold tracking-wide">{capitalize(restaurantData?.status || 'Approved')}</span>
                 </div>
-                <button onClick={() => handleEditClick('basic')} className="text-[#2563EB] text-sm font-bold hover:underline">Edit</button>
+                <button onClick={() => handleEditClick('basic')} className="text-[#E0470F] text-sm font-bold hover:underline">Edit</button>
               </div>
             </div>
             
@@ -309,9 +309,9 @@ export default function OutletInfo() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <p className="text-base font-bold text-gray-900">Compliance details</p>
-                  <span className="px-2.5 py-0.5 bg-[#FFEAF0] text-[#E91E63] rounded-full text-[10px] font-bold tracking-wide">{capitalize(restaurantData?.status || 'Approved')}</span>
+                  <span className="px-2.5 py-0.5 bg-[#FFF1E6] text-[#F2541B] rounded-full text-[10px] font-bold tracking-wide">{capitalize(restaurantData?.status || 'Approved')}</span>
                 </div>
-                <button onClick={() => handleEditClick('compliance')} className="text-[#2563EB] text-sm font-bold hover:underline">Edit</button>
+                <button onClick={() => handleEditClick('compliance')} className="text-[#E0470F] text-sm font-bold hover:underline">Edit</button>
               </div>
             </div>
 
@@ -335,15 +335,15 @@ export default function OutletInfo() {
               <div>
                 <p className="text-[13px] text-gray-500 font-medium mb-0.5">FSSAI document</p>
                 <div className="flex gap-4 mt-1.5">
-                  <button className="text-[#2563EB] text-[15px] font-bold hover:underline tracking-tight" onClick={() => window.open(restaurantData?.fssaiImage?.url || restaurantData?.fssaiImage, "_blank")}>View image</button>
-                  <button className="text-[#2563EB] text-[15px] font-bold hover:underline tracking-tight">Upload</button>
+                  <button className="text-[#E0470F] text-[15px] font-bold hover:underline tracking-tight" onClick={() => window.open(restaurantData?.fssaiImage?.url || restaurantData?.fssaiImage, "_blank")}>View image</button>
+                  <button className="text-[#E0470F] text-[15px] font-bold hover:underline tracking-tight">Upload</button>
                 </div>
               </div>
               <div>
                 <p className="text-[13px] text-gray-500 font-medium mb-0.5">PAN document</p>
                 <div className="flex gap-4 mt-1.5">
-                  <button className="text-[#2563EB] text-[15px] font-bold hover:underline tracking-tight" onClick={() => window.open(restaurantData?.panImage?.url || restaurantData?.panImage, "_blank")}>View image</button>
-                  <button className="text-[#2563EB] text-[15px] font-bold hover:underline tracking-tight">Upload</button>
+                  <button className="text-[#E0470F] text-[15px] font-bold hover:underline tracking-tight" onClick={() => window.open(restaurantData?.panImage?.url || restaurantData?.panImage, "_blank")}>View image</button>
+                  <button className="text-[#E0470F] text-[15px] font-bold hover:underline tracking-tight">Upload</button>
                 </div>
               </div>
             </div>
@@ -355,9 +355,9 @@ export default function OutletInfo() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <p className="text-base font-bold text-gray-900">Bank and UPI details</p>
-                  <span className="px-2.5 py-0.5 bg-[#FFEAF0] text-[#E91E63] rounded-full text-[10px] font-bold tracking-wide">{capitalize(restaurantData?.status || 'Approved')}</span>
+                  <span className="px-2.5 py-0.5 bg-[#FFF1E6] text-[#F2541B] rounded-full text-[10px] font-bold tracking-wide">{capitalize(restaurantData?.status || 'Approved')}</span>
                 </div>
-                <button onClick={() => handleEditClick('bank')} className="text-[#2563EB] text-sm font-bold hover:underline">Edit</button>
+                <button onClick={() => handleEditClick('bank')} className="text-[#E0470F] text-sm font-bold hover:underline">Edit</button>
               </div>
             </div>
 
@@ -402,25 +402,25 @@ export default function OutletInfo() {
             {editSection === 'restaurantName' && (
               <div>
                 <label className="text-[13px] font-bold text-gray-700 mb-1.5 block tracking-wide">Restaurant Name</label>
-                <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E91E63]/20 focus:border-[#E91E63] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400" value={editFormData.restaurantName || editFormData.name || ''} onChange={e => setEditFormData({...editFormData, restaurantName: e.target.value})} placeholder="Enter restaurant name" />
+                <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F2541B]/20 focus:border-[#F2541B] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400" value={editFormData.restaurantName || editFormData.name || ''} onChange={e => setEditFormData({...editFormData, restaurantName: e.target.value})} placeholder="Enter restaurant name" />
               </div>
             )}
             {editSection === 'basic' && (
               <>
                 <div>
                   <label className="text-[13px] font-bold text-gray-700 mb-1.5 block tracking-wide">Owner Name</label>
-                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E91E63]/20 focus:border-[#E91E63] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400" value={editFormData.ownerName || ''} onChange={e => setEditFormData({...editFormData, ownerName: e.target.value})} placeholder="Enter owner name" />
+                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F2541B]/20 focus:border-[#F2541B] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400" value={editFormData.ownerName || ''} onChange={e => setEditFormData({...editFormData, ownerName: e.target.value})} placeholder="Enter owner name" />
                 </div>
                 <div>
                   <label className="text-[13px] font-bold text-gray-700 mb-1.5 block tracking-wide">Primary Contact</label>
-                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E91E63]/20 focus:border-[#E91E63] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400" value={editFormData.primaryContactNumber || editFormData.ownerPhone || ''} onChange={e => setEditFormData({...editFormData, primaryContactNumber: e.target.value})} placeholder="Enter contact number" />
+                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F2541B]/20 focus:border-[#F2541B] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400" value={editFormData.primaryContactNumber || editFormData.ownerPhone || ''} onChange={e => setEditFormData({...editFormData, primaryContactNumber: e.target.value})} placeholder="Enter contact number" />
                 </div>
                 <div>
                   <label className="text-[13px] font-bold text-gray-700 mb-1.5 block tracking-wide">Email</label>
-                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E91E63]/20 focus:border-[#E91E63] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400" value={editFormData.email || editFormData.ownerEmail || ''} onChange={e => setEditFormData({...editFormData, email: e.target.value})} placeholder="Enter email address" />
+                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F2541B]/20 focus:border-[#F2541B] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400" value={editFormData.email || editFormData.ownerEmail || ''} onChange={e => setEditFormData({...editFormData, email: e.target.value})} placeholder="Enter email address" />
                 </div>
                 <div className="flex items-center gap-3 mt-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <input type="checkbox" id="pureVeg" checked={!!editFormData.pureVegRestaurant} onChange={e => setEditFormData({...editFormData, pureVegRestaurant: e.target.checked})} className="w-5 h-5 rounded border-gray-300 text-[#E91E63] focus:ring-[#E91E63]" />
+                  <input type="checkbox" id="pureVeg" checked={!!editFormData.pureVegRestaurant} onChange={e => setEditFormData({...editFormData, pureVegRestaurant: e.target.checked})} className="w-5 h-5 rounded border-gray-300 text-[#F2541B] focus:ring-[#F2541B]" />
                   <label htmlFor="pureVeg" className="text-[14px] font-bold text-gray-800 cursor-pointer">Pure Veg Restaurant</label>
                 </div>
               </>
@@ -429,19 +429,19 @@ export default function OutletInfo() {
               <>
                 <div>
                   <label className="text-[13px] font-bold text-gray-700 mb-1.5 block tracking-wide">PAN Number</label>
-                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E91E63]/20 focus:border-[#E91E63] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400 uppercase" value={editFormData.panNumber || ''} onChange={e => setEditFormData({...editFormData, panNumber: e.target.value})} placeholder="Enter PAN number" />
+                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F2541B]/20 focus:border-[#F2541B] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400 uppercase" value={editFormData.panNumber || ''} onChange={e => setEditFormData({...editFormData, panNumber: e.target.value})} placeholder="Enter PAN number" />
                 </div>
                 <div>
                   <label className="text-[13px] font-bold text-gray-700 mb-1.5 block tracking-wide">GST Number</label>
-                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E91E63]/20 focus:border-[#E91E63] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400 uppercase" value={editFormData.gstNumber || ''} onChange={e => setEditFormData({...editFormData, gstNumber: e.target.value})} placeholder="Enter GST number (if any)" />
+                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F2541B]/20 focus:border-[#F2541B] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400 uppercase" value={editFormData.gstNumber || ''} onChange={e => setEditFormData({...editFormData, gstNumber: e.target.value})} placeholder="Enter GST number (if any)" />
                 </div>
                 <div>
                   <label className="text-[13px] font-bold text-gray-700 mb-1.5 block tracking-wide">FSSAI Number</label>
-                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E91E63]/20 focus:border-[#E91E63] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400" value={editFormData.fssaiNumber || ''} onChange={e => setEditFormData({...editFormData, fssaiNumber: e.target.value})} placeholder="Enter FSSAI number" />
+                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F2541B]/20 focus:border-[#F2541B] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400" value={editFormData.fssaiNumber || ''} onChange={e => setEditFormData({...editFormData, fssaiNumber: e.target.value})} placeholder="Enter FSSAI number" />
                 </div>
                 <div>
                   <label className="text-[13px] font-bold text-gray-700 mb-1.5 block tracking-wide">FSSAI Expiry</label>
-                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E91E63]/20 focus:border-[#E91E63] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400" type="date" value={editFormData.fssaiExpiry ? new Date(editFormData.fssaiExpiry).toISOString().split('T')[0] : ''} onChange={e => setEditFormData({...editFormData, fssaiExpiry: e.target.value})} />
+                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F2541B]/20 focus:border-[#F2541B] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400" type="date" value={editFormData.fssaiExpiry ? new Date(editFormData.fssaiExpiry).toISOString().split('T')[0] : ''} onChange={e => setEditFormData({...editFormData, fssaiExpiry: e.target.value})} />
                 </div>
               </>
             )}
@@ -449,19 +449,19 @@ export default function OutletInfo() {
               <>
                 <div>
                   <label className="text-[13px] font-bold text-gray-700 mb-1.5 block tracking-wide">Account Holder</label>
-                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E91E63]/20 focus:border-[#E91E63] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400" value={editFormData.accountHolderName || editFormData.nameOnPan || ''} onChange={e => setEditFormData({...editFormData, accountHolderName: e.target.value})} placeholder="Enter account holder name" />
+                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F2541B]/20 focus:border-[#F2541B] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400" value={editFormData.accountHolderName || editFormData.nameOnPan || ''} onChange={e => setEditFormData({...editFormData, accountHolderName: e.target.value})} placeholder="Enter account holder name" />
                 </div>
                 <div>
                   <label className="text-[13px] font-bold text-gray-700 mb-1.5 block tracking-wide">Account Number</label>
-                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E91E63]/20 focus:border-[#E91E63] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400" value={editFormData.accountNumber || ''} onChange={e => setEditFormData({...editFormData, accountNumber: e.target.value})} placeholder="Enter bank account number" />
+                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F2541B]/20 focus:border-[#F2541B] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400" value={editFormData.accountNumber || ''} onChange={e => setEditFormData({...editFormData, accountNumber: e.target.value})} placeholder="Enter bank account number" />
                 </div>
                 <div>
                   <label className="text-[13px] font-bold text-gray-700 mb-1.5 block tracking-wide">IFSC Code</label>
-                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E91E63]/20 focus:border-[#E91E63] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400 uppercase" value={editFormData.ifscCode || ''} onChange={e => setEditFormData({...editFormData, ifscCode: e.target.value})} placeholder="Enter IFSC code" />
+                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F2541B]/20 focus:border-[#F2541B] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400 uppercase" value={editFormData.ifscCode || ''} onChange={e => setEditFormData({...editFormData, ifscCode: e.target.value})} placeholder="Enter IFSC code" />
                 </div>
                 <div>
                   <label className="text-[13px] font-bold text-gray-700 mb-1.5 block tracking-wide">UPI ID</label>
-                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E91E63]/20 focus:border-[#E91E63] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400" value={editFormData.upiId || ''} onChange={e => setEditFormData({...editFormData, upiId: e.target.value})} placeholder="Enter UPI ID (optional)" />
+                  <input className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F2541B]/20 focus:border-[#F2541B] transition-all text-[15px] text-gray-900 px-4 placeholder:text-gray-400" value={editFormData.upiId || ''} onChange={e => setEditFormData({...editFormData, upiId: e.target.value})} placeholder="Enter UPI ID (optional)" />
                 </div>
               </>
             )}
@@ -475,7 +475,7 @@ export default function OutletInfo() {
               Cancel
             </button>
             <button 
-              className="flex-1 px-5 py-2.5 bg-[#E91E63] text-white rounded-xl font-bold text-sm hover:bg-[#D81B60] transition-colors shadow-sm disabled:opacity-70 flex justify-center items-center"
+              className="flex-1 px-5 py-2.5 bg-[#F2541B] text-white rounded-xl font-bold text-sm hover:bg-[#D81B60] transition-colors shadow-sm disabled:opacity-70 flex justify-center items-center"
               onClick={handleEditSave} 
               disabled={savingEdit}
             >

@@ -8,6 +8,7 @@ import { deliveryAPI } from "@food/api"
 import { clearModuleAuth } from "@food/utils/auth"
 import { useAppLogo } from "@food/hooks/useAppLogo"
 import logoNew from "@/assets/logo.png"
+import { SaathiWordmark, logoMark } from "@/shared/components/brand/FoodSaathiLogo"
 
 const DEFAULT_COUNTRY_CODE = "+91"
 
@@ -86,7 +87,7 @@ export default function DeliverySignIn() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FFF9F2] dark:bg-[#0a0a0a] flex flex-col relative overflow-hidden font-['Poppins']">
+    <div className="min-h-screen fs-cream-bg dark:bg-[#1A0F09] flex flex-col relative overflow-hidden font-['Poppins']">
       {/* iOS Keyboard Push-up Fix */}
       <style>{`
         @supports (-webkit-touch-callout: none) {
@@ -104,7 +105,7 @@ export default function DeliverySignIn() {
       `}</style>
       {/* Soft Ambient Background Elements */}
       <div className="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] rounded-full bg-[#FFE4C4]/40 dark:bg-primary/5 blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-[#E0F7FA]/50 dark:bg-blue-900/10 blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-[#FFF4EC]/50 dark:bg-blue-900/10 blur-[100px] pointer-events-none" />
       
       {/* Floating Decorative Elements (Approximating the reference image's background icons) */}
       <motion.div animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="absolute top-[15%] left-[8%] opacity-30 dark:opacity-10 pointer-events-none">
@@ -129,29 +130,34 @@ export default function DeliverySignIn() {
           className="w-full flex flex-col items-center"
         >
           <div className="relative mb-6 flex justify-center">
-            <div className="absolute inset-0 bg-blue-400/20 rounded-full blur-[40px] scale-150 pointer-events-none" />
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 200, damping: 20 }}
-              className="relative w-36 h-36 sm:w-40 sm:h-40 rounded-full bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden border-4 border-white"
-              style={{ borderRadius: '50%', WebkitMaskImage: '-webkit-radial-gradient(white, black)' }}
-            >
-              <img 
-                src={logoUrl} 
-                alt="Delivery Logo" 
-                className="w-full h-full object-contain p-2"
+            <div className="absolute inset-0 bg-[#FFA51F]/25 rounded-full blur-[40px] scale-150 pointer-events-none" />
+            <div className="relative flex flex-col items-center">
+              {/* speed lines behind the rider */}
+              <div className="absolute left-0 top-[42%] flex flex-col gap-2">
+                {[28, 40, 22].map((w, i) => (
+                  <span key={i} className="fs-speed-line block h-[5px] rounded-full bg-[#F2541B]" style={{ width: w, animationDelay: `${i * 0.15}s` }} />
+                ))}
+              </div>
+              <motion.img
+                src={logoUrl === logoNew ? logoMark : logoUrl}
+                alt="Food Saathi Delivery"
+                initial={{ x: -240, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 70, damping: 13 }}
+                className="relative h-36 sm:h-40 w-auto object-contain animate-fs-ride"
               />
-            </motion.div>
+              <SaathiWordmark size="text-3xl" className="mt-1" />
+              <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#3A1C10] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-[#FFC93C]">🛵 Delivery Partner</span>
+            </div>
           </div>
 
           {/* Typography Section */}
           <div className="text-center mb-8 px-2">
-            <h1 className="text-[28px] md:text-[32px] font-black text-[#3c2a21] dark:text-white leading-tight tracking-tight mb-2 font-['Outfit']">
+            <h1 className="font-display text-[30px] md:text-[34px] font-extrabold text-[#3A1C10] dark:text-white leading-tight tracking-tight mb-2">
               Deliver smiles, <br/> earn on your schedule.
             </h1>
-            <h2 className="text-[22px] text-[#5e4b3c] dark:text-gray-300 font-semibold mb-1">
-              Delivery Partner Login
+            <h2 className="font-script text-[22px] text-[#6B4A38] dark:text-gray-300 mb-1">
+              Khushiyon ka Delivery Partner
             </h2>
             <p className="text-sm text-[#8c7a6b] dark:text-gray-400 font-medium">
               Login with your mobile number
@@ -161,8 +167,8 @@ export default function DeliverySignIn() {
           <form onSubmit={handleSendOTP} className="w-full space-y-6">
             {/* Pill-shaped Glassmorphic Input */}
             <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-orange-100 to-blue-100 dark:from-gray-800 dark:to-gray-800 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-500"></div>
-              <div className="relative flex items-center bg-white/70 dark:bg-[#1a1a1a]/80 backdrop-blur-xl border border-white/50 dark:border-gray-800 rounded-[2rem] p-2 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+              <div className="absolute -inset-1 bg-gradient-to-r from-[#FFE4D1] to-[#FFEDC9] dark:from-gray-800 dark:to-gray-800 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-500"></div>
+              <div className="relative flex items-center bg-white/70 dark:bg-[#2A1A11]/80 backdrop-blur-xl border border-white/50 dark:border-gray-800 rounded-[2rem] p-2 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
                 
                 {/* Prefix Section */}
                 <div className="flex items-center pl-4 pr-3 border-r border-gray-200 dark:border-gray-700">
@@ -199,7 +205,7 @@ export default function DeliverySignIn() {
             <button
               type="submit"
               disabled={loading || phone.length < 10}
-              className="w-full py-4.5 bg-gradient-to-r from-[#4CB8C4] to-[#3CD3AD] hover:from-[#3BA0AB] hover:to-[#2BB896] disabled:from-gray-300 disabled:to-gray-300 dark:disabled:from-gray-800 dark:disabled:to-gray-800 disabled:text-gray-500 text-white rounded-[2rem] font-bold text-[17px] shadow-[0_15px_30px_-10px_rgba(76,184,196,0.5)] transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+              className="fs-shine w-full py-4.5 bg-gradient-to-r from-[#FF7A2F] via-[#F2541B] to-[#E2420F] hover:brightness-105 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-[2rem] font-bold text-[17px] shadow-[0_15px_30px_-10px_rgba(242,84,27,0.55)] transition-all active:scale-[0.98] flex items-center justify-center gap-2"
             >
               {loading ? (
                 <Loader2 className="w-6 h-6 animate-spin" />
@@ -224,9 +230,9 @@ export default function DeliverySignIn() {
           <div className="mt-8 text-center">
             <p className="text-xs text-gray-500 font-medium">
               By continuing, you agree to our <br className="sm:hidden" />
-              <Link to="/food/delivery/profile/terms" className="text-gray-800 dark:text-gray-300 font-bold hover:text-[#4CB8C4] underline underline-offset-2 mx-1">Terms</Link>
+              <Link to="/food/delivery/profile/terms" className="text-gray-800 dark:text-gray-300 font-bold hover:text-[#FF7A2F] underline underline-offset-2 mx-1">Terms</Link>
               &
-              <Link to="/food/delivery/profile/privacy" className="text-gray-800 dark:text-gray-300 font-bold hover:text-[#4CB8C4] underline underline-offset-2 ml-1">Privacy Policy</Link>
+              <Link to="/food/delivery/profile/privacy" className="text-gray-800 dark:text-gray-300 font-bold hover:text-[#FF7A2F] underline underline-offset-2 ml-1">Privacy Policy</Link>
             </p>
           </div>
         </motion.div>

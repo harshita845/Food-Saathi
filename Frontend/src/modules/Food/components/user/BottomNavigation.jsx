@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom"
 import { Tag, User, Home as HomeIcon, UtensilsCrossed, ShoppingBag } from "lucide-react"
 import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
 import { getPublicLandingSettings } from "@food/api"
 import { useAppLocation } from "@food/hooks/useAppLocation"
 
@@ -51,65 +52,42 @@ export default function BottomNavigation() {
         !pathname.includes("/under-250") &&
         !pathname.includes("/profile")))
 
+  const tabs = [
+    { to: "/food/user/", label: "Home", Icon: HomeIcon, active: isHome },
+    { to: "/food/user/under-250", label: `Under ₹${under250PriceLimit}`, Icon: Tag, active: isUnder250 },
+    { to: "/food/user/orders", label: "Orders", Icon: ShoppingBag, active: isOrders },
+    { to: "/food/user/profile", label: "Profile", Icon: User, active: isProfile },
+  ]
+
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-white dark:bg-[#1a1a1a] z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] border-t border-gray-100 dark:border-gray-800 pb-[max(env(safe-area-inset-bottom,0px),10px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] box-border">
-      <div className="flex items-center justify-between px-2 py-1.5 min-h-[64px]">
-        {/* Home Tab */}
-        <Link
-          to="/food/user/"
-          className={`flex flex-col items-center justify-center gap-1 w-[22%] py-2 rounded-[1.5rem] transition-all duration-300 ${isHome
-              ? "bg-[#ffeef2] dark:bg-primary/20 text-primary"
-              : "text-slate-500 dark:text-gray-400"
-            }`}
-        >
-          <HomeIcon className={`h-5 w-5 ${isHome ? "text-primary" : "text-slate-500 dark:text-gray-400"}`} strokeWidth={isHome ? 2.5 : 2} />
-          <span className={`text-[10px] sm:text-xs font-bold ${isHome ? "text-primary" : "text-slate-500 dark:text-gray-400 font-semibold"}`}>
-            Home
-          </span>
-        </Link>
-
-        {/* Under 250 Tab */}
-        <Link
-          to="/food/user/under-250"
-          className={`flex flex-col items-center justify-center gap-1 w-[22%] py-2 rounded-[1.5rem] transition-all duration-300 ${isUnder250
-              ? "bg-[#ffeef2] dark:bg-primary/20 text-primary"
-              : "text-slate-500 dark:text-gray-400"
-            }`}
-        >
-          <Tag className={`h-5 w-5 ${isUnder250 ? "text-primary" : "text-slate-500 dark:text-gray-400"}`} strokeWidth={isUnder250 ? 2.5 : 2} />
-          <span className={`text-[10px] sm:text-xs font-bold ${isUnder250 ? "text-primary" : "text-slate-500 dark:text-gray-400 font-semibold"}`}>
-            Under ₹{under250PriceLimit}
-          </span>
-        </Link>
-
-        {/* Orders Tab */}
-        <Link
-          to="/food/user/orders"
-          className={`flex flex-col items-center justify-center gap-1 w-[22%] py-2 rounded-[1.5rem] transition-all duration-300 ${isOrders
-              ? "bg-[#ffeef2] dark:bg-primary/20 text-primary"
-              : "text-slate-500 dark:text-gray-400"
-            }`}
-        >
-          <ShoppingBag className={`h-5 w-5 ${isOrders ? "text-primary" : "text-slate-500 dark:text-gray-400"}`} strokeWidth={isOrders ? 2.5 : 2} />
-          <span className={`text-[10px] sm:text-xs font-bold ${isOrders ? "text-primary" : "text-slate-500 dark:text-gray-400 font-semibold"}`}>
-            Orders
-          </span>
-        </Link>
-
-        {/* Profile Tab */}
-        <Link
-          to="/food/user/profile"
-          className={`flex flex-col items-center justify-center gap-1 w-[22%] py-2 rounded-[1.5rem] transition-all duration-300 ${isProfile
-              ? "bg-[#ffeef2] dark:bg-primary/20 text-primary"
-              : "text-slate-500 dark:text-gray-400"
-            }`}
-        >
-          <User className={`h-5 w-5 ${isProfile ? "text-primary" : "text-slate-500 dark:text-gray-400"}`} strokeWidth={isProfile ? 2.5 : 2} />
-          <span className={`text-[10px] sm:text-xs font-bold ${isProfile ? "text-primary" : "text-slate-500 dark:text-gray-400 font-semibold"}`}>
-            Profile
-          </span>
-        </Link>
-      </div>
+    <div className="md:hidden fixed bottom-0 left-0 right-0 w-full z-50 px-3 pb-[max(env(safe-area-inset-bottom,0px),10px)] pl-[max(env(safe-area-inset-left,0px),12px)] pr-[max(env(safe-area-inset-right,0px),12px)] box-border pointer-events-none">
+      <nav className="pointer-events-auto relative flex items-center justify-between rounded-[28px] border border-white/70 bg-white/90 px-1.5 py-1.5 shadow-[0_14px_40px_-14px_rgba(58,28,16,0.45)] backdrop-blur-xl dark:border-[#3E2A1F] dark:bg-[#26170E]/95">
+        {tabs.map(({ to, label, Icon, active }) => (
+          <Link
+            key={to}
+            to={to}
+            className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2"
+          >
+            {active && (
+              <motion.span
+                layoutId="fs-bottom-nav-pill"
+                className="absolute inset-0 rounded-[22px] fs-gradient shadow-[0_8px_20px_-8px_rgba(242,84,27,0.7)]"
+                transition={{ type: "spring", stiffness: 420, damping: 32 }}
+              />
+            )}
+            <motion.span
+              className="relative z-10"
+              animate={active ? { y: [0, -3, 0], scale: [1, 1.15, 1] } : { y: 0, scale: 1 }}
+              transition={{ duration: 0.4 }}
+            >
+              <Icon className={`h-5 w-5 ${active ? "text-white" : "text-[#8C705B] dark:text-gray-400"}`} strokeWidth={active ? 2.5 : 2} />
+            </motion.span>
+            <span className={`relative z-10 text-[10px] sm:text-xs ${active ? "font-bold text-white" : "font-semibold text-[#8C705B] dark:text-gray-400"}`}>
+              {label}
+            </span>
+          </Link>
+        ))}
+      </nav>
     </div>
   )
 }

@@ -100,7 +100,7 @@ export default function MyBookings() {
         const key = String(status || "").toLowerCase()
         if (key === "pending") return "bg-amber-100 text-amber-700"
         if (key === "accepted" || key === "confirmed") return "bg-green-100 text-green-700 font-bold"
-        if (key === "checked-in") return "bg-[#F9F9FB] text-primary"
+        if (key === "checked-in") return "bg-[#FFF9F0] text-primary"
         if (key === "completed") return "bg-blue-100 text-blue-700"
         if (key === "cancelled") return "bg-red-100 text-red-700"
         return "bg-slate-100 text-slate-700"
@@ -140,8 +140,8 @@ export default function MyBookings() {
     if (loading) return <Loader />
 
     return (
-        <AnimatedPage className="bg-slate-50 dark:bg-[#0a0a0a] min-h-screen pb-10 transition-colors">
-            <div className="bg-white dark:bg-[#0a0a0a] p-4 flex items-center shadow-sm sticky top-0 z-10 border-b dark:border-gray-800">
+        <AnimatedPage className="bg-slate-50 dark:bg-[#1A0F09] min-h-screen pb-10 transition-colors">
+            <div className="bg-white dark:bg-[#1A0F09] p-4 flex items-center shadow-sm sticky top-0 z-10 border-b dark:border-gray-800">
                 <button onClick={() => navigate("/")}>
                     <ArrowLeft className="w-6 h-6 text-gray-700 dark:text-white cursor-pointer" />
                 </button>
@@ -151,7 +151,7 @@ export default function MyBookings() {
             <div className="p-4 space-y-4">
                 {bookings.length > 0 ? (
                     bookings.map((booking) => (
-                        <div key={booking._id} className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-gray-800 flex items-start gap-4">
+                        <div key={booking._id} className="bg-white dark:bg-[#2A1A11] rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-gray-800 flex items-start gap-4">
                             <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100 dark:bg-gray-800">
                                 <img
                                     src={booking.restaurant?.image || booking.restaurant?.profileImage?.url || ""}

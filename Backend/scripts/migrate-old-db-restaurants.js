@@ -19,7 +19,7 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const DEFAULT_INPUT = path.join(REPO_ROOT, 'old db', 'restaurants.csv');
 const OUTPUT_ROOT = path.join(REPO_ROOT, 'migration-output', 'old-db-restaurants');
 const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const LEGACY_DEFAULT_ZONE_NAME = 'Samana';
+const LEGACY_DEFAULT_ZONE_NAME = process.env.LEGACY_DEFAULT_ZONE_NAME || 'Indore';
 
 function parseArgs(argv = []) {
     const args = {
@@ -592,7 +592,7 @@ async function resolveLegacyDefaultZone() {
 async function applyRestaurants(prepared) {
     const defaultZone = await resolveLegacyDefaultZone();
     if (!defaultZone?._id) {
-        throw new Error(`Legacy default zone "${LEGACY_DEFAULT_ZONE_NAME}" not found. Create the Samana zone first.`);
+        throw new Error(`Legacy default zone "${LEGACY_DEFAULT_ZONE_NAME}" not found. Create that zone first.`);
     }
 
     const existingDocs = await FoodRestaurant.find({

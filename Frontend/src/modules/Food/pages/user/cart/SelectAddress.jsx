@@ -11,7 +11,7 @@ import { Badge } from "@food/components/ui/badge"
 import { useProfile } from "@food/context/ProfileContext"
 import { toast } from "sonner"
 
-const ORANGE = "#7e3866"
+const ORANGE = "#F2541B"
 
 const getAddressId = (address) => address?.id || address?._id || ""
 
@@ -117,7 +117,7 @@ export default function SelectAddress() {
       const query = [street, form.additionalDetails, city, state, form.zipCode].filter(Boolean).join(", ")
       try {
         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`, {
-          headers: { "Accept-Language": "en", "User-Agent": "CityFood-App" }
+          headers: { "Accept-Language": "en", "User-Agent": "FoodSaathi-App" }
         })
         const json = await res.json()
         if (Array.isArray(json) && json.length > 0) {
@@ -157,7 +157,7 @@ export default function SelectAddress() {
   }
 
   return (
-    <AnimatedPage className="min-h-screen bg-linear-to-b from-orange-50/30 via-white to-orange-50/20 dark:from-[#0a0a0a] dark:via-[#1a1a1a] dark:to-[#0a0a0a] p-4 sm:p-6 md:p-8">
+    <AnimatedPage className="min-h-screen bg-linear-to-b from-orange-50/30 via-white to-orange-50/20 dark:from-[#1A0F09] dark:via-[#2A1A11] dark:to-[#1A0F09] p-4 sm:p-6 md:p-8">
       <div className="max-w-3xl mx-auto space-y-6 md:space-y-8">
         <ScrollReveal>
           <div className="flex items-center gap-4">
@@ -236,7 +236,7 @@ export default function SelectAddress() {
                   <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
 
                   {showDropdown && (
-                    <div className="absolute z-20 mt-2 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] shadow-xl overflow-hidden">
+                    <div className="absolute z-20 mt-2 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2A1A11] shadow-xl overflow-hidden">
                       {suggestions.length === 0 ? (
                         <div className="p-4 text-sm text-gray-600 dark:text-gray-400">
                           No matches found.

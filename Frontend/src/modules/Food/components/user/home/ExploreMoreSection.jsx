@@ -36,7 +36,7 @@ export default function ExploreMoreSection({
                 >
                   <Link to={item.href} className="block w-full">
                     <div className="flex flex-col items-center gap-2 w-full group">
-                      <div className="relative w-full aspect-square rounded-[1.25rem] bg-white dark:bg-[#1a1a1a] flex items-center justify-center shadow-[0_4px_12px_-4px_rgba(0,0,0,0.1)] group-hover:shadow-[0_12px_24px_-6px_rgba(0,0,0,0.15)] transition-all duration-500 overflow-hidden border border-gray-100 dark:border-gray-800 group-hover:border-primary/40">
+                      <div className="relative w-full aspect-square rounded-[1.25rem] bg-white dark:bg-[#2A1A11] flex items-center justify-center shadow-[0_4px_12px_-4px_rgba(0,0,0,0.1)] group-hover:shadow-[0_12px_24px_-6px_rgba(0,0,0,0.15)] transition-all duration-500 overflow-hidden border border-gray-100 dark:border-gray-800 group-hover:border-primary/40">
                         <div
                           className={`absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500 bg-gradient-to-br ${
                             index % 3 === 0
