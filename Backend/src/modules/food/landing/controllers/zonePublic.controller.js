@@ -51,7 +51,8 @@ const isPointWithinZoneRadius = (lat, lng, zone) => {
     return getDistanceKm(lat, lng, centerLat, centerLng) <= radiusKm;
 };
 
-const doesZoneServePoint = (lat, lng, zone) => {
+/** True when the zone (polygon, or centre + radius when enabled) covers the point. */
+export const doesZoneServePoint = (lat, lng, zone) => {
     if (zone?.isRadiusEnabled) {
         return isPointWithinZoneRadius(lat, lng, zone);
     }

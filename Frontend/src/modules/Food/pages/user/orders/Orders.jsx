@@ -312,6 +312,7 @@ export default function Orders() {
               restaurant: order.restaurantId?.restaurantName || order.restaurantId?.name || order.restaurantName || 'Restaurant',
               restaurantId: order.restaurantId?._id || order.restaurantId,
               restaurantSlug: order.restaurantId?.slug || null,
+              zoneId: order.zoneId?._id || order.zoneId || null,
               restaurantImage: order.restaurantId?.profileImage?.url || order.restaurantId?.profileImage || null,
               restaurantLocation: order.restaurantId?.location?.area || order.restaurantId?.location?.city || order.address?.city || order.deliveryAddress?.city || '',
               restaurantRating,
@@ -455,6 +456,19 @@ export default function Orders() {
 
     if (!restaurantTarget || !order.items?.length) {
       toast.info('Order items or restaurant information not available')
+      return
+    }
+
+    // Past orders stay in history wherever you are, but you can only reorder
+    // from a restaurant that delivers to your current location.
+    let currentZoneId = null
+    try {
+      currentZoneId = localStorage.getItem('userZoneId')
+    } catch {
+      currentZoneId = null
+    }
+    if (order.zoneId && currentZoneId && String(order.zoneId) !== String(currentZoneId)) {
+      toast.error(`${order.restaurant || 'This restaurant'} doesn't deliver to your current location.`)
       return
     }
 

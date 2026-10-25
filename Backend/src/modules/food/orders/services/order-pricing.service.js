@@ -7,6 +7,7 @@ import { FoodOffer } from '../../admin/models/offer.model.js';
 import { FoodOfferUsage } from '../../admin/models/offerUsage.model.js';
 import { FoodItem } from '../../admin/models/food.model.js';
 import { FoodZone } from '../../admin/models/zone.model.js';
+import { doesZoneServePoint } from '../../landing/controllers/zonePublic.controller.js';
 import { FoodAddon } from '../../restaurant/models/foodAddon.model.js';
 import { serializeFoodVariants, getFoodDisplayPrice } from '../../admin/services/foodVariant.service.js';
 import { ValidationError } from '../../../../core/auth/errors.js';
@@ -49,6 +50,26 @@ export async function assertOrderingOpen(restaurant) {
   }
 
   throw new ValidationError('Ordering is temporarily unavailable due to maintenance. Please try again later.');
+}
+
+/**
+ * The delivery address must be inside the restaurant's delivery zone, so a customer in one
+ * city can't order (or reorder) from a restaurant in another.
+ * @param {[number, number]} [coordinates] - delivery address as [lng, lat]
+ */
+async function assertRestaurantServesAddress(restaurant, coordinates) {
+  if (!restaurant?.zoneId || !Array.isArray(coordinates) || coordinates.length !== 2) return;
+  const [lng, lat] = coordinates.map(Number);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+  const zone = await FoodZone.findById(restaurant.zoneId).lean();
+  if (!zone || zone.isActive === false) return;
+  const hasGeometry = zone.isRadiusEnabled || (Array.isArray(zone.coordinates) && zone.coordinates.length >= 3);
+  if (!hasGeometry) return;
+  if (!doesZoneServePoint(lat, lng, zone)) {
+    const err = new ValidationError("This restaurant doesn't deliver to your selected address. Please choose a restaurant near you.");
+    err.code = "OUT_OF_DELIVERY_ZONE";
+    throw err;
+  }
 }
 
 /** Same discount selection the restaurant page uses when adding an item to the cart. */
@@ -207,6 +228,8 @@ export async function calculateOrderPricing(userId, dto) {
 
   if (restaurant.status !== "approved")
     throw new ValidationError("Restaurant not available");
+
+  await assertRestaurantServesAddress(restaurant, dto?.deliveryAddress?.location?.coordinates);
 
   const items = await resolveServerOrderItems(restaurant, dto.items);
   let itemDiscountTotal = 0;
