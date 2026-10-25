@@ -9,6 +9,19 @@ function getOfferPath(partnerId, orderMongoId) {
   return `delivery_partner_offers/${sanitizeFirebaseKey(partnerId)}/${sanitizeFirebaseKey(orderMongoId)}`;
 }
 
+const FIREBASE_WRITE_TIMEOUT_MS = 4000;
+
+/** Firebase writes must never stall dispatch: give up after a few seconds. */
+function withTimeout(promise, label) {
+  let timer;
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`${label} timed out after ${FIREBASE_WRITE_TIMEOUT_MS}ms`)), FIREBASE_WRITE_TIMEOUT_MS);
+    }),
+  ]).finally(() => clearTimeout(timer));
+}
+
 function stripUndefined(value) {
   return JSON.parse(JSON.stringify(value ?? {}));
 }
@@ -19,13 +32,16 @@ export async function publishDeliveryOfferToFirebase(partnerId, orderMongoId, pa
     if (!db || !partnerId || !orderMongoId) return false;
 
     const offeredAt = Number(payload.offeredAt) || Date.now();
-    await db.ref(getOfferPath(partnerId, orderMongoId)).set(
-      stripUndefined({
-        ...payload,
-        status: 'offered',
-        offeredAt,
-        last_updated: Date.now(),
-      }),
+    await withTimeout(
+      db.ref(getOfferPath(partnerId, orderMongoId)).set(
+        stripUndefined({
+          ...payload,
+          status: 'offered',
+          offeredAt,
+          last_updated: Date.now(),
+        }),
+      ),
+      'Firebase offer publish',
     );
     return true;
   } catch (err) {
@@ -39,7 +55,7 @@ export async function removeDeliveryOfferFromFirebase(partnerId, orderMongoId) {
     const db = getFirebaseDB();
     if (!db || !partnerId || !orderMongoId) return false;
 
-    await db.ref(getOfferPath(partnerId, orderMongoId)).remove();
+    await withTimeout(db.ref(getOfferPath(partnerId, orderMongoId)).remove(), 'Firebase offer remove');
     return true;
   } catch (err) {
     logger.warn(`Firebase delivery offer remove failed: ${err.message}`);

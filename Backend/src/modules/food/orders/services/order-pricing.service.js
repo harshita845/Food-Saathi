@@ -6,9 +6,11 @@ import { FoodBusinessSettings } from '../../admin/models/businessSettings.model.
 import { FoodOffer } from '../../admin/models/offer.model.js';
 import { FoodOfferUsage } from '../../admin/models/offerUsage.model.js';
 import { FoodItem } from '../../admin/models/food.model.js';
+import { FoodZone } from '../../admin/models/zone.model.js';
 import { FoodAddon } from '../../restaurant/models/foodAddon.model.js';
 import { serializeFoodVariants, getFoodDisplayPrice } from '../../admin/services/foodVariant.service.js';
 import { ValidationError } from '../../../../core/auth/errors.js';
+import { logger } from '../../../../utils/logger.js';
 import { haversineKm } from './order.helpers.js';
 import { getDrivingDistances } from '../../../../services/googleMaps.service.js';
 
@@ -32,10 +34,21 @@ export async function assertOrderingOpen(restaurant) {
 
   const exemptZoneIds = (businessSettings.maintenanceExemptZoneIds || []).map(String);
   const zoneId = restaurant?.zoneId ? String(restaurant.zoneId) : '';
-  if (!zoneId || !exemptZoneIds.includes(zoneId)) {
-    throw new ValidationError('Ordering is temporarily unavailable due to maintenance. Please try again later.');
+  if (zoneId && exemptZoneIds.includes(zoneId)) return businessSettings;
+
+  // Zones can also be exempted by name per deployment (MAINTENANCE_EXEMPT_ZONE_NAMES=Indore,Bhopal).
+  const exemptZoneNames = String(process.env.MAINTENANCE_EXEMPT_ZONE_NAMES || '')
+    .split(',')
+    .map((n) => n.trim().toLowerCase())
+    .filter(Boolean);
+  if (zoneId && exemptZoneNames.length) {
+    const zone = await FoodZone.findById(zoneId).select('name').lean();
+    if (zone?.name && exemptZoneNames.includes(String(zone.name).trim().toLowerCase())) {
+      return businessSettings;
+    }
   }
-  return businessSettings;
+
+  throw new ValidationError('Ordering is temporarily unavailable due to maintenance. Please try again later.');
 }
 
 /** Same discount selection the restaurant page uses when adding an item to the cart. */
@@ -97,7 +110,9 @@ export async function resolveServerOrderItems(restaurant, rawItems = []) {
   const items = Array.isArray(rawItems) ? rawItems : [];
   if (!items.length) throw new ValidationError('At least one item required');
 
-  const ids = [...new Set(items.map((it) => String(it?.itemId || '').trim()))];
+  // Cart line ids look like "<foodId>::<variantId|base>"; the menu item id is the part before "::".
+  const baseItemId = (it) => String(it?.itemId || it?.id || '').trim().split('::')[0];
+  const ids = [...new Set(items.map(baseItemId))];
   const objectIds = ids.filter((id) => mongoose.isValidObjectId(id)).map((id) => new mongoose.Types.ObjectId(id));
   const restaurantObjectId = new mongoose.Types.ObjectId(String(restaurant._id));
 
@@ -113,7 +128,7 @@ export async function resolveServerOrderItems(restaurant, rawItems = []) {
   const addonById = new Map(addons.map((a) => [String(a._id), a]));
 
   return items.map((it) => {
-    const itemId = String(it?.itemId || '').trim();
+    const itemId = baseItemId(it);
     const quantity = Math.max(1, Math.trunc(Number(it?.quantity) || 1));
     const food = foodById.get(itemId);
 
@@ -125,8 +140,13 @@ export async function resolveServerOrderItems(restaurant, rawItems = []) {
       let basePrice;
       let variantId = '';
       let variantName = '';
-      if (it?.variantId) {
-        const variant = variants.find((v) => v.id === String(it.variantId));
+      if (it?.variantId && variants.length) {
+        const wanted = String(it.variantId);
+        const indexMatch = /^variant-(\d+)$/.exec(wanted);
+        const variant =
+          variants.find((v) => v.id === wanted) ||
+          (it?.variantName ? variants.find((v) => v.name === String(it.variantName)) : null) ||
+          (indexMatch ? variants[Number(indexMatch[1])] : null);
         if (!variant) {
           throw new ValidationError(`The selected option for ${food.name} is no longer available.`);
         }
@@ -201,23 +221,21 @@ export async function calculateOrderPricing(userId, dto) {
   });
   itemDiscountTotal = Math.floor(itemDiscountTotal);
 
-  const feeSettings = await FoodFeeSettings.findOne({ isActive: true })
+  const feeSettings = (await FoodFeeSettings.findOne({ isActive: true })
     .sort({ createdAt: -1 })
-    .lean();
-  
-  if (!feeSettings) {
-    throw new ValidationError("Fee settings are not configured by admin.");
-  }
+    .lean()) || {};
 
-  const packagingFee = feeSettings.packagingFee != null ? Number(feeSettings.packagingFee) : NaN;
-  if (!Number.isFinite(packagingFee)) {
-    throw new ValidationError("Packaging fee is not configured by admin.");
-  }
-
-  const platformFee = feeSettings.platformFee != null ? Number(feeSettings.platformFee) : NaN;
-  if (!Number.isFinite(platformFee)) {
-    throw new ValidationError("Platform fee is not configured by admin.");
-  }
+  // Fees the admin has not configured are charged as 0 (ordering keeps working);
+  // set them in Admin -> Fee Settings.
+  const missingFees = [];
+  const readFee = (key) => {
+    const value = feeSettings[key] != null ? Number(feeSettings[key]) : NaN;
+    if (Number.isFinite(value)) return value;
+    missingFees.push(key);
+    return 0;
+  };
+  const packagingFee = readFee('packagingFee');
+  const platformFee = readFee('platformFee');
 
   const freeUpTo = Number(feeSettings.freeDeliveryUpTo || 0);
   let distanceKm = null;
@@ -319,8 +337,13 @@ export async function calculateOrderPricing(userId, dto) {
     }
     
     if (!Number.isFinite(deliveryFee)) {
-      throw new ValidationError("Base delivery fee is not configured by admin.");
+      missingFees.push('deliveryFee');
+      deliveryFee = 0;
     }
+  }
+
+  if (missingFees.length) {
+    logger.warn(`[Pricing] Fee settings not configured (${missingFees.join(', ')}); charging 0. Configure them in Admin -> Fee Settings.`);
   }
 
   const gstRate = feeSettings.gstRate != null ? Number(feeSettings.gstRate) : 0;

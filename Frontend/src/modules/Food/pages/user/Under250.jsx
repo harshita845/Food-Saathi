@@ -20,6 +20,7 @@ import { flattenMenuItems, getMenuFromResponse } from "@food/utils/menuItems"
 import { calculateDistance, formatDistance } from "@food/utils/common"
 import { getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailability"
 import { readScopedValue, removeScopedValue, writeScopedValue } from "@food/utils/appStorage"
+import { getDiscountedItemPrice } from "@food/utils/itemDiscount"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -208,26 +209,17 @@ const HorizontalMenuScroller = ({ restaurant, quantities, isClosed, handleItemCl
               <div className="flex items-center justify-between">
                 <div>
                   {(() => {
-                    let discountPercentage = restaurant?.discount || 0;
-                    const specificItemDiscount = (restaurant?.itemDiscounts || []).find(d => String(d.itemId) === String(item.id || item._id));
-                    if (specificItemDiscount) {
-                      discountPercentage = specificItemDiscount.discountValue || 0;
-                    } else {
-                      const matchingRule = (restaurant?.discountRules || []).find(rule => {
-                        const val = Number(rule.conditionValue);
-                        if (rule.conditionType === 'PRICE_ABOVE' && item.price > val) return true;
-                        if (rule.conditionType === 'PRICE_BELOW' && item.price < val) return true;
-                        return false;
-                      });
-                      if (matchingRule) discountPercentage = matchingRule.discountValue || 0;
-                    }
+                    const discountedPrice = getDiscountedItemPrice(restaurant, item.id || item._id, item.price);
+                    const basePrice = Math.round(Number(item.price) || 0);
+                    const savedAmount = Math.max(0, basePrice - discountedPrice);
+                    const savedPercent = basePrice > 0 ? Math.round((savedAmount / basePrice) * 100) : 0;
 
-                    if (discountPercentage > 0) {
+                    if (savedAmount > 0) {
                       return (
                         <div className="flex flex-col gap-0.5">
                           <div className="flex items-center gap-2">
                             <p className="text-base md:text-lg lg:text-xl xl:text-2xl font-bold text-gray-900 dark:text-white">
-                              {RUPEE_SYMBOL}{Math.round(item.price * (1 - discountPercentage / 100))}
+                              {RUPEE_SYMBOL}{discountedPrice}
                             </p>
                             <p className="text-xs md:text-sm text-gray-500 line-through">
                               {RUPEE_SYMBOL}{Math.round(item.price)}
@@ -235,7 +227,7 @@ const HorizontalMenuScroller = ({ restaurant, quantities, isClosed, handleItemCl
                           </div>
                           <div className="inline-flex">
                             <span className="text-[10px] font-bold text-green-600 bg-green-50 border border-green-200 px-1 py-0.5 rounded uppercase">
-                              {discountPercentage}% OFF
+                              {savedPercent}% OFF
                             </span>
                           </div>
                         </div>
@@ -1051,22 +1043,8 @@ export default function Under250() {
       r.menuItems?.some(m => m.id === item.id)
     );
     
-    // Evaluate Item-Specific and Smart Rules Discounts
-    let discountPercentage = restaurantObj?.discount || 0;
-    const specificItemDiscount = (restaurantObj?.itemDiscounts || []).find(d => String(d.itemId) === String(item.id || item._id));
-    if (specificItemDiscount) {
-      discountPercentage = specificItemDiscount.discountValue || 0;
-    } else {
-      const matchingRule = (restaurantObj?.discountRules || []).find(rule => {
-        const val = Number(rule.conditionValue);
-        if (rule.conditionType === 'PRICE_ABOVE' && item.price > val) return true;
-        if (rule.conditionType === 'PRICE_BELOW' && item.price < val) return true;
-        return false;
-      });
-      if (matchingRule) discountPercentage = matchingRule.discountValue || 0;
-    }
-    
-    const finalPrice = discountPercentage > 0 ? Math.round(item.price * (1 - discountPercentage / 100)) : item.price;
+    // Same discount rule as the restaurant page and the server's checkout pricing
+    const finalPrice = getDiscountedItemPrice(restaurantObj, item.id || item._id, item.price);
 
     // Prepare cart item with all required properties
     const cartItem = {

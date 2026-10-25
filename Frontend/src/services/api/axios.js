@@ -62,7 +62,8 @@ function formatApiError(err) {
     const responseData = err.response.data;
     const backendMessage =
       responseData && typeof responseData === "object" && !Array.isArray(responseData)
-        ? responseData.message
+        ? responseData.message ||
+          (typeof responseData.error === "string" ? responseData.error : null)
         : null;
 
     // Default to the message provided by backend when it is a structured JSON payload.

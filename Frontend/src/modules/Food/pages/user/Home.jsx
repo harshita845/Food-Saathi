@@ -2261,7 +2261,7 @@ export default function Home() {
                   <div className="pb-4 sm:pb-6">
                     <FestBanner
                       isVegMode={vegMode}
-                      images={[]}
+                      images={festBannerImages}
                       hideFoodImages={false}
                     />
                   </div>

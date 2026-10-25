@@ -24,6 +24,8 @@ export default function FeeSettings() {
     deliveryBonusAmount: "",
     dispatchRadiusExpansionEnabled: true,
     dispatchRadiusTiers: "2, 4, 6, 8, 15",
+    dispatchOfferTimeoutSeconds: 60,
+    scheduledDispatchLeadMinutes: 30,
   })
   const [loadingFeeSettings, setLoadingFeeSettings] = useState(false)
   const [savingFeeSettings, setSavingFeeSettings] = useState(false)
@@ -50,6 +52,8 @@ export default function FeeSettings() {
           deliveryBonusAmount: response.data.data.feeSettings.deliveryBonusAmount ?? "",
           dispatchRadiusExpansionEnabled: response.data.data.feeSettings.dispatchRadiusExpansionEnabled !== false,
           dispatchRadiusTiers: response.data.data.feeSettings.dispatchRadiusTiers?.join(", ") ?? "2, 4, 6, 8, 15",
+          dispatchOfferTimeoutSeconds: response.data.data.feeSettings.dispatchOfferTimeoutSeconds ?? 60,
+          scheduledDispatchLeadMinutes: response.data.data.feeSettings.scheduledDispatchLeadMinutes ?? 30,
         })
       } else if (response.data.success && response.data.data.feeSettings === null) {
         // Not configured yet - keep empty fields (no defaults).
@@ -67,6 +71,8 @@ export default function FeeSettings() {
           deliveryBonusAmount: "",
           dispatchRadiusExpansionEnabled: true,
           dispatchRadiusTiers: "2, 4, 6, 8, 15",
+          dispatchOfferTimeoutSeconds: 60,
+          scheduledDispatchLeadMinutes: 30,
         })
       }
     } catch (error) {
@@ -100,6 +106,8 @@ export default function FeeSettings() {
         deliveryBonusAmount: feeSettings.deliveryBonusAmount === "" ? undefined : Number(feeSettings.deliveryBonusAmount),
         dispatchRadiusExpansionEnabled: Boolean(feeSettings.dispatchRadiusExpansionEnabled),
         dispatchRadiusTiers: feeSettings.dispatchRadiusTiers ? feeSettings.dispatchRadiusTiers.split(',').map(s => Number(s.trim())).filter(n => !isNaN(n)) : undefined,
+        dispatchOfferTimeoutSeconds: feeSettings.dispatchOfferTimeoutSeconds === "" ? undefined : Number(feeSettings.dispatchOfferTimeoutSeconds),
+        scheduledDispatchLeadMinutes: feeSettings.scheduledDispatchLeadMinutes === "" ? undefined : Number(feeSettings.scheduledDispatchLeadMinutes),
         isActive: true,
       })
 
@@ -122,6 +130,8 @@ export default function FeeSettings() {
             deliveryBonusAmount: saved.deliveryBonusAmount ?? "",
             dispatchRadiusExpansionEnabled: saved.dispatchRadiusExpansionEnabled !== false,
             dispatchRadiusTiers: saved.dispatchRadiusTiers?.join(", ") ?? "2, 4, 6, 8, 15",
+            dispatchOfferTimeoutSeconds: saved.dispatchOfferTimeoutSeconds ?? 60,
+            scheduledDispatchLeadMinutes: saved.scheduledDispatchLeadMinutes ?? 30,
           })
         }
       } else {
@@ -671,6 +681,46 @@ export default function FeeSettings() {
                   />
                   <p className="text-xs text-slate-500">
                     Comma-separated list of radius steps used when expansion is enabled
+                  </p>
+                </div>
+
+                {/* Rider offer timeout */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-slate-700">
+                    Rider Offer Timeout (seconds)
+                  </label>
+                  <input
+                    type="number"
+                    value={feeSettings.dispatchOfferTimeoutSeconds}
+                    onChange={(e) => setFeeSettings({ ...feeSettings, dispatchOfferTimeoutSeconds: e.target.value })}
+                    min="15"
+                    max="600"
+                    step="5"
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                    placeholder="60"
+                  />
+                  <p className="text-xs text-slate-500">
+                    How long riders see a new-order popup before the search widens to the next radius step (15–600)
+                  </p>
+                </div>
+
+                {/* Scheduled order lead time */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-slate-700">
+                    Scheduled Order Rider Search (minutes before)
+                  </label>
+                  <input
+                    type="number"
+                    value={feeSettings.scheduledDispatchLeadMinutes}
+                    onChange={(e) => setFeeSettings({ ...feeSettings, scheduledDispatchLeadMinutes: e.target.value })}
+                    min="0"
+                    max="240"
+                    step="5"
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                    placeholder="30"
+                  />
+                  <p className="text-xs text-slate-500">
+                    For scheduled orders, start looking for a rider this many minutes before the scheduled time (0–240)
                   </p>
                 </div>
               </div>

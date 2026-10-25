@@ -94,9 +94,6 @@ const RestaurantWithdraws = lazy(() => import("@food/pages/admin/transactions/Re
 const RestaurantPayouts = lazy(() => import("@food/pages/admin/transactions/RestaurantPayouts"));
 const WithdrawMethod = lazy(() => import("@food/pages/admin/transactions/WithdrawMethod"));
 // Employee Management
-const EmployeeRole = lazy(() => import("@food/pages/admin/employees/EmployeeRole"));
-const AddEmployee = lazy(() => import("@food/pages/admin/employees/AddEmployee"));
-const EmployeeList = lazy(() => import("@food/pages/admin/employees/EmployeeList"));
 // Sub Admins
 const SubAdminsList = lazy(() => import("@food/pages/admin/subAdmins/SubAdminsList"));
 // Business Settings
@@ -117,7 +114,6 @@ const ImageSetting = lazy(() => import("@food/pages/admin/settings/ImageSetting"
 const DeveloperSettings = lazy(() => import("@food/pages/admin/settings/DeveloperSettings"));
 const PaymentReconciliation = lazy(() => import("@food/pages/admin/settings/PaymentReconciliation"));
 // System Settings
-const ThirdParty = lazy(() => import("@food/pages/admin/system/ThirdParty"));
 const FirebaseNotification = lazy(() => import("@food/pages/admin/system/FirebaseNotification"));
 const OfflinePaymentSetup = lazy(() => import("@food/pages/admin/system/OfflinePaymentSetup"));
 const JoinUsPageSetup = lazy(() => import("@food/pages/admin/system/JoinUsPageSetup"));
@@ -130,8 +126,6 @@ const AdminNotifications = lazy(() => import("@food/pages/admin/system/AdminNoti
 const LandingPageSettings = lazy(() => import("@food/pages/admin/system/LandingPageSettings"));
 const PageMetaData = lazy(() => import("@food/pages/admin/system/PageMetaData"));
 const ReactSite = lazy(() => import("@food/pages/admin/system/ReactSite"));
-const CleanDatabase = lazy(() => import("@food/pages/admin/system/CleanDatabase"));
-const AddonActivation = lazy(() => import("@food/pages/admin/system/AddonActivation"));
 const LandingPageManagement = lazy(() => import("@food/pages/admin/system/LandingPageManagement"));
 const AppIntroAds = lazy(() => import("@food/pages/admin/advertisement/AppIntroAds"));
 const DiningManagement = lazy(() => import("@food/pages/admin/system/DiningManagement"));
@@ -293,9 +287,6 @@ export default function AdminRouter() {
             <Route path="restaurant-payouts" element={<RestaurantPayouts />} />
             <Route path="withdraw-method" element={<WithdrawMethod />} />
             
-            <Route path="employee-role" element={<EmployeeRole />} />
-            <Route path="employees" element={<EmployeeList />} />
-            <Route path="employees/add" element={<AddEmployee />} />
             <Route path="sub-admins" element={<SubAdminsList />} />
 
             {/* SYSTEM & BUSINESS SETTINGS */}
@@ -318,7 +309,6 @@ export default function AdminRouter() {
             <Route path="pages-social-media/cancellation" element={<CancellationPolicy />} />
             <Route path="pages-social-media/react-registration" element={<ReactRegistration />} />
             
-            <Route path="3rd-party-configurations/party" element={<ThirdParty />} />
             <Route path="3rd-party-configurations/firebase" element={<FirebaseNotification />} />
             <Route path="3rd-party-configurations/offline-payment" element={<OfflinePaymentSetup />} />
             <Route path="3rd-party-configurations/join-us" element={<JoinUsPageSetup />} />
@@ -333,8 +323,6 @@ export default function AdminRouter() {
             <Route path="landing-page-settings/react" element={<LandingPageSettings type="react" />} />
             <Route path="page-meta-data" element={<PageMetaData />} />
             <Route path="react-site" element={<ReactSite />} />
-            <Route path="clean-database" element={<CleanDatabase />} />
-            <Route path="addon-activation" element={<AddonActivation />} />
             <Route path="hero-banner-management" element={<LandingPageManagement />} />
             <Route path="app-intro-ads" element={<AppIntroAds />} />
             <Route path="dining-management" element={<DiningManagement />} />

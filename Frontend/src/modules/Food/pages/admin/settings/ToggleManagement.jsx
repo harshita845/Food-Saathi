@@ -24,11 +24,17 @@ export default function ToggleManagement() {
     restaurantRegistration: true,
     deliveryRegistration: true,
   });
+  const [zones, setZones] = useState([]);
+  const [exemptZoneIds, setExemptZoneIds] = useState([]);
 
   const codSaveTimerRef = useRef(null);
 
   useEffect(() => {
     fetchBusinessSettings();
+    adminAPI
+      .getZones({ limit: 1000 })
+      .then((response) => setZones(response?.data?.data?.zones || []))
+      .catch(() => setZones([]));
     return () => {
       if (codSaveTimerRef.current) clearTimeout(codSaveTimerRef.current);
     };
@@ -50,6 +56,7 @@ export default function ToggleManagement() {
           restaurantRegistration: settings.restaurantRegistration !== false,
           deliveryRegistration: settings.deliveryRegistration !== false,
         }));
+        setExemptZoneIds((settings.maintenanceExemptZoneIds || []).map(String));
       }
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to load toggle settings");
@@ -71,6 +78,8 @@ export default function ToggleManagement() {
         toast.success(`${TOGGLE_LABELS[fieldKey]} updated`);
       } else if (fieldKey === "maxCodAmount") {
         toast.success("Max COD amount updated");
+      } else if (fieldKey === "maintenanceExemptZoneIds") {
+        toast.success("Maintenance exemptions updated");
       }
     } catch (error) {
       await fetchBusinessSettings();
@@ -108,6 +117,19 @@ export default function ToggleManagement() {
       }
     }, 600);
   };
+  const toggleExemptZone = async (zoneId) => {
+    const id = String(zoneId);
+    const next = exemptZoneIds.includes(id)
+      ? exemptZoneIds.filter((z) => z !== id)
+      : [...exemptZoneIds, id];
+    setExemptZoneIds(next);
+    try {
+      await persistToggles({ maintenanceExemptZoneIds: next }, "maintenanceExemptZoneIds");
+    } catch {
+      // reverted in persistToggles via fetchBusinessSettings
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-4 lg:p-6 bg-slate-50 min-h-screen flex items-center justify-center">
@@ -193,7 +215,7 @@ export default function ToggleManagement() {
               <div className="flex items-center justify-between border border-slate-100 p-4 rounded-xl bg-slate-50/50">
                 <div>
                   <p className="text-sm font-semibold text-slate-800">Maintenance Mode</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Suspend all customer ordering temporarily</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Suspend customer ordering temporarily (except the zones selected below)</p>
                 </div>
                 <button
                   type="button"
@@ -213,6 +235,40 @@ export default function ToggleManagement() {
                     />
                   )}
                 </button>
+              </div>
+
+              <div className="md:col-span-2 border border-slate-100 p-4 rounded-xl bg-slate-50/50">
+                <p className="text-sm font-semibold text-slate-800">Zones open during maintenance</p>
+                <p className="text-xs text-slate-500 mt-0.5 mb-3">
+                  Customers in the selected zones can still order while maintenance mode is on.
+                </p>
+                {zones.length === 0 ? (
+                  <p className="text-xs text-slate-400">No zones found.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {zones.map((zone) => {
+                      const id = String(zone._id || zone.id);
+                      const checked = exemptZoneIds.includes(id);
+                      return (
+                        <label
+                          key={id}
+                          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium cursor-pointer ${
+                            checked ? "border-blue-500 bg-blue-50 text-blue-700" : "border-slate-200 bg-white text-slate-700"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            className="accent-blue-600"
+                            checked={checked}
+                            disabled={isSaving("maintenanceExemptZoneIds")}
+                            onChange={() => toggleExemptZone(id)}
+                          />
+                          {zone.name || zone.zoneName || "Unnamed zone"}
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center justify-between border border-slate-100 p-4 rounded-xl bg-slate-50/50">

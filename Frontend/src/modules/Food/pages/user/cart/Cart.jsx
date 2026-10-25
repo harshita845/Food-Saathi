@@ -962,6 +962,12 @@ export default function Cart() {
         if (error.code !== 'ERR_NETWORK' && error.response?.status !== 404) {
           debugError("Error calculating pricing:", error)
         }
+        // The server rejected the cart (item unavailable, ordering paused, fees not set up...):
+        // tell the customer why instead of showing a bill the server will refuse at checkout.
+        if (error.response?.status === 400) {
+          const reason = error.response?.data?.error || error.response?.data?.message
+          if (reason) toast.error(reason, { id: 'cart-pricing-error' })
+        }
         // Fallback to frontend calculation if backend fails
         setPricing(null)
       } finally {
@@ -2518,10 +2524,10 @@ export default function Cart() {
 
               {/* Coupon Section */}
               <div className="bg-white dark:bg-[#2A1A11] rounded-2xl overflow-hidden border border-slate-100 dark:border-gray-800 shadow-sm flex flex-col">
-                {deliveryFee === 0 && (
+                {deliveryFee === 0 && Number(feeSettings.deliveryFee) > 0 && (
                   <div className="px-4 py-3 md:px-6 md:py-4 border-b border-dashed border-gray-200 dark:border-gray-800 flex items-center gap-3 bg-[#f4fcf7] dark:bg-green-900/10">
                     <CheckCircle2 className="h-5 w-5 text-green-600 fill-green-600/20" />
-                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">You saved {RUPEE_SYMBOL}{feeSettings.deliveryFee || 25} on delivery</span>
+                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">You saved {RUPEE_SYMBOL}{Number(feeSettings.deliveryFee)} on delivery</span>
                   </div>
                 )}
 

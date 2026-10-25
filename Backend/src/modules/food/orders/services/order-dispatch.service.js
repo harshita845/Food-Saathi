@@ -403,71 +403,8 @@ export async function tryAutoAssign(orderId, options = {}) {
       return order;
     }
 
-    const io = getIO();
-    const payload = buildDeliverySocketPayload(order, order.restaurantId);
-
-    logger.info(`[DeliveryPopupServer] dispatch start order=${order.order_id || order._id} attempt=${attempt} riders=${eligible.length} maxKm=${maxKm} ioAvailable=${Boolean(io)} dispatchStatus=${order.dispatch?.status || 'unassigned'}`);
-
-    // Broadcast to ALL eligible riders in this tier (Firebase first, socket fallback).
-    logger.info(`[PM2 LOG] [Dispatch] Broadcasting order ${order._id} to ${eligible.length} riders at ${maxKm}km.`);
-    const offeredAt = Date.now();
-    for (const p of eligible) {
-      const roomName = rooms.delivery(p.partnerId);
-      const eventPayload = {
-        ...payload,
-        pickupDistanceKm: p.distanceKm,
-        offeredAt,
-        isResend: Boolean(options.isResend),
-      };
-
-      logger.info(`[DeliveryPopupServer] dispatch target order=${order.order_id || order._id} rider=${String(p.partnerId)} room=${roomName} distanceKm=${Number(p.distanceKm || 0).toFixed(2)}`);
-
-      // 1. Firebase RTDB (Primary Frontend Channel)
-      const fbSuccess = await publishDeliveryOfferToFirebase(
-        p.partnerId,
-        order._id.toString(),
-        eventPayload,
-      );
-      if (fbSuccess) {
-        logger.info(`[PM2 LOG] [Firebase DB] Published order ${order._id} to rider ${p.partnerId}`);
-      } else {
-        logger.warn(`[PM2 LOG] [Firebase DB] Failed to publish order ${order._id} to rider ${p.partnerId}`);
-      }
-
-      // 2. Socket.IO (Fallback)
-      if (io) {
-        io.to(roomName).emit('new_order_available', eventPayload);
-        logger.info(`[PM2 LOG] [Socket.IO] Emitted order ${order._id} to room ${roomName}`);
-      }
-    }
-
-    // FCM Push for background/closed apps
-    const notifyList = eligible.map(p => ({
-      ownerType: 'DELIVERY_PARTNER',
-      ownerId: p.partnerId,
-    }));
-    logger.info(`[FCM-Dispatch] Sending new_order push to ${notifyList.length} delivery partner(s) for order ${order._id}: [${notifyList.map(n => n.ownerId).join(', ')}]`);
-    try {
-      const fcmResults = await notifyOwnersUrgentlySafely(
-        notifyList,
-        {
-          title: '🚴 New Order Nearby!',
-          body: `Order #${order.order_id || order._id} is waiting. Be the first to accept!`,
-          sound: 'default',
-          data: {
-            type: 'new_order',
-            orderId: order._id.toString(),
-            orderMongoId: order._id?.toString?.() || '',
-            link: `/delivery/orders/${order._id?.toString?.() || ''}`,
-          },
-        },
-      );
-      logger.info(`[FCM-Dispatch] new_order push results for order ${order._id}: ${JSON.stringify(fcmResults?.map?.(r => ({ success: r?.successCount, fail: r?.failureCount })) || 'void')}`);
-    } catch (err) {
-      logger.warn(`Push notifications failed for batch: ${err.message}`);
-    }
-
-    // Record or refresh offers for every rider notified in this attempt.
+    // 1. Record the offers first, so the rider app's "available orders" list shows the order
+    //    even if a push channel (Firebase / FCM / socket) is slow or down.
     for (const p of eligible) {
       upsertPartnerOffer(order, {
         partnerId: p.partnerId,
@@ -477,11 +414,44 @@ export async function tryAutoAssign(orderId, options = {}) {
         requiredCashForOrder: Number(p.requiredCashForOrder || requiredAmount || 0),
       });
     }
-
     order.dispatch.status = 'unassigned';
     order.dispatch.deliveryPartnerId = null;
     order.markModified('dispatch.offeredTo');
     await order.save();
+
+    const io = getIO();
+    const payload = buildDeliverySocketPayload(order, order.restaurantId);
+    const offeredAt = Date.now();
+    logger.info(`[Dispatch] Broadcasting order ${order.order_id || order._id} attempt=${attempt} to ${eligible.length} rider(s) within ${maxKm}km`);
+
+    // 2. Socket popup (instant) and Firebase popup, for all riders in parallel.
+    await Promise.allSettled(
+      eligible.map(async (p) => {
+        const eventPayload = {
+          ...payload,
+          pickupDistanceKm: p.distanceKm,
+          offeredAt,
+          isResend: Boolean(options.isResend),
+        };
+        io.to(rooms.delivery(p.partnerId)).emit('new_order_available', eventPayload);
+        const ok = await publishDeliveryOfferToFirebase(p.partnerId, order._id.toString(), eventPayload);
+        if (!ok) logger.warn(`[Dispatch] Firebase offer not published for rider ${p.partnerId} order ${order._id}`);
+      }),
+    );
+
+    // 3. FCM push for background/closed apps; never blocks dispatch.
+    const notifyList = eligible.map((p) => ({ ownerType: 'DELIVERY_PARTNER', ownerId: p.partnerId }));
+    void notifyOwnersUrgentlySafely(notifyList, {
+      title: '🚴 New Order Nearby!',
+      body: `Order #${order.order_id || order._id} is waiting. Be the first to accept!`,
+      sound: 'default',
+      data: {
+        type: 'new_order',
+        orderId: order._id.toString(),
+        orderMongoId: order._id.toString(),
+        link: `/delivery/orders/${order._id.toString()}`,
+      },
+    }).catch((err) => logger.warn(`Push notifications failed for batch: ${err.message}`));
 
     // Re-check after the configured offer timeout if no one accepts
     await addOrderJob({
