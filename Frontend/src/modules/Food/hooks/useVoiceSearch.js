@@ -44,7 +44,9 @@ export const useVoiceSearch = (onResult) => {
 
             recognition.onerror = (event) => {
                 const errorType = event.error;
-                console.error('Speech recognition error:', errorType);
+                if (errorType !== 'aborted') {
+                    console.error('Speech recognition error:', errorType);
+                }
                 
                 if (errorType === 'not-allowed') {
                     toast.error("Microphone access denied. Please allow permission.");
@@ -53,7 +55,7 @@ export const useVoiceSearch = (onResult) => {
                 } else if (errorType === 'network') {
                     toast.error("Voice search requires an active internet connection.");
                 } else if (errorType === 'aborted') {
-                    // Ignore aborted errors
+                    // Ignore aborted errors (normal user cancellation)
                 } else {
                     toast.error(`Voice search error: ${errorType}`);
                 }

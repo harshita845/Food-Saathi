@@ -1912,13 +1912,25 @@ export const getApprovedRestaurantByIdOrSlug = async (idOrSlug, query = {}) => {
     if (/^[0-9a-fA-F]{24}$/.test(value)) {
         doc = await FoodRestaurant.findOne({ _id: value, status: 'approved' }).lean();
     } else {
-        // Slug path: use normalized field for index-friendly exact match.
+        // Slug path: use normalized field with fallback on slug and case-insensitive restaurantName
         const restaurantNameNormalized = normalizeName(value);
         if (restaurantNameNormalized) {
             doc = await FoodRestaurant.findOne({
                 status: 'approved',
-                restaurantNameNormalized
+                $or: [
+                    { restaurantNameNormalized },
+                    { slug: value },
+                    { restaurantName: new RegExp(`^${escapeRegex(restaurantNameNormalized)}$`, 'i') },
+                    { restaurantName: new RegExp(`^${escapeRegex(value.replace(/-/g, ' '))}$`, 'i') }
+                ]
             }).lean();
+
+            if (doc && !doc.restaurantNameNormalized) {
+                FoodRestaurant.updateOne(
+                    { _id: doc._id },
+                    { $set: { restaurantNameNormalized } }
+                ).catch(() => {});
+            }
         }
     }
 

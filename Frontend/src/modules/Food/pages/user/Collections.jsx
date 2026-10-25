@@ -6,7 +6,6 @@ import { Input } from "@food/components/ui/input"
 import useAppBackNavigation from "@food/hooks/useAppBackNavigation"
 
 // Import banner
-import collectionsBanner from "@food/assets/collectionspagebanner.png"
 
 // Gradient colors for collection cards
 const gradientColors = [
@@ -71,12 +70,9 @@ export default function Collections() {
 
       {/* Banner Section - Clean without dark overlay */}
       <div className="relative w-full overflow-hidden min-h-[25vh] md:min-h-[30vh] bg-gradient-to-b from-amber-50 to-white">
-        <div className="absolute inset-0 z-0">
-          <img
-            src={collectionsBanner}
-            alt="Your Collections"
-            className="w-full h-full object-cover"
-          />
+        <div className="absolute inset-0 z-0 flex flex-col items-center justify-center px-6 text-center">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">Your Collections</h1>
+          <p className="mt-1 text-sm text-gray-600">Restaurants and dishes you have saved</p>
         </div>
       </div>
 

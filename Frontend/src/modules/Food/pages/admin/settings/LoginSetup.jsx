@@ -6,29 +6,32 @@ const debugWarn = (...args) => {}
 const debugError = (...args) => {}
 
 
+// Login links for this deployment (same origin the admin panel is served from)
+const APP_ORIGIN = typeof window !== "undefined" ? window.location.origin : ""
+
 const panelLoginUrls = [
   {
     id: 1,
     panelName: "Admin Panel",
-    loginUrl: "https://admin.stackfood.com/login",
+    loginUrl: `${APP_ORIGIN}/admin/login`,
     status: "active"
   },
   {
     id: 2,
     panelName: "Restaurant Panel",
-    loginUrl: "https://restaurant.stackfood.com/login",
+    loginUrl: `${APP_ORIGIN}/food/restaurant/login`,
     status: "active"
   },
   {
     id: 3,
     panelName: "Deliveryman Panel",
-    loginUrl: "https://delivery.stackfood.com/login",
+    loginUrl: `${APP_ORIGIN}/food/delivery/login`,
     status: "active"
   },
   {
     id: 4,
     panelName: "Customer Panel",
-    loginUrl: "https://app.stackfood.com/login",
+    loginUrl: `${APP_ORIGIN}/user/auth/login`,
     status: "active"
   }
 ]

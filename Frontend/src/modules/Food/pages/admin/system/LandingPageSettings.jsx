@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Monitor, Info, X, ChevronRight, RotateCcw, Save } from "lucide-react";
-import mobileImage1 from "@food/assets/Transaction-report-icons/mobile_image1.png";
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -18,12 +17,12 @@ export default function LandingPageSettings({ type = "admin" }) {
     subtitle: "when you can order always form",
     tagline: "Start Your Business or Download the App",
     buttonName: "Order Now",
-    redirectLink: "https://stackfood-web.6amtech.com/",
+    redirectLink: "",
     redirectLinkEnabled: true,
   });
   const [adminImageContent, setAdminImageContent] = useState({
     enabled: true,
-    contentImage: mobileImage1,
+    contentImage: null,
     backgroundImage: null,
   });
   const [adminFloatingIcon, setAdminFloatingIcon] = useState({
@@ -108,12 +107,12 @@ export default function LandingPageSettings({ type = "admin" }) {
         subtitle: "when you can order always form",
         tagline: "Start Your Business or Download the App",
         buttonName: "Order Now",
-        redirectLink: "https://stackfood-web.6amtech.com/",
+        redirectLink: "",
         redirectLinkEnabled: true,
       });
       setAdminImageContent({
         enabled: true,
-        contentImage: mobileImage1,
+        contentImage: null,
         backgroundImage: null,
       });
       setAdminFloatingIcon({

@@ -9,6 +9,7 @@ import { Label } from "@food/components/ui/label"
 import { Button } from "@food/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@food/components/ui/dialog"
 import { Checkbox } from "@food/components/ui/checkbox"
+import InteractiveExploreIcon from "@food/components/user/home/InteractiveExploreIcon"
 const debugLog = (...args) => { }
 const debugWarn = (...args) => { }
 const debugError = (...args) => { }
@@ -2129,16 +2130,12 @@ export default function LandingPageManagement() {
                       <div key={item.id} className="border border-slate-200 rounded-lg p-4 flex flex-col items-center relative">
                         <span className="text-sm font-semibold text-slate-700 mb-3">{item.label}</span>
 
-                        <div className="w-24 h-24 mb-4 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden relative group">
-                          {dbItem?.imageUrl ? (
-                            <img
-                              src={dbItem.imageUrl}
-                              alt={item.label}
-                              className="w-full h-full object-contain p-2"
-                            />
-                          ) : (
-                            <ImageIcon className="w-8 h-8 text-slate-300" />
-                          )}
+                        <div className="w-24 h-24 mb-4 rounded-[1.4rem] bg-[#FFFDF9] border border-[#EDE8E0] shadow-[0_6px_16px_-4px_rgba(0,0,0,0.06)] flex items-center justify-center overflow-hidden relative group">
+                          <InteractiveExploreIcon
+                            label={item.label}
+                            image={dbItem?.imageUrl || ''}
+                            className="w-full h-full p-2"
+                          />
 
                           {exploreIconsUploading[item.id] && (
                             <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10">

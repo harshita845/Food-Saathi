@@ -173,55 +173,85 @@ export const getRestaurantAvailabilityStatus = (restaurant, now = new Date(), op
   }
 
   const dayName = DAY_NAMES[now.getDay()]
+  const yesterdayName = DAY_NAMES[(now.getDay() + 6) % 7]
   const todayTiming = getTodayTiming(restaurant, dayName)
+  const yesterdayTiming = getTodayTiming(restaurant, yesterdayName)
 
   // Legacy openDays can get stale; enforce only when no explicit outlet timing exists for today.
   const openDays = Array.isArray(restaurant.openDays) ? restaurant.openDays : []
-  if (!todayTiming && openDays.length > 0) {
-    const normalizedOpenDays = new Set(openDays.map((day) => normalizeDay(day)).filter(Boolean))
-    if (normalizedOpenDays.size > 0 && !normalizedOpenDays.has(dayName)) {
-      return {
-        isOpen: false,
-        isActive,
-        isAcceptingOrders,
-        isWithinTimings: false,
-        reason: "closed-day",
-      }
+  const normalizedOpenDays = new Set(openDays.map((day) => normalizeDay(day)).filter(Boolean))
+  const isLegacyClosedDay = (name, timing) =>
+    !timing && normalizedOpenDays.size > 0 && !normalizedOpenDays.has(name)
+
+  const resolveWindow = (timing) => {
+    const openingTime =
+      timing?.openingTime ||
+      restaurant?.deliveryTimings?.openingTime ||
+      restaurant?.openingTime ||
+      null
+    const closingTime =
+      timing?.closingTime ||
+      restaurant?.deliveryTimings?.closingTime ||
+      restaurant?.closingTime ||
+      null
+    return {
+      openingTime,
+      closingTime,
+      openingMinutes: parseTimeToMinutes(openingTime),
+      closingMinutes: parseTimeToMinutes(closingTime),
+      hasExplicitWindow: Boolean(openingTime || closingTime),
     }
   }
 
-  if (todayTiming?.isOpen === false) {
+  const nowMinutes = now.getHours() * 60 + now.getMinutes()
+  const todayWindow = resolveWindow(todayTiming)
+  const todayIsOpenDay = todayTiming?.isOpen !== false && !isLegacyClosedDay(dayName, todayTiming)
+
+  // Yesterday's late-night window (e.g. Sunday 8:00 AM - 1:30 AM) still covers early Monday.
+  const yesterdayWindow = resolveWindow(yesterdayTiming)
+  const yesterdayIsOpenDay =
+    yesterdayTiming?.isOpen !== false && !isLegacyClosedDay(yesterdayName, yesterdayTiming)
+  const yesterdayRunsPastMidnight =
+    yesterdayIsOpenDay &&
+    yesterdayWindow.openingMinutes !== null &&
+    yesterdayWindow.closingMinutes !== null &&
+    yesterdayWindow.closingMinutes < yesterdayWindow.openingMinutes
+  if (yesterdayRunsPastMidnight && nowMinutes <= yesterdayWindow.closingMinutes) {
+    const minutesUntilClose = yesterdayWindow.closingMinutes - nowMinutes
+    return {
+      isOpen: true,
+      isActive,
+      isAcceptingOrders,
+      isWithinTimings: true,
+      openingTime: yesterdayWindow.openingTime,
+      closingTime: yesterdayWindow.closingTime,
+      minutesUntilClose,
+      closingCountdownLabel: formatClosingCountdown(minutesUntilClose, yesterdayWindow.closingTime),
+      reason: isAcceptingOrders ? "open" : "open-by-timings",
+    }
+  }
+
+  if (!todayIsOpenDay) {
     return {
       isOpen: false,
       isActive,
       isAcceptingOrders,
       isWithinTimings: false,
-      reason: "day-closed",
+      reason: todayTiming ? "day-closed" : "closed-day",
     }
   }
 
-  const openingTime =
-    todayTiming?.openingTime ||
-    restaurant?.deliveryTimings?.openingTime ||
-    restaurant?.openingTime ||
-    null
-  const closingTime =
-    todayTiming?.closingTime ||
-    restaurant?.deliveryTimings?.closingTime ||
-    restaurant?.closingTime ||
-    null
-
-  const openingMinutes = parseTimeToMinutes(openingTime)
-  const closingMinutes = parseTimeToMinutes(closingTime)
-  const nowMinutes = now.getHours() * 60 + now.getMinutes()
-  const hasExplicitWindow = Boolean(openingTime || closingTime)
+  const { openingTime, closingTime, openingMinutes, closingMinutes, hasExplicitWindow } = todayWindow
   // If a restaurant provides only one side of the window, treat timings as not enforced
   // (prevents accidental "offline" due to partial data).
-  const isWithinTimings = hasExplicitWindow
-    ? (openingMinutes !== null && closingMinutes !== null
-      ? isWithinTimeWindow(nowMinutes, openingMinutes, closingMinutes)
-      : true)
-    : true
+  let isWithinTimings = true
+  if (hasExplicitWindow && openingMinutes !== null && closingMinutes !== null && openingMinutes !== closingMinutes) {
+    isWithinTimings = closingMinutes > openingMinutes
+      ? nowMinutes >= openingMinutes && nowMinutes <= closingMinutes
+      // Today's window runs past midnight: today's share is from opening until midnight
+      // (the early-morning part belongs to yesterday's window, handled above).
+      : nowMinutes >= openingMinutes
+  }
   const minutesUntilClose = isWithinTimings
     ? getMinutesUntilClosing(nowMinutes, openingMinutes, closingMinutes)
     : null

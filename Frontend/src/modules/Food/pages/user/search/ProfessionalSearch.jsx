@@ -9,7 +9,7 @@ import { Card, CardContent } from "@food/components/ui/card"
 import { Button } from "@food/components/ui/button"
 import { Input } from "@food/components/ui/input"
 import { useAppLocation } from "@food/hooks/useAppLocation"
-import { searchAPI, adminAPI } from "@/services/api"
+import { searchAPI, adminAPI, getPublicCategories } from "@/services/api"
 import { motion, AnimatePresence } from "framer-motion"
 import { createPortal } from "react-dom"
 import OptimizedImage from "@food/components/OptimizedImage"
@@ -119,12 +119,20 @@ export default function ProfessionalSearch() {
       return;
     }
     try {
-      const res = await adminAPI.getPublicCategories({ zoneId })
+      const res = typeof getPublicCategories === "function"
+        ? await getPublicCategories(zoneId || null)
+        : await adminAPI.getPublicCategories({ zoneId })
       const payload = res?.data?.data || res?.data || res || {}
-      if (Array.isArray(payload.categories) || Array.isArray(payload)) {
-        const categories = Array.isArray(payload.categories) ? payload.categories : payload;
-        sessionCategoriesCache.set(cacheKey, categories);
-        setCategories(categories)
+      const list = Array.isArray(payload.categories)
+        ? payload.categories
+        : Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload.data?.categories)
+            ? payload.data.categories
+            : []
+      if (list.length > 0) {
+        sessionCategoriesCache.set(cacheKey, list);
+        setCategories(list)
       }
     } catch (err) {
       console.error("Failed to fetch categories", err)

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="gourmetBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3A1C71" />
+      <stop offset="50%" stop-color="#D76D77" />
+      <stop offset="100%" stop-color="#FFAF7B" />
+    </linearGradient>
+    <linearGradient id="gourmetGloss" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.55" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="goldPlate" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFDF0" />
+      <stop offset="40%" stop-color="#FFD700" />
+      <stop offset="100%" stop-color="#E5A100" />
+    </linearGradient>
+    <filter id="shadowGourmet" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#3A1C71" flood-opacity="0.4" />
+    </filter>
+  </defs>
+
+  <!-- Base Rounded Container -->
+  <rect x="15" y="15" width="170" height="170" rx="42" fill="url(#gourmetBg)" filter="url(#shadowGourmet)" />
+
+  <!-- Glossy Reflection Sheen -->
+  <path d="M 15 57 Q 15 15 57 15 L 143 15 Q 185 15 185 57 L 185 85 Q 100 115 15 85 Z" fill="url(#gourmetGloss)" />
+
+  <!-- 3D Gourmet Cloche & Crown -->
+  <g transform="translate(100, 108)">
+    <!-- Serving Platter -->
+    <ellipse cx="0" cy="34" rx="60" ry="10" fill="url(#goldPlate)" stroke="#FFFFFF" stroke-width="2.5" />
+    <ellipse cx="0" cy="32" rx="52" ry="7" fill="#C68A00" opacity="0.6" />
+
+    <!-- Cloche Dome -->
+    <path d="M -46 28 C -46 -15 46 -15 46 28 Z" fill="url(#goldPlate)" stroke="#FFFFFF" stroke-width="3" filter="url(#shadowGourmet)" />
+    
+    <!-- Cloche Handle / Crown -->
+    <circle cx="0" cy="-20" r="9" fill="#FFF2A3" stroke="#FFFFFF" stroke-width="2.5" />
+    <path d="M -8 -8 L -4 -16 L 0 -10 L 4 -16 L 8 -8 Z" fill="#FFE57F" />
+
+    <!-- Cloche Rim -->
+    <rect x="-49" y="26" width="98" height="6" rx="3" fill="#FFE885" stroke="#FFFFFF" stroke-width="1.5" />
+  </g>
+
+  <!-- Stars / Twinkles -->
+  <g fill="#FFF" opacity="0.95">
+    <path d="M 100 40 Q 100 52 88 52 Q 100 52 100 64 Q 100 52 112 52 Q 100 52 100 40 Z" />
+    <path d="M 45 68 Q 45 76 37 76 Q 45 76 45 84 Q 45 76 53 76 Q 45 76 45 68 Z" />
+    <path d="M 155 75 Q 155 83 147 83 Q 155 83 155 91 Q 155 83 163 83 Q 155 83 155 75 Z" />
+  </g>
+</svg>

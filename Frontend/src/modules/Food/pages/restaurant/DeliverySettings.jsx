@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import useRestaurantBackNavigation from "@food/hooks/useRestaurantBackNavigation"
 import { motion, AnimatePresence } from "framer-motion"
-import Lenis from "lenis"
+import useRestaurantLenis from "@food/hooks/useRestaurantLenis"
 import { ArrowLeft, Truck, X, CheckCircle, AlertCircle } from "lucide-react"
 import { Switch } from "@food/components/ui/switch"
 import { Card, CardContent } from "@food/components/ui/card"
@@ -27,25 +27,7 @@ export default function DeliverySettings() {
   const [toastMessage, setToastMessage] = useState("")
   const [savingStatus, setSavingStatus] = useState(false)
 
-  // Lenis smooth scrolling
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-    })
-
-    function raf(time) {
-      lenis.raf(time)
-      requestAnimationFrame(raf)
-    }
-
-    requestAnimationFrame(raf)
-
-    return () => {
-      lenis.destroy()
-    }
-  }, [])
+  useRestaurantLenis()
 
   const syncStatusLocally = (status) => {
     const value = Boolean(status)

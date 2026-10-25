@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="collectionsBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4776E6" />
+      <stop offset="50%" stop-color="#8E54E9" />
+      <stop offset="100%" stop-color="#FF512F" />
+    </linearGradient>
+    <linearGradient id="collectionsGloss" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.55" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF6B8B" />
+      <stop offset="50%" stop-color="#FF3366" />
+      <stop offset="100%" stop-color="#CC0033" />
+    </linearGradient>
+    <linearGradient id="bookGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#E8EAF6" />
+    </linearGradient>
+    <filter id="shadowCollections" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#4776E6" flood-opacity="0.4" />
+    </filter>
+  </defs>
+
+  <!-- Base Rounded Container -->
+  <rect x="15" y="15" width="170" height="170" rx="42" fill="url(#collectionsBg)" filter="url(#shadowCollections)" />
+
+  <!-- Glossy Reflection Sheen -->
+  <path d="M 15 57 Q 15 15 57 15 L 143 15 Q 185 15 185 57 L 185 85 Q 100 115 15 85 Z" fill="url(#collectionsGloss)" />
+
+  <!-- 3D Curated Book / Bookmark Collection -->
+  <g transform="translate(100, 106)">
+    <!-- Back Card -->
+    <rect x="-38" y="-34" width="76" height="76" rx="16" fill="url(#bookGrad)" opacity="0.75" transform="rotate(-10)" stroke="#FFFFFF" stroke-width="2" />
+    
+    <!-- Front Card -->
+    <rect x="-38" y="-34" width="76" height="76" rx="16" fill="url(#bookGrad)" transform="rotate(6)" stroke="#FFFFFF" stroke-width="2.5" filter="url(#shadowCollections)" />
+
+    <!-- Bookmark Ribbon -->
+    <path d="M 10 -34 L 10 2 L 20 -4 L 30 2 L 30 -34 Z" fill="#FFA726" stroke="#FFFFFF" stroke-width="1.5" />
+
+    <!-- Radiant 3D Heart -->
+    <path d="M 0 -8 C 0 -18 -18 -18 -18 -5 C -18 7 0 20 0 20 C 0 20 18 7 18 -5 C 18 -18 0 -18 0 -8 Z" fill="url(#heartGrad)" stroke="#FFFFFF" stroke-width="2.5" filter="url(#shadowCollections)" />
+  </g>
+
+  <!-- Sparkles -->
+  <g fill="#FFF" opacity="0.95">
+    <path d="M 45 45 Q 45 55 35 55 Q 45 55 45 65 Q 45 55 55 55 Q 45 55 45 45 Z" />
+    <path d="M 155 50 Q 155 58 147 58 Q 155 58 155 66 Q 155 58 163 58 Q 155 58 155 50 Z" />
+    <path d="M 150 148 Q 150 156 142 156 Q 150 156 150 164 Q 150 156 158 156 Q 150 156 150 148 Z" />
+  </g>
+</svg>

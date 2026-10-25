@@ -440,6 +440,12 @@ export const adminAPI = {
   /** Categories (admin) */
   getCategories: (params = {}) =>
     adminClient.get("/food/admin/categories", { params }),
+  /** Public categories */
+  getPublicCategories: (params = {}, config = {}) =>
+    getPublicCategoriesOnce(
+      typeof params === "string" ? { zoneId: params } : (params || {}),
+      config
+    ),
   /** Dining categories (admin) */
   getDiningCategories: (params = {}) =>
     adminClient.get("/food/admin/dining/categories", { params }),
@@ -1211,7 +1217,7 @@ export const getPublicGourmetRestaurants = (zoneId = null) =>
         : [];
   });
 
-const getPublicCategoriesOnce = (params = {}, config = {}) => {
+function getPublicCategoriesOnce(params = {}, config = {}) {
   const { noCache, ...axiosConfig } = config || {};
   const keyParams =
     params && typeof params === "object" ? { ...params } : {};

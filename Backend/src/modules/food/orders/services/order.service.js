@@ -33,6 +33,7 @@ import * as userWalletService from '../../user/services/userWallet.service.js';
 import * as financeService from './finance.service.js';
 import { withTransaction, sessionOpts } from '../../../../utils/dbTransaction.js';
 import { calculateOrderPricing, assertOrderingOpen } from './order-pricing.service.js';
+import { isRestaurantWithinOutletHours } from '../../restaurant/services/restaurantHours.service.js';
 import * as dispatchService from './order-dispatch.service.js';
 import { clearDeliveryOffersForOrder } from './order-dispatch.firebase.js';
 import * as deliveryService from './order-delivery.service.js';
@@ -171,6 +172,11 @@ export async function createOrder(userId, dto) {
     throw new ValidationError("Restaurant not accepting orders");
   if (restaurant.isAcceptingOrders === false)
     throw new ValidationError("Restaurant not accepting orders");
+  if (!dto.scheduledAt && !(await isRestaurantWithinOutletHours(restaurant._id))) {
+    const err = new ValidationError("This restaurant is closed right now. Please check its opening hours.");
+    err.code = "RESTAURANT_CLOSED";
+    throw err;
+  }
 
   const settings = await getDispatchSettings();
   const dispatchMode = settings.dispatchMode;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { ArrowLeft, Star, Clock } from "lucide-react"
+import { ArrowLeft, Star, Clock, Tag, Percent, Sparkles } from "lucide-react"
 import { Button } from "@food/components/ui/button"
 import { Card, CardContent } from "@food/components/ui/card"
 import { restaurantAPI } from "@food/api"
@@ -9,12 +9,11 @@ import { toast } from "sonner"
 import { RestaurantGridSkeleton } from "@food/components/ui/loading-skeletons"
 import { useDelayedLoading } from "@food/hooks/useDelayedLoading"
 
-// Import banner image
-import offerBanner from "../../assets/offerpagebanner.svg"
+// Import brand banner
+import offerBanner from "@food/assets/offerpagebanner.png"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
-
 
 export default function Offers() {
   const navigate = useNavigate()
@@ -54,23 +53,34 @@ export default function Offers() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#1A0F09]">
-      {/* Banner Section */}
-      <div className="relative w-full overflow-hidden min-h-[25vh] md:min-h-[30vh]">
+      {/* Banner Section - Styled to match application aesthetic */}
+      <div className="relative w-full overflow-hidden h-[30vh] sm:h-[35vh] md:h-[40vh] shadow-2xl">
         {/* Back Button */}
         <button 
           onClick={goBack}
-          className="absolute top-4 left-4 md:top-6 md:left-6 z-20 w-10 h-10 md:w-12 md:h-12 bg-gray-800/60 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-gray-800/80 transition-colors"
+          className="absolute top-4 left-4 md:top-6 md:left-6 z-20 w-10 h-10 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full flex items-center justify-center transition-all active:scale-90"
         >
-          <ArrowLeft className="h-5 w-5 md:h-6 md:w-6 text-white" />
+          <ArrowLeft className="h-5 w-5 text-white" />
         </button>
         
         {/* Banner Image */}
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0 scale-105">
           <img 
             src={offerBanner} 
             alt="Great Offers" 
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover animate-in fade-in zoom-in duration-1000"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent" />
+        </div>
+
+        {/* Banner Text Overlay */}
+        <div className="absolute bottom-6 sm:bottom-8 left-6 md:left-10 z-10 space-y-1.5 sm:space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="w-8 h-[2px] bg-primary" />
+            <span className="text-[10px] sm:text-xs font-black tracking-[0.25em] text-amber-300 uppercase">Save Big Today</span>
+          </div>
+          <h1 className="text-3xl md:text-5xl font-black text-white drop-shadow-2xl">Great Offers</h1>
+          <p className="text-white/80 text-xs sm:text-sm md:text-base font-medium max-w-md">Discover exclusive discounts, promo codes, and special restaurant deals.</p>
         </div>
       </div>
 
@@ -84,7 +94,7 @@ export default function Offers() {
         {error && !loading && (
           <div className="flex flex-col items-center justify-center py-20">
             <p className="text-red-500 dark:text-red-400 text-center">{error}</p>
-            <Button onClick={() => window.location.reload()} className="mt-4">Retry</Button>
+            <Button onClick={() => window.location.reload()} className="mt-4 bg-primary hover:bg-primary/90 text-white">Retry</Button>
           </div>
         )}
 
@@ -94,7 +104,7 @@ export default function Offers() {
             {/* Grouped Offers Sections */}
             {Object.keys(groupedOffers).length > 0 && Object.entries(groupedOffers).map(([offerText, dishes]) => (
               <section key={offerText}>
-                <h2 className="text-2xl sm:text-3xl font-black text-red-500 dark:text-red-400 text-center mb-4 tracking-wide">
+                <h2 className="text-2xl sm:text-3xl font-black text-primary dark:text-primary text-center mb-4 tracking-wide">
                   {offerText}
                 </h2>
                 
@@ -117,7 +127,7 @@ export default function Offers() {
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                           {/* Offer Badge */}
-                          <div className="absolute top-2 left-2 bg-blue-600 text-white text-[10px] sm:text-xs font-semibold px-2 py-1 rounded">
+                          <div className="absolute top-2 left-2 bg-primary text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded-md shadow-sm">
                             {dish.offer}
                           </div>
                         </div>
@@ -156,16 +166,16 @@ export default function Offers() {
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {offers.map((o) => (
-                    <Card key={o.id || o.offerId} className="border border-slate-200 shadow-sm">
+                    <Card key={o.id || o.offerId} className="border border-slate-200 dark:border-zinc-800 shadow-sm bg-white dark:bg-[#2A1A11]">
                       <CardContent className="p-4 space-y-2">
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="text-xs text-slate-500 dark:text-slate-400">Coupon</p>
-                            <p className="text-lg font-extrabold text-slate-900 dark:text-slate-100 tracking-wide">
+                            <p className="text-lg font-extrabold text-primary tracking-wide">
                               {o.couponCode || "-"}
                             </p>
                           </div>
-                          <span className="px-2 py-1 rounded-md text-xs font-semibold bg-blue-600 text-white">
+                          <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-primary text-white shadow-sm">
                             {o.title || "Offer"}
                           </span>
                         </div>
@@ -185,9 +195,29 @@ export default function Offers() {
               </section>
             )}
 
-            {offers.length === 0 && !loading && (
-              <div className="text-center py-12">
-                <p className="text-gray-500 dark:text-gray-400">No offers available at the moment</p>
+            {/* Empty State - Themed to match FoodSaathi brand */}
+            {offers.length === 0 && Object.keys(groupedOffers).length === 0 && !loading && (
+              <div className="flex flex-col items-center justify-center py-16 px-4 text-center max-w-md mx-auto">
+                <div className="relative mb-5">
+                  <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-amber-50 to-orange-100 dark:from-[#2A1A11] dark:to-[#1E120B] border border-orange-200/70 dark:border-orange-950/60 shadow-lg flex items-center justify-center">
+                    <Tag className="w-9 h-9 text-primary" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-[10px] font-black shadow-md">
+                    %
+                  </div>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white tracking-tight mb-2">
+                  No Active Offers Right Now
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
+                  Restaurants frequently update their special discounts and daily deals. Check back soon or explore top restaurants delivering to your area!
+                </p>
+                <Button 
+                  onClick={() => navigate('/food/user/home')} 
+                  className="bg-primary hover:bg-primary/90 text-white font-bold px-6 py-2.5 rounded-xl shadow-lg shadow-primary/25 transition-all active:scale-95"
+                >
+                  Explore Restaurants
+                </Button>
               </div>
             )}
           </>

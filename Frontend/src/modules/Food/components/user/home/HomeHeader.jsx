@@ -29,7 +29,6 @@ export default function HomeHeader({
   savedAddressText,
   handleLocationClick,
   handleSearchFocus,
-  placeholderIndex,
   placeholders,
   vegMode = false,
   handleVegModeChange,
@@ -37,6 +36,17 @@ export default function HomeHeader({
   handleVoiceSearchClick,
   pushSearchDown = false
 }) {
+  // Rotating search placeholder (kept local so only the header re-renders)
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const placeholderCount = Array.isArray(placeholders) ? placeholders.length : 0;
+  useEffect(() => {
+    if (placeholderCount <= 1) return undefined;
+    const interval = setInterval(() => {
+      setPlaceholderIndex((prev) => (prev + 1) % placeholderCount);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [placeholderCount]);
+
   const [notifications, setNotifications] = useState(() => {
     const saved = localStorage.getItem('food_user_notifications');
     return saved ? JSON.parse(saved) : [];
@@ -243,14 +253,20 @@ export default function HomeHeader({
       {/* Sticky Search Bar and Veg Toggle */}
       <div id="home-header-search-row" className={`relative sticky z-[60] px-1 pb-2 transition-all duration-300 pointer-events-none ${pushSearchDown ? 'mt-[252px] sm:mt-[258px]' : 'mt-2 sm:mt-3'} ${isCategoryStuck ? 'top-0 pt-2 bg-white/95 dark:bg-[#1A0F09]/95 backdrop-blur-2xl' : 'top-2 pt-2 bg-transparent'}`}>
         <div className="flex items-center gap-2.5 w-[96%] mx-auto pointer-events-auto">
-          {/* Search Bar */}
+          {/* Search Bar - Glossy Glassmorphism */}
           <div
-            className="relative bg-white/95 dark:bg-[#2A1A11]/80 backdrop-blur-md rounded-2xl flex items-center px-3 shadow-[0_10px_28px_-12px_rgba(58,28,16,0.45)] border border-white/70 dark:border-white/10 cursor-pointer active:scale-[0.98] transition-all duration-300 flex-1 h-11"
+            className="group/search relative overflow-hidden bg-gradient-to-b from-white/95 via-white/90 to-white/80 dark:from-white/15 dark:to-white/5 backdrop-blur-xl backdrop-saturate-150 rounded-[1.25rem] flex items-center px-3.5 shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.95),0_12px_28px_-8px_rgba(58,28,16,0.3),0_4px_10px_-2px_rgba(0,0,0,0.08)] border border-white/90 dark:border-white/20 cursor-pointer active:scale-[0.985] transition-all duration-300 flex-1 h-12"
             onClick={handleSearchFocus}
           >
-            <Search className="h-[18px] w-[18px] text-primary mr-2 shrink-0" strokeWidth={2.5} />
+            {/* Top Gloss Reflection Highlight */}
+            <div className="absolute inset-x-3 top-0 h-[48%] bg-gradient-to-b from-white/70 via-white/25 to-transparent rounded-t-[1.15rem] pointer-events-none" />
+
+            {/* Subtle Diagonal Glass Refraction Glow */}
+            <div className="absolute -left-10 -top-4 w-28 h-20 bg-gradient-to-br from-white/35 via-white/10 to-transparent rounded-full blur-sm pointer-events-none" />
+
+            <Search className="h-[18px] w-[18px] text-primary mr-2.5 shrink-0 z-10 drop-shadow-[0_1px_2px_rgba(242,84,27,0.2)]" strokeWidth={2.5} />
             
-            <div className="flex-1 overflow-hidden relative h-5">
+            <div className="flex-1 overflow-hidden relative h-5 z-10">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={placeholderIndex}
@@ -258,17 +274,17 @@ export default function HomeHeader({
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: -8, opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute inset-0 text-[13px] font-bold text-gray-400 truncate flex items-center"
+                  className="absolute inset-0 text-[13.5px] font-bold text-gray-500/90 dark:text-gray-300 truncate flex items-center"
                 >
                   {placeholders?.[placeholderIndex] || 'Search'}
                 </motion.span>
               </AnimatePresence>
             </div>
 
-            <div className="flex items-center gap-2 pl-2">
-              <div className="h-5 w-[1px] bg-gray-200" />
+            <div className="flex items-center gap-2 pl-2 z-10">
+              <div className="h-5 w-[1px] bg-gradient-to-b from-transparent via-gray-300/80 dark:via-white/20 to-transparent" />
               <Mic 
-                className="h-5 w-5 text-primary" 
+                className="h-5 w-5 text-primary shrink-0 transition-transform hover:scale-110 active:scale-95 drop-shadow-[0_1px_2px_rgba(242,84,27,0.2)]" 
                 onClick={(e) => {
                   e.stopPropagation();
                   handleVoiceSearchClick?.();
@@ -277,16 +293,19 @@ export default function HomeHeader({
             </div>
           </div>
 
-          {/* Veg Toggle (Stacked Pill Switch) */}
+          {/* Veg Toggle (Glossy Stacked Pill Switch) */}
           <div 
-            className="flex flex-col items-center justify-center cursor-pointer active:scale-95 transition-transform duration-300 shrink-0 px-2 bg-white/95 dark:bg-[#2A1A11]/80 backdrop-blur-md rounded-2xl py-1 shadow-[0_10px_28px_-12px_rgba(58,28,16,0.45)] border border-white/50 dark:border-white/10"
+            className="relative overflow-hidden flex flex-col items-center justify-center cursor-pointer active:scale-95 transition-all duration-300 shrink-0 px-2.5 py-1.5 bg-gradient-to-b from-white/95 via-white/90 to-white/80 dark:from-white/15 dark:to-white/5 backdrop-blur-xl backdrop-saturate-150 rounded-[1.25rem] shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.95),0_12px_28px_-8px_rgba(58,28,16,0.3),0_4px_10px_-2px_rgba(0,0,0,0.08)] border border-white/90 dark:border-white/20 h-12"
             onClick={() => handleVegModeChange?.(!vegMode)}
           >
-            <div className="text-[9px] font-black leading-tight text-gray-700 dark:text-gray-200 tracking-wider text-center drop-shadow-sm">
+            {/* Top Gloss Reflection Highlight */}
+            <div className="absolute inset-x-2 top-0 h-[45%] bg-gradient-to-b from-white/70 via-white/20 to-transparent rounded-t-[1.15rem] pointer-events-none" />
+
+            <div className="text-[9px] font-black leading-tight text-gray-800 dark:text-gray-100 tracking-wider text-center drop-shadow-sm z-10">
               VEG<br/>MODE
             </div>
-            <div className={`mt-0.5 w-[30px] h-[16px] rounded-full relative transition-colors duration-300 border border-white/20 ${vegMode ? 'bg-green-600' : 'bg-[#bcc0c5]/50'}`}>
-              <div className={`absolute top-[1px] w-[12px] h-[12px] rounded-full bg-white shadow-sm transition-transform duration-300 ${vegMode ? 'translate-x-[15px]' : 'translate-x-[1px]'}`} />
+            <div className={`mt-0.5 w-[30px] h-[16px] rounded-full relative transition-all duration-300 shadow-inner z-10 border border-white/40 ${vegMode ? 'bg-gradient-to-r from-emerald-500 to-green-600 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-gray-300/80 dark:bg-gray-700/80'}`}>
+              <div className={`absolute top-[1px] w-[12px] h-[12px] rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.25)] transition-transform duration-300 ${vegMode ? 'translate-x-[15px]' : 'translate-x-[1px]'}`} />
             </div>
           </div>
         </div>

@@ -146,12 +146,12 @@ export default function DeliverymanList() {
   useEffect(() => {
     fetchDeliverymen()
     
-    // Polling interval: every 8 seconds refresh data (real-time request)
+    // Poll every 30 seconds as a fallback to live updates
     const interval = setInterval(() => {
       // Pass a flag or just call fetchDeliverymen
       // To avoid showing loading spinner on every poll, we could add a quietFetch
-      fetchDeliverymenQuietly()
-    }, 8000)
+      if (!document.hidden) fetchDeliverymenQuietly()
+    }, 30000)
 
     return () => clearInterval(interval)
   }, [])

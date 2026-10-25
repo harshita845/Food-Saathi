@@ -671,7 +671,10 @@ function TableBookings() {
     };
 
     fetchBookings();
-    const interval = setInterval(fetchBookings, 8000);
+    // Table bookings change rarely; poll gently and skip while the tab is hidden.
+    const interval = setInterval(() => {
+      if (!document.hidden) fetchBookings();
+    }, 30000);
     return () => {
       isMounted = false;
       clearInterval(interval);

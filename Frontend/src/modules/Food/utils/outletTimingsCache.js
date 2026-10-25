@@ -1,13 +1,26 @@
 import { restaurantAPI } from "@food/api";
 
-const cache = new Map();
+const cache = new Map(); // id -> { at, value }
 const inFlight = new Map();
+// Restaurants edit their hours at any time; never trust a cached copy for long.
+const CACHE_TTL_MS = 60 * 1000;
 
-/** Session cache + in-flight dedupe for outlet timings (viewport-deferred fetch). */
+const readCache = (id) => {
+  const entry = cache.get(id);
+  if (!entry) return undefined;
+  if (Date.now() - entry.at > CACHE_TTL_MS) {
+    cache.delete(id);
+    return undefined;
+  }
+  return entry.value;
+};
+
+/** Short-lived cache + in-flight dedupe for outlet timings (viewport-deferred fetch). */
 export async function fetchOutletTimingsOnce(restaurantId) {
   const id = String(restaurantId || "").trim();
   if (!id) return null;
-  if (cache.has(id)) return cache.get(id);
+  const cached = readCache(id);
+  if (cached !== undefined) return cached;
   if (inFlight.has(id)) return inFlight.get(id);
 
   const promise = (async () => {
@@ -17,10 +30,10 @@ export async function fetchOutletTimingsOnce(restaurantId) {
         response?.data?.data?.outletTimings ||
         response?.data?.outletTimings ||
         null;
-      cache.set(id, timings);
+      cache.set(id, { at: Date.now(), value: timings });
       return timings;
     } catch {
-      cache.set(id, null);
+      // Don't cache failures: try again next time.
       return null;
     } finally {
       inFlight.delete(id);
@@ -34,5 +47,5 @@ export async function fetchOutletTimingsOnce(restaurantId) {
 export function primeOutletTimingsCache(restaurantId, timings) {
   const id = String(restaurantId || "").trim();
   if (!id || timings == null) return;
-  cache.set(id, timings);
+  cache.set(id, { at: Date.now(), value: timings });
 }

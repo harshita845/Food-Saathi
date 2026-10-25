@@ -66,6 +66,16 @@ const toUploadsPath = (rawPath) => {
     return `${uploadPath}${query ? `?${query}` : ''}`;
   }
 
+  // Do not rewrite frontend source or build assets to /uploads/
+  if (
+    normalizedPath.startsWith('/src/') ||
+    normalizedPath.startsWith('/@') ||
+    normalizedPath.startsWith('/node_modules/') ||
+    normalizedPath.includes('/assets/')
+  ) {
+    return '';
+  }
+
   const fileName = normalizedPath.split('/').filter(Boolean).pop();
   if (!fileName || !FILE_LIKE_REGEX.test(fileName)) {
     return '';

@@ -85,7 +85,6 @@ import {
   DropdownMenuTrigger,
 } from "@food/components/ui/dropdown-menu";
 import { useAppLocation } from "@food/hooks/useAppLocation";
-import offerImage from "@food/assets/offerimage.png";
 import api, { publicGetOnce, restaurantAPI, getPublicLandingSettings, getPublicExploreIcons, getPublicCategories, getPublicGourmetRestaurants } from "@food/api";
 import { API_BASE_URL } from "@food/api/config";
 import OptimizedImage, { ShopPlaceholder } from "@food/components/OptimizedImage";
@@ -979,7 +978,6 @@ export default function Home() {
   // Mock points value - replace with actual points from context/store
   const userPoints = 99;
 
-  const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [activeTab, setActiveTab] = useState("food");
   const [headerBgHeight, setHeaderBgHeight] = useState(0);
 
@@ -1995,14 +1993,7 @@ export default function Home() {
   // Removed GSAP animations - using CSS and ScrollReveal components instead for better performance
   // Auto-scroll removed - manual scroll only
 
-  // Animated placeholder cycling - same as RestaurantDetails highlight offer animation
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPlaceholderIndex((prev) => (prev + 1) % placeholders.length);
-    }, 2000); // Change placeholder every 2 seconds (same as RestaurantDetails)
-
-    return () => clearInterval(interval);
-  }, []); // placeholders is a constant, no need for dependency
+  // Search placeholder rotation lives in HomeHeader so it doesn't re-render the whole page.
 
   const handleRestaurantFavoriteToggle = useCallback(
     (event, restaurant, restaurantSlug, favorite) => {
@@ -2244,7 +2235,6 @@ export default function Home() {
               location={effectiveLocation}
               handleLocationClick={handleLocationClick}
               handleSearchFocus={handleSearchFocus}
-              placeholderIndex={placeholderIndex}
               placeholders={placeholders}
               vegMode={vegMode}
               handleVegModeChange={handleVegModeChange}
@@ -2258,7 +2248,7 @@ export default function Home() {
                 {festVideoActive ? (
                   <div className="w-full h-3 sm:h-4" />
                 ) : (
-                  <div className="pb-4 sm:pb-6">
+                  <div className="pb-1 sm:pb-2">
                     <FestBanner
                       isVegMode={vegMode}
                       images={festBannerImages}
@@ -2269,7 +2259,7 @@ export default function Home() {
               </div>
             )}
             
-            <div className="h-3 w-full" />
+            <div className="h-1 w-full" />
 
           <AnimatePresence mode="wait">
             {activeTab === "food" ? (
@@ -2426,14 +2416,14 @@ export default function Home() {
 
         {recommendedForYouRestaurants.length > 0 && (
           <motion.section
-            className="content-auto pt-1 sm:pt-2"
+            className="content-auto pt-6 sm:pt-8 mb-4"
             initial={false}
             animate={{ opacity: 1, y: 0 }}>
-            <h2 className="text-xs sm:text-sm lg:text-base font-semibold text-gray-400 dark:text-gray-500 tracking-widest uppercase mb-2 sm:mb-3 px-4">
+            <h2 className="text-base sm:text-lg lg:text-xl font-black text-gray-950 dark:text-white tracking-wide uppercase mb-3.5 sm:mb-4 px-4">
               Recommended For You
             </h2>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 px-4">
+            <div className="flex overflow-x-auto gap-4 px-4 pb-3 scrollbar-hide snap-x snap-mandatory">
               {recommendedForYouRestaurants.map((restaurant, index) => {
                 const restaurantSlug =
                   restaurant.slug ||
@@ -2441,7 +2431,7 @@ export default function Home() {
                 return (
                   <div
                     key={`recommended-${restaurant.mongoId || restaurant.id || restaurantSlug}`}
-                    className="transform transition-all duration-300 hover:-translate-y-1"
+                    className="w-[200px] sm:w-[230px] md:w-[250px] flex-shrink-0 snap-start transform transition-all duration-300 hover:-translate-y-1"
                     style={
                       index < 6
                         ? {
@@ -2453,22 +2443,22 @@ export default function Home() {
                     <Link
                       to={`/user/restaurants/${restaurantSlug}`}
                       className="block rounded-[20px] overflow-hidden border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#2A1A11] shadow-sm hover:shadow-md transition-shadow">
-                      <div className="relative h-24 sm:h-28 md:h-32 bg-gray-50">
+                      <div className="relative h-32 sm:h-36 md:h-40 bg-gray-50 dark:bg-gray-900">
                         <RestaurantImageCarousel
                           restaurant={restaurant}
                           backendOrigin={BACKEND_ORIGIN}
-                          className="h-24 sm:h-28 md:h-32"
+                          className="h-32 sm:h-36 md:h-40"
                           roundedClass="rounded-t-[20px]"
                         />
-                        <div className={`absolute bottom-2 left-2 px-2 py-0.5 rounded-lg ${Number(restaurant.rating) > 0 ? "bg-black/80 backdrop-blur-md text-white font-medium" : "bg-gray-200/90 text-gray-600 font-medium"} text-[10px] shadow-lg border border-white/10`}>
+                        <div className={`absolute bottom-2 left-2 z-20 px-2 py-0.5 rounded-lg ${Number(restaurant.rating) > 0 ? "bg-black/80 backdrop-blur-md text-white font-medium" : "bg-gray-200/90 text-gray-600 font-medium"} text-[10px] shadow-lg border border-white/10 whitespace-nowrap`}>
                           {Number(restaurant.rating) > 0 ? Number(restaurant.rating).toFixed(1) : "NEW"}
                         </div>
                       </div>
-                      <div className="p-2.5">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate tracking-tight">
+                      <div className="p-3">
+                        <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate tracking-tight">
                           {restaurant.name}
                         </p>
-                        <p className="text-[10px] text-primary font-bold mt-1 flex items-center gap-1 uppercase tracking-wider">
+                        <p className="text-[11px] text-primary font-bold mt-1 flex items-center gap-1 uppercase tracking-wider whitespace-nowrap">
                           <Flame className="w-3.5 h-3.5 fill-primary" />
                           Near & Fast
                         </p>
@@ -2531,7 +2521,7 @@ export default function Home() {
                                   className="h-32 sm:h-36"
                                   roundedClass="rounded-t-2xl"
                                 />
-                                <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-white font-bold text-xs shadow-lg border border-white/10 flex items-center gap-1">
+                                <div className="absolute bottom-2 left-2 z-20 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-white font-bold text-xs shadow-lg border border-white/10 flex items-center gap-1">
                                   <Star className="w-3 h-3 fill-primary text-primary" />
                                   {Number(restaurant.rating || 0).toFixed(1)}
                                 </div>
@@ -2552,12 +2542,12 @@ export default function Home() {
                 </div>
               )}
 
-              <div className="px-4 mb-3 lg:mb-4">
-                <div className="flex flex-col gap-0.5 lg:gap-1">
-                  <h2 className="text-xs sm:text-sm lg:text-base font-semibold text-gray-400 tracking-widest uppercase">
+              <div className="px-4 mb-4 lg:mb-5">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-sm sm:text-base lg:text-lg font-black text-gray-800 dark:text-gray-200 tracking-wider uppercase">
                     {filteredRestaurants.length} Restaurants Delivering to You
                   </h2>
-                  <span className="text-base sm:text-lg lg:text-2xl text-gray-900 dark:text-white font-bold tracking-tight">
+                  <span className="text-2xl sm:text-3xl lg:text-4xl text-gray-950 dark:text-white font-black tracking-tight">
                     All Restaurants
                   </span>
                 </div>

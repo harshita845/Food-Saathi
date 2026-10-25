@@ -57,7 +57,6 @@ import {
   getFoodVariants,
   hasFoodVariants,
 } from "@food/utils/foodVariants"
-import fssaiLogo from "@food/assets/fssai.png"
 import { RestaurantDetailSkeleton } from "@food/components/ui/loading-skeletons"
 import MenuScanAnimation from "@food/components/user/MenuScanAnimation"
 
@@ -216,6 +215,49 @@ function RestaurantDetailsContent() {
 
     return () => clearInterval(intervalId)
   }, [])
+
+  // Keep open/closed in sync with the restaurant app: re-read outlet timings and the
+  // online/offline switch every minute and whenever the customer returns to the tab.
+  const liveRestaurantId = restaurant?.mongoId || restaurant?._id || null
+  useEffect(() => {
+    if (!liveRestaurantId) return undefined
+    let cancelled = false
+    const refreshAvailability = async () => {
+      if (document.hidden) return
+      const [timingsRes, restaurantRes] = await Promise.allSettled([
+        restaurantAPI.getOutletTimingsByRestaurantId(liveRestaurantId),
+        restaurantAPI.getRestaurantById(liveRestaurantId, { noCache: true }),
+      ])
+      if (cancelled) return
+      const outletTimings =
+        timingsRes.status === "fulfilled"
+          ? timingsRes.value?.data?.data?.outletTimings || timingsRes.value?.data?.outletTimings
+          : null
+      const latest =
+        restaurantRes.status === "fulfilled"
+          ? restaurantRes.value?.data?.data?.restaurant || restaurantRes.value?.data?.restaurant || null
+          : null
+      setRestaurant((prev) => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          ...(outletTimings ? { outletTimings } : {}),
+          ...(latest && typeof latest.isAcceptingOrders === "boolean" ? { isAcceptingOrders: latest.isAcceptingOrders } : {}),
+          ...(latest && typeof latest.isActive === "boolean" ? { isActive: latest.isActive } : {}),
+        }
+      })
+      setAvailabilityTick(Date.now())
+    }
+    const intervalId = setInterval(refreshAvailability, 60000)
+    window.addEventListener("focus", refreshAvailability)
+    document.addEventListener("visibilitychange", refreshAvailability)
+    return () => {
+      cancelled = true
+      clearInterval(intervalId)
+      window.removeEventListener("focus", refreshAvailability)
+      document.removeEventListener("visibilitychange", refreshAvailability)
+    }
+  }, [liveRestaurantId])
 
   useEffect(() => {
     setSelectedMenuCategory("all")
@@ -2992,11 +3034,7 @@ function RestaurantDetailsContent() {
         <div className="px-4 py-4 mt-2 mb-24 border-t border-dashed border-gray-200 dark:border-gray-800 bg-gray-50/30 dark:bg-white/5 mx-4 rounded-xl">
           <div className="flex items-center gap-4">
             <div className="h-12 w-20 flex items-center justify-center bg-white rounded-lg p-1.5 shadow-sm border border-gray-100">
-              <img
-                src={fssaiLogo}
-                alt="FSSAI"
-                className="h-full w-auto object-contain"
-              />
+              <span className="text-sm font-extrabold italic tracking-tight text-[#1a5aa8]">fssai</span>
             </div>
             <div className="flex-1">
               <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-1">
@@ -4061,11 +4099,7 @@ function RestaurantDetailsContent() {
                     {restaurant?.onboarding?.step3?.fssai?.registrationNumber && (
                       <div className="mt-4 px-2 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center gap-3 opacity-80 mb-2">
                         <div className="h-8 w-14 flex items-center justify-center bg-white rounded p-1 border border-gray-100">
-                          <img
-                            src={fssaiLogo}
-                            alt="FSSAI"
-                            className="h-full w-auto object-contain"
-                          />
+                          <span className="text-xs font-extrabold italic tracking-tight text-[#1a5aa8]">fssai</span>
                         </div>
                         <div className="flex-1">
                           <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium">

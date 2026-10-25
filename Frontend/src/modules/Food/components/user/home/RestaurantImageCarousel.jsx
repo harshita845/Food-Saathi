@@ -686,11 +686,11 @@ const RestaurantImageCarousel = React.memo(
 
         {/* Recommended Dish Floating Tag */}
         {currentSlide?.isRecommended && currentSlide?.name && (
-          <div className={`absolute top-3 z-10 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/75 backdrop-blur-md text-white text-[11px] font-bold shadow-lg border border-amber-400/40 pointer-events-none ${currentSlide.foodType ? "left-12" : "left-3"}`}>
+          <div className={`absolute top-3 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/75 backdrop-blur-md text-white text-[11px] font-bold shadow-lg border border-amber-400/40 pointer-events-none max-w-[calc(100%-3.5rem)] ${currentSlide.foodType ? "left-11 sm:left-12" : "left-3"}`}>
             <Sparkles className="w-3 h-3 text-amber-400 fill-amber-400 shrink-0" />
-            <span className="truncate max-w-[140px] sm:max-w-[190px]">{currentSlide.name}</span>
+            <span className="truncate">{currentSlide.name}</span>
             {currentSlide.price > 0 && (
-              <span className="text-amber-300 font-extrabold ml-0.5">₹{Math.round(currentSlide.price)}</span>
+              <span className="text-amber-300 font-extrabold ml-0.5 shrink-0">₹{Math.round(currentSlide.price)}</span>
             )}
           </div>
         )}

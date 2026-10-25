@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { BarChart3, ChevronDown, Info, Settings, FileText, FileSpreadsheet, Code, Loader2 } from "lucide-react"
+import { BarChart3, ChevronDown, Info, Settings, FileText, FileSpreadsheet, Code, Loader2, Search, Download } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@food/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@food/components/ui/dialog"
 import { exportTransactionReportToCSV, exportTransactionReportToExcel, exportTransactionReportToPDF, exportTransactionReportToJSON } from "@food/components/admin/reports/reportsExportUtils"
@@ -15,8 +15,6 @@ import restaurantEarningIcon from "@food/assets/Transaction-report-icons/store-e
 import deliverymanEarningIcon from "@food/assets/Transaction-report-icons/deliveryman-earning.svg"
 
 // Import search and export icons from Dashboard-icons
-import searchIcon from "@food/assets/Dashboard-icons/image8.png"
-import exportIcon from "@food/assets/Dashboard-icons/image9.png"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -392,7 +390,7 @@ export default function TransactionReport() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-7 pr-2 py-1.5 w-full text-[11px] rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                <img src={searchIcon} alt="Search" className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3" />
+                <Search aria-hidden="true" className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
                 {isRefreshing && (
                   <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 animate-spin" />
                 )}
@@ -401,7 +399,7 @@ export default function TransactionReport() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="px-2.5 py-1.5 text-[11px] font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1 transition-all">
-                    <img src={exportIcon} alt="Export" className="w-3 h-3" />
+                    <Download aria-hidden="true" className="w-3 h-3" />
                     <span>Export</span>
                     <ChevronDown className="w-2.5 h-2.5" />
                   </button>

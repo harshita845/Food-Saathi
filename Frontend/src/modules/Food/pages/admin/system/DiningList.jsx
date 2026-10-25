@@ -100,8 +100,8 @@ export default function DiningList() {
         
         // Setup polling for real-time reflection
         const intervalId = setInterval(() => {
-            fetchRestaurants()
-        }, 3000)
+            if (!document.hidden) fetchRestaurants()
+        }, 30000)
         
         return () => clearInterval(intervalId)
     }, [])

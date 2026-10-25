@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Search, Grid2x2, ShoppingBag } from "lucide-react";
 import { motion } from "framer-motion";
-import { adminAPI } from "@food/api";
+import { adminAPI, getPublicCategories } from "@food/api";
 import { foodImages } from "@food/constants/images";
 import OptimizedImage from "@food/components/OptimizedImage";
 import { useAppLocation } from "@food/hooks/useAppLocation"
@@ -42,11 +42,14 @@ export default function Categories() {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const response = await adminAPI.getPublicCategories(zoneId ? { zoneId } : {});
+        const response = typeof getPublicCategories === "function"
+          ? await getPublicCategories(zoneId || null)
+          : await adminAPI.getPublicCategories(zoneId ? { zoneId } : {});
         const list =
+          response?.categories ||
           response?.data?.data?.categories ||
           response?.data?.categories ||
-          [];
+          (Array.isArray(response) ? response : []);
 
         if (Array.isArray(list)) {
           const transformed = list.map((cat, idx) => ({

@@ -70,8 +70,8 @@ export default function DeliveryBoyWallet() {
 
     // Real-time polling every 5 seconds
     const interval = setInterval(() => {
-      fetchWallets({ silent: true })
-    }, 5000)
+      if (!document.hidden) fetchWallets({ silent: true })
+    }, 30000)
 
     return () => clearInterval(interval)
   }, [fetchWallets])

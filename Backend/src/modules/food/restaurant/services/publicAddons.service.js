@@ -14,7 +14,15 @@ export async function getPublicApprovedRestaurantAddons(restaurantIdOrSlug) {
             .lean();
     } else {
         const normalized = value.trim().toLowerCase().replace(/-/g, ' ').replace(/\s+/g, ' ');
-        restaurant = await FoodRestaurant.findOne({ restaurantNameNormalized: normalized, status: 'approved' })
+        const escaped = String(normalized).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        restaurant = await FoodRestaurant.findOne({
+            status: 'approved',
+            $or: [
+                { restaurantNameNormalized: normalized },
+                { slug: value },
+                { restaurantName: new RegExp(`^${escaped}$`, 'i') }
+            ]
+        })
             .select('_id status')
             .lean();
     }

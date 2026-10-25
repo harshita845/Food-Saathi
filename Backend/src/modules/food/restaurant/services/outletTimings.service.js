@@ -50,14 +50,29 @@ const toClientShape = (doc) => {
 };
 
 export async function getOutletTimingsForRestaurant(restaurantId) {
+    let resolvedId = restaurantId;
     if (!restaurantId || !mongoose.Types.ObjectId.isValid(String(restaurantId))) {
-        throw new ValidationError('Invalid restaurant id');
+        const { FoodRestaurant } = await import('../models/restaurant.model.js');
+        const normalized = String(restaurantId || '').trim().toLowerCase().replace(/-/g, ' ').replace(/\s+/g, ' ');
+        const escaped = String(normalized).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const r = await FoodRestaurant.findOne({
+            $or: [
+                { restaurantNameNormalized: normalized },
+                { slug: restaurantId },
+                { restaurantName: new RegExp(`^${escaped}$`, 'i') }
+            ]
+        }).select('_id').lean();
+        if (r?._id) {
+            resolvedId = r._id;
+        } else {
+            throw new ValidationError('Invalid restaurant id');
+        }
     }
-    const doc = await FoodRestaurantOutletTimings.findOne({ restaurantId }).select('timings updatedAt').lean();
+    const doc = await FoodRestaurantOutletTimings.findOne({ restaurantId: resolvedId }).select('timings updatedAt').lean();
     if (!doc || !doc.timings || doc.timings.length === 0) {
         // Fallback to onboarding details
         const { FoodRestaurant } = await import('../models/restaurant.model.js');
-        const restaurant = await FoodRestaurant.findById(restaurantId).lean();
+        const restaurant = await FoodRestaurant.findById(resolvedId).select('openDays openingTime closingTime').lean();
         
         if (restaurant) {
             const { openDays, openingTime, closingTime } = restaurant;

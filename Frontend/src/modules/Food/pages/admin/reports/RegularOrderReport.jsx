@@ -1,12 +1,10 @@
 import { useMemo, useState, useEffect } from "react"
-import { BarChart3, ChevronDown, Settings, FileText, FileSpreadsheet, Code, Loader2 } from "lucide-react"
+import { BarChart3, ChevronDown, Settings, FileText, FileSpreadsheet, Code, Loader2, Search, Download } from "lucide-react"
 import { adminAPI } from "@food/api"
 import { toast } from "sonner"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@food/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@food/components/ui/dialog"
 import { exportReportsToCSV, exportReportsToExcel, exportReportsToPDF, exportReportsToJSON } from "@food/components/admin/reports/reportsExportUtils"
-import searchIcon from "@food/assets/Dashboard-icons/image8.png"
-import exportIcon from "@food/assets/Dashboard-icons/image9.png"
 import scheduledIcon from "@food/assets/Dashboard-icons/scheduled.svg"
 import pendingIcon from "@food/assets/Dashboard-icons/pending.svg"
 import acceptedIcon from "@food/assets/Dashboard-icons/accepted.svg"
@@ -539,13 +537,13 @@ export default function RegularOrderReport() {
                   }}
                   className="pl-7 pr-2 py-1.5 w-full text-[11px] rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                <img src={searchIcon} alt="Search" className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3" />
+                <Search aria-hidden="true" className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
               </div>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="px-2.5 py-1.5 text-[11px] font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1 transition-all">
-                    <img src={exportIcon} alt="Export" className="w-3 h-3" />
+                    <Download aria-hidden="true" className="w-3 h-3" />
                     <span>Export</span>
                     <ChevronDown className="w-2.5 h-2.5" />
                   </button>

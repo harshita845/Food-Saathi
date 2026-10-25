@@ -6,7 +6,6 @@ import {
   DirectionsService, 
   Polyline
 } from '@react-google-maps/api';
-import bikeLogo from '@food/assets/bikelogo.png';
 import useOrderLocationSubscription from '@food/hooks/useOrderLocationSubscription';
 import { useGoogleMapsApiKey } from '@food/utils/googleMapsApiKey';
 import { subscribeLocationUpdates } from '@food/utils/userSocketManager';
@@ -713,7 +712,6 @@ const DeliveryTrackingMapInner = ({
                 src="/MapRider.png"
                 alt="Rider"
                 className="w-full h-full object-contain drop-shadow-2xl"
-                onError={(e) => { e.target.src = bikeLogo; }}
               />
             </div>
           </OverlayView>

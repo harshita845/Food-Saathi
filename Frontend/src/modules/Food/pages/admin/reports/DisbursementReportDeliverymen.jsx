@@ -6,9 +6,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { exportReportsToCSV, exportReportsToExcel, exportReportsToPDF, exportReportsToJSON } from "@food/components/admin/reports/reportsExportUtils"
 
 // Import icons from Transaction-report-icons
-import pendingIcon from "@food/assets/Transaction-report-icons/trx1.png"
-import completedIcon from "@food/assets/Transaction-report-icons/trx3.png"
-import canceledIcon from "@food/assets/Transaction-report-icons/trx5.png"
+import pendingIcon from "@food/assets/Transaction-report-icons/trx1.svg"
+import completedIcon from "@food/assets/Transaction-report-icons/trx3.svg"
+import canceledIcon from "@food/assets/Dashboard-icons/canceled.svg"
 
 export default function DisbursementReportDeliverymen() {
   const [searchQuery, setSearchQuery] = useState("")

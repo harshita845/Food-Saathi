@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import Lenis from "lenis"
+import useRestaurantLenis from "@food/hooks/useRestaurantLenis"
 import { ArrowLeft, ChevronUp, ChevronDown, Clock, Edit2 } from "lucide-react"
 import { Switch } from "@food/components/ui/switch"
 import { MobileTimePicker } from "@mui/x-date-pickers/MobileTimePicker"
@@ -10,6 +10,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import dayjs from "dayjs"
 import { useCompanyName } from "@food/hooks/useCompanyName"
 import { restaurantAPI } from "@food/api"
+import { toast } from "sonner"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -20,7 +21,8 @@ const stringToTime = (timeString) => {
     return dayjs().hour(9).minute(0)
   }
   const [hours, minutes] = timeString.split(":").map(Number)
-  return dayjs().hour(hours || 9).minute(minutes || 0)
+  // 0 is a valid hour (midnight), so only fall back when the value is not a number
+  return dayjs().hour(Number.isFinite(hours) ? hours : 9).minute(Number.isFinite(minutes) ? minutes : 0)
 }
 
 // Helper function to convert Date object to "HH:mm" string
@@ -82,44 +84,43 @@ export default function OutletTimings() {
     }
   }, [])
 
-  // Save to backend whenever days change (debounced).
+  // Save to backend whenever days change (debounced). A pending change is flushed
+  // when the page closes, so leaving right after an edit never loses it.
+  const pendingSaveRef = useRef(null)
+  const saveTimings = useCallback(async (timings) => {
+    try {
+      await restaurantAPI.saveOutletTimings(timings)
+      window.dispatchEvent(new Event("outletTimingsUpdated"))
+      toast.success("Outlet timings saved", { id: "outlet-timings-save" })
+    } catch (error) {
+      debugError("Error saving outlet timings to backend:", error)
+      toast.error(
+        error?.response?.data?.message || "Could not save outlet timings. Please try again.",
+        { id: "outlet-timings-save" },
+      )
+    }
+  }, [])
+
   useEffect(() => {
     if (loading) return
     if (!isInternalUpdate.current) return // Only save if the user made a change
-    
+
+    pendingSaveRef.current = days
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
-    saveTimerRef.current = setTimeout(async () => {
-      try {
-        await restaurantAPI.saveOutletTimings(days)
-        window.dispatchEvent(new Event("outletTimingsUpdated"))
-      } catch (error) {
-        debugError("Error saving outlet timings to backend:", error)
-      }
+    saveTimerRef.current = setTimeout(() => {
+      pendingSaveRef.current = null
+      saveTimings(days)
     }, 500)
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
     }
-  }, [days, loading])
+  }, [days, loading, saveTimings])
 
-  // Lenis smooth scrolling
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-    })
+  useEffect(() => () => {
+    if (pendingSaveRef.current) saveTimings(pendingSaveRef.current)
+  }, [saveTimings])
 
-    function raf(time) {
-      lenis.raf(time)
-      requestAnimationFrame(raf)
-    }
-
-    requestAnimationFrame(raf)
-
-    return () => {
-      lenis.destroy()
-    }
-  }, [])
+  useRestaurantLenis()
 
   const toggleDay = (day) => {
     setExpandedDay(expandedDay === day ? null : day)
@@ -195,7 +196,7 @@ export default function OutletTimings() {
         </div>
 
         {/* Main Content */}
-        <div className="px-4 py-6">
+        <div className="px-4 py-6 pb-28 md:pb-16">
           {/* Food Saathi delivery Section Header */}
           <div className="mb-6">
             <div className="text-center mb-2">

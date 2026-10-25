@@ -1,0 +1,14 @@
+# Binary assets: never apply line-ending conversion (it corrupted 47 images before).
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.pdf  binary
+*.mp4  binary
+*.mp3  binary
+*.woff binary
+*.woff2 binary
+*.ttf  binary
+*.otf  binary
