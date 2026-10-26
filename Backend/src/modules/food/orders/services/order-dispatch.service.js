@@ -778,7 +778,7 @@ export async function checkRidersAvailabilityInZone({ restaurantId, zoneId, requ
       { requiredAmount: Number(requiredCashAmount) },
     );
     if (cashEligible.length === 0) {
-      return { available: false, count: 0, reason: 'all_riders_busy' };
+      return { available: false, count: 0, reason: 'cash_limit_exceeded' };
     }
     return { available: true, count: cashEligible.length, reason: 'available' };
   }

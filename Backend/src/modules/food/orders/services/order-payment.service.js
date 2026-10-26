@@ -1,3 +1,5 @@
+import QRCode from 'qrcode';
+import { FoodDeliveryPartner } from '../../delivery/models/deliveryPartner.model.js';
 import { FoodOrder } from '../models/order.model.js';
 import { FoodTransaction } from '../models/foodTransaction.model.js';
 import {
@@ -45,6 +47,8 @@ function qrResponse(qr, reused = false) {
     status: qr.status,
     amount: Number(qr.amount || 0),
     expiresAt: qr.expiresAt,
+    isDirectQr: Boolean(qr.isDirectQr),
+    shortUrl: qr.shortUrl || '',
     reused,
   };
 }
@@ -95,7 +99,7 @@ export async function syncRazorpayQrPayment(orderDoc) {
   }
 
   const qr = payment.qr || {};
-  if (!qr.qrId || !isRazorpayConfigured()) return payment;
+  if (!qr.qrId || !isRazorpayConfigured() || qr.isDirectQr || String(qr.qrId).startsWith('upi_')) return payment;
 
   try {
     const [result, remoteQr] = await Promise.all([
@@ -158,7 +162,7 @@ export async function createCollectQr(orderId, deliveryPartnerId) {
   if (isActiveQr(payment.qr, now)) return qrResponse(payment.qr, true);
 
   // Before replacing a terminal QR, check Razorpay for a late captured payment.
-  if (payment.qr?.qrId) {
+  if (payment.qr?.qrId && !payment.qr?.isDirectQr && !String(payment.qr.qrId).startsWith('upi_')) {
     await syncRazorpayQrPayment(order);
     transaction = await FoodTransaction.findOne({ orderId: order._id }).lean();
     payment = transaction?.payment || payment;
@@ -166,9 +170,6 @@ export async function createCollectQr(orderId, deliveryPartnerId) {
       throw new ValidationError('Order is already paid');
     }
     if (isActiveQr(payment.qr, now)) return qrResponse(payment.qr, true);
-  }
-  if (!isRazorpayConfigured()) {
-    throw new ValidationError('Razorpay QR payment is not configured');
   }
 
   const amountDue = getExpectedAmount(transaction, order);
@@ -189,40 +190,79 @@ export async function createCollectQr(orderId, deliveryPartnerId) {
     throw new ValidationError('A payment QR is already being created. Please try again.');
   }
 
-  let razorpayQr;
-  try {
-    const orderIdentity = String(order.orderId || order.order_id || order._id);
-    razorpayQr = await createRazorpayQrCode({
-      amountPaise: Math.round(amountDue * 100),
-      closeBy,
-      description: `Payment collection for order ${orderIdentity}`,
-      notes: {
-        order_id: String(order._id),
-        order_reference: orderIdentity,
-        user_id: String(order.userId || ''),
-        customer_id: String(order.userId || ''),
-        delivery_partner_id: String(deliveryPartnerId || ''),
-        amount: amountDue.toFixed(2),
-        purpose: 'cod_order_collection',
-      },
-    });
-  } catch (error) {
-    await financeService.releaseQrCreation(transaction._id, { previousMethod, now });
-    throw error;
+  let razorpayQr = null;
+  const orderIdentity = String(order.orderId || order.order_id || order._id);
+
+  if (isRazorpayConfigured()) {
+    try {
+      razorpayQr = await createRazorpayQrCode({
+        amountPaise: Math.round(amountDue * 100),
+        closeBy,
+        description: `Payment collection for order ${orderIdentity}`,
+        notes: {
+          order_id: String(order._id),
+          order_reference: orderIdentity,
+          user_id: String(order.userId || ''),
+          customer_id: String(order.userId || ''),
+          delivery_partner_id: String(deliveryPartnerId || ''),
+          amount: amountDue.toFixed(2),
+          purpose: 'cod_order_collection',
+        },
+      });
+    } catch (error) {
+      logger.warn(`[order-payment] Razorpay dynamic QR code failed (${error.message || error}). Falling back to direct UPI QR.`);
+    }
   }
 
-  const qr = {
-    qrId: String(razorpayQr.id || ''),
-    imageUrl: String(razorpayQr.image_url || ''),
-    amount: amountDue,
-    paymentLinkId: '',
-    shortUrl: '',
-    status: String(razorpayQr.status || 'active').toLowerCase(),
-    expiresAt,
-  };
+  let qr;
+  if (razorpayQr?.id && razorpayQr?.image_url) {
+    qr = {
+      qrId: String(razorpayQr.id),
+      imageUrl: String(razorpayQr.image_url),
+      amount: amountDue,
+      paymentLinkId: '',
+      shortUrl: '',
+      status: String(razorpayQr.status || 'active').toLowerCase(),
+      expiresAt,
+      isDirectQr: false,
+    };
+  } else {
+    try {
+      let partner = null;
+      if (deliveryPartnerId) {
+        partner = await FoodDeliveryPartner.findById(deliveryPartnerId).lean();
+      }
+      const upiId = partner?.upiId || process.env.PLATFORM_UPI_ID || (partner?.phone ? `${partner.phone}@upi` : 'foodsaathi@upi');
+      const payeeName = partner?.name || partner?.bankAccountHolderName || 'FoodSaathi Delivery';
+      const upiString = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${amountDue.toFixed(2)}&cu=INR&tn=${encodeURIComponent(`Order ${orderIdentity}`)}`;
+
+      const dataUrl = await QRCode.toDataURL(upiString, {
+        margin: 2,
+        width: 340,
+        errorCorrectionLevel: 'M',
+      });
+
+      qr = {
+        qrId: `upi_${order._id}_${Date.now()}`,
+        imageUrl: dataUrl,
+        amount: amountDue,
+        paymentLinkId: '',
+        shortUrl: upiString,
+        status: 'active',
+        expiresAt,
+        isDirectQr: true,
+        upiId,
+      };
+    } catch (fallbackError) {
+      await financeService.releaseQrCreation(transaction._id, { previousMethod, now });
+      logger.error('[order-payment] Direct UPI QR code generation failed:', fallbackError);
+      throw new ValidationError('Could not generate payment QR code. Please collect cash instead.');
+    }
+  }
+
   if (!qr.qrId || !qr.imageUrl) {
     await financeService.failQrCreation(transaction._id, { now });
-    throw new Error('Razorpay returned an invalid QR response');
+    throw new Error('Failed to generate a valid QR code response');
   }
 
   const saved = await financeService.saveCreatedQr(transaction._id, order._id, qr, {
@@ -233,7 +273,7 @@ export async function createCollectQr(orderId, deliveryPartnerId) {
     if (latest?.payment?.status === 'paid' || latest?.status === 'captured') {
       throw new ValidationError('Order is already paid');
     }
-    throw new Error('Could not save the Razorpay QR against this order');
+    throw new Error('Could not save the QR against this order');
   }
 
   enqueueOrderEvent('collect_qr_created', {
@@ -242,6 +282,7 @@ export async function createCollectQr(orderId, deliveryPartnerId) {
     deliveryPartnerId,
     qrId: qr.qrId,
     amountDue,
+    isDirectQr: qr.isDirectQr,
   });
   return qrResponse(qr);
 }

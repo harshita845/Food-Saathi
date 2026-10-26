@@ -635,11 +635,9 @@ export default function Cart() {
             return
           }
         } catch (error) {
-          // If 404/410 — restaurant deleted from DB, clear stale cart immediately
+          // If 404/410 — restaurant deleted from DB, clear stale cart quietly
           const httpStatus = error?.response?.status
           if (httpStatus === 404 || httpStatus === 410) {
-            const staleName = cart[0]?.restaurant || 'the restaurant'
-            toast.error(`"${staleName}" is no longer available. Your cart has been cleared.`, { duration: 5000 })
             clearCart()
             setRestaurantData(null)
             setLoadingRestaurant(false)
@@ -703,9 +701,7 @@ export default function Cart() {
             if (restaurants.length > 0) {
               debugLog("?? Available restaurant names:", restaurants.map(r => r.name).slice(0, 10))
             }
-            // Restaurant not found by name either — clear stale cart
-            const staleName = cart[0]?.restaurant || 'the restaurant'
-            toast.error(`"${staleName}" is no longer available. Your cart has been cleared.`, { duration: 5000 })
+            // Restaurant not found by name either — clear stale cart quietly
             clearCart()
           }
         } catch (searchError) {
@@ -907,7 +903,8 @@ export default function Cart() {
   // Calculate pricing from backend whenever cart, address, or coupon changes
   useEffect(() => {
     const calculatePricing = async () => {
-      if (cart.length === 0 || !hasSavedAddress) {
+      const resolvedRestaurantId = restaurantData?.restaurantId || restaurantData?._id || restaurantId || undefined
+      if (cart.length === 0 || !hasSavedAddress || loadingRestaurant || !resolvedRestaurantId) {
         setPricing(null)
         return
       }
@@ -927,7 +924,6 @@ export default function Cart() {
           isVeg: item.isVeg !== false
         }))
 
-        const resolvedRestaurantId = restaurantData?.restaurantId || restaurantData?._id || restaurantId || undefined
         const resolvedCouponCode = appliedCoupon?.code || couponCode || undefined
 
         const response = await orderAPI.calculateOrder({
@@ -976,7 +972,7 @@ export default function Cart() {
     }
 
     calculatePricing()
-  }, [cart, defaultAddress, appliedCoupon, couponCode, restaurantId, pricingRefreshKey])
+  }, [cart, defaultAddress, appliedCoupon, couponCode, restaurantId, restaurantData, loadingRestaurant, pricingRefreshKey])
 
   // Fetch wallet balance
   useEffect(() => {

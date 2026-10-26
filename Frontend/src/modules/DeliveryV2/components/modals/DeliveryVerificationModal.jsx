@@ -465,31 +465,54 @@ const OtpModal = ({ order, onVerified, onClose }) => {
                   <h3 className="text-gray-950 font-bold text-xl mb-2">Scan to Pay</h3>
                   <p className="text-gray-500 text-sm mb-8 font-medium">Order Total: ₹{amountToCollect.toFixed(2)}</p>
 
-                  <div className="flex flex-col items-center gap-4 bg-gray-50 rounded-3xl border-2 border-gray-100 p-6 mb-8 w-full">
-                    <div className="relative aspect-square w-44 sm:w-56 overflow-hidden bg-white">
+                  <div className="flex flex-col items-center gap-4 bg-gray-50 rounded-3xl border-2 border-gray-100 p-6 mb-6 w-full">
+                    <div className="relative aspect-square w-48 sm:w-56 overflow-hidden bg-white rounded-2xl p-2 border border-gray-200 flex items-center justify-center shadow-sm">
                       <img
                         src={collectQr?.imageUrl}
-                        alt="Razorpay UPI payment QR"
+                        alt="UPI Payment QR"
                         className="h-full w-full object-contain"
-                        style={{
-                          transform: 'scale(3.35) translateY(-4.5%)',
-                          transformOrigin: 'center center',
-                        }}
+                        style={
+                          collectQr?.isDirectQr || collectQr?.imageUrl?.startsWith('data:')
+                            ? { transform: 'none' }
+                            : {
+                                transform: 'scale(3.35) translateY(-4.5%)',
+                                transformOrigin: 'center center',
+                              }
+                        }
                       />
                     </div>
-                    <p className={`text-xs font-bold ${paymentStatus === 'pending' ? 'text-amber-700' : 'text-red-600'}`}>
-                      {paymentStatus === 'pending'
-                        ? 'Waiting for server-verified payment…'
-                        : 'This QR has expired or failed.'}
-                    </p>
+                    <div className="text-center space-y-1">
+                      <p className={`text-xs font-bold ${paymentStatus === 'pending' ? 'text-amber-700' : 'text-red-600'}`}>
+                        {paymentStatus === 'pending'
+                          ? (collectQr?.isDirectQr ? 'Scan with GPay, PhonePe, Paytm, or BHIM' : 'Waiting for server-verified payment…')
+                          : 'This QR has expired or failed.'}
+                      </p>
+                      {collectQr?.isDirectQr && (
+                        <p className="text-[11px] text-gray-400 font-medium">
+                          Tap below once customer completes payment
+                        </p>
+                      )}
+                    </div>
                   </div>
 
-                  <button
-                    onClick={() => setShowQrModal(false)}
-                    className="w-full py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold text-xs uppercase tracking-widest"
-                  >
-                    Close QR
-                  </button>
+                  <div className="w-full flex flex-col gap-2.5">
+                    <button
+                      onClick={async () => {
+                        setShowQrModal(false);
+                        await confirmCashCollected();
+                      }}
+                      disabled={isCompletingCash}
+                      className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-2xl font-bold text-xs uppercase tracking-wider shadow-lg shadow-green-500/20 active:scale-[0.98] transition-transform hover:from-emerald-500 hover:to-green-500 disabled:opacity-50"
+                    >
+                      {isCompletingCash ? 'Recording...' : 'Payment Received via UPI ✓'}
+                    </button>
+                    <button
+                      onClick={() => setShowQrModal(false)}
+                      className="w-full py-3 bg-gray-100 text-gray-500 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-gray-200 transition-colors"
+                    >
+                      Close QR
+                    </button>
+                  </div>
                 </motion.div>
               </motion.div>
             )}

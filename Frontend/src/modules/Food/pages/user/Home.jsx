@@ -832,13 +832,16 @@ export default function Home() {
         setRecommendedRestaurantIds(settingsData.recommendedRestaurantIds || []);
         setUnder250PriceLimit(Number(settingsData.under250PriceLimit) || 250);
 
-        const recRest = settingsData.recommendedRestaurants || [];
+        // Restaurant lists are only meaningful once we know the customer's delivery zone;
+        // without it the server would return restaurants from every city.
+        const hasZone = Boolean(effectiveZoneId);
+        const recRest = hasZone ? (settingsData.recommendedRestaurants || []) : [];
         setRecommendedRestaurantsFromSettings(recRest);
 
         const images = Array.isArray(settingsData.festBannerImages) ? settingsData.festBannerImages : [];
         setFestBannerImages(images);
 
-        const gourmetList = Array.isArray(gourmetData) ? gourmetData : [];
+        const gourmetList = hasZone && Array.isArray(gourmetData) ? gourmetData : [];
         setGourmetRestaurants(gourmetList);
         setShowGourmetSection(settingsData.showGourmet ?? true);
 

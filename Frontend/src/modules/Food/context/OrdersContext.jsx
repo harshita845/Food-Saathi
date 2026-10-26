@@ -123,13 +123,26 @@ export function OrdersProvider({ children }) {
     }))
   }, [])
 
+  const removeOrder = useCallback((orderId) => {
+    const needle = normalizeOrderLookupId(orderId)
+    if (!needle) return
+    setOrders((prevOrders) => {
+      const next = prevOrders.filter((order) => !orderLookupIds(order).includes(needle))
+      try {
+        localStorage.setItem("userOrders", JSON.stringify(next))
+      } catch {}
+      return next
+    })
+  }, [])
+
   const value = useMemo(() => ({
     orders,
     createOrder,
+    removeOrder,
     getOrderById,
     getAllOrders,
     updateOrderStatus
-  }), [orders])
+  }), [orders, removeOrder])
 
   return <OrdersContext.Provider value={value}>{children}</OrdersContext.Provider>
 }

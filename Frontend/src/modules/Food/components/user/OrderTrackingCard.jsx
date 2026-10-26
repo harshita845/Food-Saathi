@@ -136,7 +136,7 @@ function ordersFingerprint(orders) {
 
 function OrderTrackingCardInner({ hasBottomNav = true }) {
   const navigate = useNavigate();
-  const { orders: contextOrders } = useOrders();
+  const { orders: contextOrders, removeOrder } = useOrders();
   const [timeRemaining, setTimeRemaining] = useState(null);
   const [apiOrders, setApiOrders] = useState([]);
   const [hasFetchedApi, setHasFetchedApi] = useState(false);
@@ -213,6 +213,10 @@ function OrderTrackingCardInner({ hasBottomNav = true }) {
       if (invalidOrderIds.has(key)) {
         return false;
       }
+      // If we haven't fetched from the server yet, do not trust stale Mongo ObjectIds from previous sessions
+      if (!hasFetchedApi && isMongoObjectId(key)) {
+        return false;
+      }
       // After first API sync, ignore stale local Mongo-like ids that are absent server-side.
       // This prevents repeated verification calls for already-deleted orders.
       if (
@@ -267,12 +271,13 @@ function OrderTrackingCardInner({ hasBottomNav = true }) {
         const fresh = response?.data?.data?.order || response?.data?.order || response?.data?.data || null;
         if (fresh) setActiveOrderOverride(fresh);
       } catch (error) {
-        if (error?.response?.status === 404 || error?.response?.status === 400) {
+        if (error?.response?.status === 404 || error?.response?.status === 400 || error?.response?.status === 403) {
           setInvalidOrderIds((prev) => {
             const next = new Set(prev);
             next.add(incomingKey);
             return next;
           });
+          if (removeOrder) removeOrder(incomingKey);
         }
       }
     };
@@ -288,7 +293,7 @@ function OrderTrackingCardInner({ hasBottomNav = true }) {
       window.removeEventListener("orderStatusNotification", handleOrderStatusNotification);
       window.removeEventListener("order-placed", handleOrderPlaced);
     };
-  }, [fetchOrders]);
+  }, [fetchOrders, removeOrder]);
 
   useEffect(() => {
     if (!activeOrder) {
@@ -309,6 +314,9 @@ function OrderTrackingCardInner({ hasBottomNav = true }) {
 
   // Proactive verification for active orders not found in recent API list
   useEffect(() => {
+    // Wait until server orders have been fetched
+    if (!hasFetchedApi) return;
+
     const key = getOrderKey(activeOrder);
     if (!key || invalidOrderIds.has(key)) return;
 
@@ -320,18 +328,29 @@ function OrderTrackingCardInner({ hasBottomNav = true }) {
       try {
         await orderAPI.getOrderDetails(key);
       } catch (error) {
-        if (error?.response?.status === 404 || error?.response?.status === 400) {
+        if (error?.response?.status === 404 || error?.response?.status === 400 || error?.response?.status === 403) {
           setInvalidOrderIds((prev) => {
             const next = new Set(prev);
             next.add(key);
             return next;
           });
+          if (removeOrder) removeOrder(key);
+          try {
+            const raw = localStorage.getItem("userOrders");
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              if (Array.isArray(parsed)) {
+                const cleaned = parsed.filter(o => getOrderKey(o) !== key && o?._id !== key && o?.orderId !== key && o?.id !== key);
+                localStorage.setItem("userOrders", JSON.stringify(cleaned));
+              }
+            }
+          } catch {}
         }
       }
     };
 
     verifyOrderExists();
-  }, [activeOrder, apiOrders, invalidOrderIds]);
+  }, [activeOrder, apiOrders, invalidOrderIds, hasFetchedApi, removeOrder]);
 
   const [dismissedKey, setDismissedKey] = useState(null);
 

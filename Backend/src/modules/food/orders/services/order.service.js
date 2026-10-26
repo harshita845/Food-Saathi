@@ -208,6 +208,14 @@ export async function createOrder(userId, dto) {
     }
   }
 
+  // Every delivery needs a mapped address: it decides the delivery zone, fee and rider route.
+  const addressCoords = dto.address?.location?.coordinates;
+  if (!Array.isArray(addressCoords) || addressCoords.length !== 2 || !addressCoords.every((c) => Number.isFinite(Number(c)))) {
+    const err = new ValidationError("Please select your delivery location on the map before placing the order.");
+    err.code = "ADDRESS_LOCATION_REQUIRED";
+    throw err;
+  }
+
   // Prices, fees, taxes and coupon discount are always computed on the server.
   const requestedCouponCode = String(dto.couponCode || dto.pricing?.couponCode || "").trim().toUpperCase();
   const serverQuote = await calculateOrderPricing(userId, {
@@ -259,6 +267,11 @@ export async function createOrder(userId, dto) {
       requiredCashAmount: isCash ? normalizedPricing.total : 0,
     });
     if (!riderAvailability.available) {
+      if (riderAvailability.reason === 'cash_limit_exceeded') {
+        const err = new ValidationError('Cash on Delivery is currently unavailable for this order amount as delivery partner cash limits have been reached. Please pay online.');
+        err.code = 'CASH_LIMIT_EXCEEDED';
+        throw err;
+      }
       const err = new ValidationError('All riders are busy, kindly try after some time');
       err.code = 'NO_RIDERS_AVAILABLE';
       throw err;
