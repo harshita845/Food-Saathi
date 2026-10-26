@@ -173,7 +173,9 @@ export default function ProfessionalSearch() {
           restaurants: all.filter(r => r.matchType === 'restaurant' || !r.matchType),
           dishes: all.filter(r => r.matchType === 'food')
         };
-        sessionSearchCache.set(cacheKey, parsedResults);
+        if (parsedResults.restaurants.length > 0 || parsedResults.dishes.length > 0) {
+          sessionSearchCache.set(cacheKey, parsedResults);
+        }
         setResults(parsedResults);
       }
     } catch (err) {

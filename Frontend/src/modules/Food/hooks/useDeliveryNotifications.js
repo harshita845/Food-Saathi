@@ -15,6 +15,7 @@ import {
 import { isValidSocketOrigin, resolveSocketOrigin } from '@food/utils/socketOrigin';
 import { DeliveryNotificationContext } from '../context/DeliveryNotificationContext';
 import { subscribeDeliveryPartnerOffers } from '@food/realtimeTracking';
+import { bindDataSync } from '@food/utils/dataSync';
 
 const shouldLogDeliverySocket = () => {
   if (typeof window === 'undefined') return import.meta.env.DEV;
@@ -789,6 +790,7 @@ export const useDeliveryNotifications = () => {
       },
       query: token ? { token } : undefined,
     });
+    bindDataSync(socketRef.current);
 
     debugLog('Socket.IO client created', {
       socketUrl,

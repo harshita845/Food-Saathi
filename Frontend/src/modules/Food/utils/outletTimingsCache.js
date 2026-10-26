@@ -49,3 +49,8 @@ export function primeOutletTimingsCache(restaurantId, timings) {
   if (!id || timings == null) return;
   cache.set(id, { at: Date.now(), value: timings });
 }
+
+/** Forget all cached timings (e.g. after a restaurant or admin edits outlet hours). */
+export function clearOutletTimingsCache() {
+  cache.clear();
+}

@@ -7,6 +7,7 @@ import alertSound from '@food/assets/audio/restaurant-order-ring.wav';
 import { dispatchNotificationInboxRefresh } from '@food/hooks/useNotificationInbox';
 import { RestaurantNotificationContext } from '../context/RestaurantNotificationContext';
 import { isModuleAuthenticated } from '@food/utils/auth';
+import { bindDataSync } from '@food/utils/dataSync';
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -670,6 +671,7 @@ export const useRestaurantNotifications = () => {
       },
       query: { token: restaurantToken },
     });
+    bindDataSync(socketRef.current);
 
     socketRef.current.on('connect', () => {
       debugLog('? Restaurant Socket connected, restaurantId:', restaurantId);

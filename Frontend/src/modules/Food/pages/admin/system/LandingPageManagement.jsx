@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react"
-import { Upload, Trash2, Image as ImageIcon, Loader2, AlertCircle, CheckCircle2, ArrowUp, ArrowDown, Layout, Tag, UtensilsCrossed, ChefHat, Megaphone, Search, X } from "lucide-react"
+import { Upload, Trash2, Image as ImageIcon, Loader2, AlertCircle, CheckCircle2, ArrowUp, ArrowDown, Layout, Tag, UtensilsCrossed, ChefHat, Megaphone, Search, X, Sparkles } from "lucide-react"
 import api from "@food/api"
 import { adminAPI } from "@food/api"
 import { getMediaUrl, getPlaceholderImage } from "@/shared/utils/media"
@@ -10,6 +10,7 @@ import { Button } from "@food/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@food/components/ui/dialog"
 import { Checkbox } from "@food/components/ui/checkbox"
 import InteractiveExploreIcon from "@food/components/user/home/InteractiveExploreIcon"
+import FestBanner from "@food/components/user/home/FestBanner"
 const debugLog = (...args) => { }
 const debugWarn = (...args) => { }
 const debugError = (...args) => { }
@@ -61,11 +62,20 @@ export default function LandingPageManagement() {
   const [diningBannersDeleting, setDiningBannersDeleting] = useState(null)
   const diningBannersFileInputRef = useRef(null)
 
+  const [previewVegMode, setPreviewVegMode] = useState(false)
   const [settings, setSettings] = useState({
     exploreMoreHeading: "Explore More",
     recommendedRestaurantIds: [],
     under250PriceLimit: 250,
     festBannerImages: [],
+    festBanner: {
+      enabled: true,
+      missionText: 'Food Saathi Missions',
+      title: 'FEAST BONANZA',
+      vegTitle: 'VEGGIE DELIGHT',
+      badgeText: 'UPTO 60% OFF NOW',
+      vegBadgeText: 'PURE VEG MAGIC',
+    },
     stats: { restaurants: '3,00,000+', cities: '800+', orders: '3 billion+' },
     appLinks: { playStore: 'https://play.google.com/store/apps/details?id=com.foodsaathi.user', appStore: '' },
     socialLinks: { instagram: '', twitter: '', facebook: '', linkedin: '', youtube: '' },
@@ -1101,6 +1111,14 @@ export default function LandingPageManagement() {
           recommendedRestaurantIds: Array.isArray(nextSettings.recommendedRestaurantIds) ? nextSettings.recommendedRestaurantIds : [],
           under250PriceLimit: Number(nextSettings.under250PriceLimit) || 250,
           festBannerImages: Array.isArray(nextSettings.festBannerImages) ? nextSettings.festBannerImages : [],
+          festBanner: nextSettings.festBanner || {
+            enabled: true,
+            missionText: 'Food Saathi Missions',
+            title: 'FEAST BONANZA',
+            vegTitle: 'VEGGIE DELIGHT',
+            badgeText: 'UPTO 60% OFF NOW',
+            vegBadgeText: 'PURE VEG MAGIC',
+          },
           stats: nextSettings.stats || { restaurants: '3,00,000+', cities: '800+', orders: '3 billion+' },
           appLinks: nextSettings.appLinks || { playStore: 'https://play.google.com/store/apps/details?id=com.foodsaathi.user', appStore: '' },
           socialLinks: nextSettings.socialLinks || { instagram: '', twitter: '', facebook: '', linkedin: '', youtube: '' },
@@ -1149,6 +1167,7 @@ export default function LandingPageManagement() {
         recommendedRestaurantIds: Array.isArray(settings.recommendedRestaurantIds) ? settings.recommendedRestaurantIds : [],
         under250PriceLimit: Number(settings.under250PriceLimit) || 250,
         festBannerImages: settings.festBannerImages || [],
+        festBanner: settings.festBanner,
         stats: settings.stats,
         appLinks: settings.appLinks,
         socialLinks: settings.socialLinks,
@@ -1168,6 +1187,7 @@ export default function LandingPageManagement() {
           festBannerImages: Array.isArray(savedSettings.festBannerImages)
             ? savedSettings.festBannerImages
             : prev.festBannerImages,
+          festBanner: savedSettings.festBanner || prev.festBanner,
           stats: savedSettings.stats || prev.stats,
           appLinks: savedSettings.appLinks || prev.appLinks,
           socialLinks: savedSettings.socialLinks || prev.socialLinks,
@@ -1229,7 +1249,8 @@ export default function LandingPageManagement() {
         exploreMoreHeading: settings.exploreMoreHeading,
         recommendedRestaurantIds: Array.isArray(settings.recommendedRestaurantIds) ? settings.recommendedRestaurantIds : [],
         under250PriceLimit: Number(settings.under250PriceLimit) || 250,
-        festBannerImages: updatedImages
+        festBannerImages: updatedImages,
+        festBanner: settings.festBanner
       }, getAuthConfig())
 
       setSuccess('Images uploaded and saved successfully!')
@@ -1255,7 +1276,8 @@ export default function LandingPageManagement() {
         exploreMoreHeading: settings.exploreMoreHeading,
         recommendedRestaurantIds: Array.isArray(settings.recommendedRestaurantIds) ? settings.recommendedRestaurantIds : [],
         under250PriceLimit: Number(settings.under250PriceLimit) || 250,
-        festBannerImages: updatedImages
+        festBannerImages: updatedImages,
+        festBanner: settings.festBanner
       }, getAuthConfig())
 
       setSuccess('Image removed successfully!')
@@ -1391,6 +1413,7 @@ export default function LandingPageManagement() {
   // ==================== RENDER ====================
   const tabs = [
     { id: 'banners', label: 'Hero Banners', icon: ImageIcon },
+    { id: 'fest-banner', label: 'Fest Banner', icon: Sparkles },
     { id: 'under-250', label: '250 Banner', icon: Tag },
     { id: 'dining', label: 'Ads Banner', icon: Megaphone },
     { id: 'explore-more', label: 'Explore More', icon: Layout },
@@ -1620,6 +1643,292 @@ export default function LandingPageManagement() {
               )}
             </div>
           </>
+        )}
+
+        {/* Fest Banner Tab */}
+        {activeTab === 'fest-banner' && (
+          <div className="space-y-6">
+            {/* Header & Save Action */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-orange-500" />
+                  Fest & Mission Banner Management
+                </h2>
+                <p className="text-sm text-slate-600 mt-1">
+                  Customize the top header banner that reflects on the user home page, including mission badge, discount titles, and rotating showcase images.
+                </p>
+              </div>
+              <Button
+                onClick={handleSaveSettings}
+                disabled={settingsSaving}
+                className="bg-orange-500 hover:bg-orange-600 text-white flex items-center gap-2 whitespace-nowrap shadow-sm"
+              >
+                {settingsSaving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    Save Banner Settings
+                  </>
+                )}
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Left Column: Settings Form */}
+              <div className="lg:col-span-7 space-y-6">
+                {/* Banner Status Card */}
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-slate-900">Banner Visibility</h3>
+                      <p className="text-xs text-slate-500 mt-0.5">Toggle banner display on the user home page</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={settings.festBanner?.enabled !== false}
+                        onChange={(e) => {
+                          setSettings(prev => ({
+                            ...prev,
+                            festBanner: {
+                              ...prev.festBanner,
+                              enabled: e.target.checked
+                            }
+                          }))
+                        }}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Banner Content Card */}
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-5">
+                  <h3 className="font-semibold text-slate-900 border-b pb-2">Banner Texts & Badges</h3>
+
+                  {/* Mission Pill Text */}
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      Mission Badge / Pill Text
+                    </Label>
+                    <Input
+                      type="text"
+                      value={settings.festBanner?.missionText || ''}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        setSettings(prev => ({
+                          ...prev,
+                          festBanner: { ...prev.festBanner, missionText: val }
+                        }))
+                      }}
+                      placeholder="e.g. FOOD SAATHI MISSIONS"
+                      className="mt-1.5"
+                    />
+                    <p className="text-xs text-slate-400 mt-1">Displayed in the glowing pill badge above the main title.</p>
+                  </div>
+
+                  {/* Main Title Non-Veg & Veg */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                        Main Title (Standard / Non-Veg)
+                      </Label>
+                      <Input
+                        type="text"
+                        value={settings.festBanner?.title || ''}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          setSettings(prev => ({
+                            ...prev,
+                            festBanner: { ...prev.festBanner, title: val }
+                          }))
+                        }}
+                        placeholder="e.g. FEAST BONANZA"
+                        className="mt-1.5 font-bold text-orange-600"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                        Main Title (Pure Veg Mode)
+                      </Label>
+                      <Input
+                        type="text"
+                        value={settings.festBanner?.vegTitle || ''}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          setSettings(prev => ({
+                            ...prev,
+                            festBanner: { ...prev.festBanner, vegTitle: val }
+                          }))
+                        }}
+                        placeholder="e.g. VEGGIE DELIGHT"
+                        className="mt-1.5 font-bold text-emerald-600"
+                      />
+                    </div>
+                  </div>
+
+                  {/* CTA / Offer Badge Non-Veg & Veg */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                        Offer Badge (Standard / Non-Veg)
+                      </Label>
+                      <Input
+                        type="text"
+                        value={settings.festBanner?.badgeText || ''}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          setSettings(prev => ({
+                            ...prev,
+                            festBanner: { ...prev.festBanner, badgeText: val }
+                          }))
+                        }}
+                        placeholder="e.g. UPTO 60% OFF NOW"
+                        className="mt-1.5"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                        Offer Badge (Pure Veg Mode)
+                      </Label>
+                      <Input
+                        type="text"
+                        value={settings.festBanner?.vegBadgeText || ''}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          setSettings(prev => ({
+                            ...prev,
+                            festBanner: { ...prev.festBanner, vegBadgeText: val }
+                          }))
+                        }}
+                        placeholder="e.g. PURE VEG MAGIC"
+                        className="mt-1.5"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rotating Showcase Food Images */}
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-slate-900">Custom Rotating Showcase Images</h3>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Optional: Upload custom dishes to rotate in the banner cards. If none are uploaded, default curated dishes are displayed.
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => festBannerFileInputRef.current?.click()}
+                      disabled={festBannerUploading}
+                      className="flex items-center gap-2 border-orange-200 hover:bg-orange-50 text-orange-700"
+                    >
+                      {festBannerUploading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin text-orange-600" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4 text-orange-600" />
+                          Add Images
+                        </>
+                      )}
+                    </Button>
+                    <input
+                      ref={festBannerFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleFestBannerImageSelect}
+                      className="hidden"
+                    />
+                  </div>
+
+                  {settings.festBannerImages && settings.festBannerImages.length > 0 ? (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 pt-2">
+                      {settings.festBannerImages.map((imgUrl, idx) => (
+                        <div key={idx} className="relative group rounded-lg overflow-hidden border border-slate-200 aspect-square bg-slate-100">
+                          <img
+                            src={getMediaUrl(imgUrl)}
+                            alt={`Fest Banner ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveFestBannerImage(idx)}
+                            className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                            title="Remove"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-lg bg-orange-50/60 border border-orange-100 text-xs text-orange-700 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-orange-500 shrink-0" />
+                      <span>Currently using default high-resolution dishes (Tacos, BBQ Ribs, Burgers, Paneer Tikka, Gourmet Pizza, Veg Biryani).</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: Live Interactive Preview */}
+              <div className="lg:col-span-5">
+                <div className="sticky top-6 space-y-4">
+                  <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Live Preview</span>
+                      <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
+                        <button
+                          type="button"
+                          onClick={() => setPreviewVegMode(false)}
+                          className={`text-xs px-3 py-1 rounded font-medium transition-all ${
+                            !previewVegMode ? 'bg-orange-500 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          Non-Veg Mode
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPreviewVegMode(true)}
+                          className={`text-xs px-3 py-1 rounded font-medium transition-all ${
+                            previewVegMode ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          Pure Veg Mode
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* App Header simulation container */}
+                    <div className="rounded-2xl p-5 bg-gradient-to-b from-[#e65100] via-[#f57c00] to-[#ff9800] overflow-hidden shadow-inner relative min-h-[220px] flex items-center justify-center">
+                      <div className="w-full">
+                        <FestBanner
+                          isVegMode={previewVegMode}
+                          settings={settings.festBanner}
+                          images={settings.festBannerImages}
+                        />
+                      </div>
+                    </div>
+
+                    <p className="text-center text-xs text-slate-400 mt-3">
+                      This is an exact live rendering of how the banner appears on user devices.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Under 250 Banner Tab */}

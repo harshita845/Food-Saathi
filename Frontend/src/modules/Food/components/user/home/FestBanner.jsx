@@ -21,10 +21,25 @@ const defaultImages = {
   ]
 };
 
-export default function FestBanner({ isVegMode, images = [], hideFoodImages = false }) {
+export default function FestBanner({ isVegMode, images = [], settings, hideFoodImages = false }) {
   const [imgIndex, setImgIndex] = useState(0);
   const [bgIndex, setBgIndex] = useState(0);
-  const currentPool = isVegMode ? defaultImages.veg : defaultImages.nonVeg;
+
+  const missionText = settings?.missionText || "Food Saathi Missions";
+  const title = isVegMode
+    ? (settings?.vegTitle || "VEGGIE DELIGHT")
+    : (settings?.title || "FEAST BONANZA");
+  const badgeText = isVegMode
+    ? (settings?.vegBadgeText || "PURE VEG MAGIC")
+    : (settings?.badgeText || "UPTO 60% OFF NOW");
+
+  const poolNonVeg = (Array.isArray(settings?.nonVegImages) && settings.nonVegImages.length >= 3)
+    ? settings.nonVegImages
+    : defaultImages.nonVeg;
+  const poolVeg = (Array.isArray(settings?.vegImages) && settings.vegImages.length >= 3)
+    ? settings.vegImages
+    : defaultImages.veg;
+  const currentPool = isVegMode ? poolVeg : poolNonVeg;
   const hasBgImages = Array.isArray(images) && images.length > 0;
 
   // Dynamic rotation for foreground images
@@ -110,7 +125,7 @@ export default function FestBanner({ isVegMode, images = [], hideFoodImages = fa
           className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/10 shadow-sm font-bold"
         >
           <Sparkles className="h-2 w-2 text-[#FFC93C] animate-pulse" />
-          <span className="text-[8.5px] font-black text-white uppercase tracking-[0.18em]">Food Saathi Missions</span>
+          <span className="text-[8.5px] font-black text-white uppercase tracking-[0.18em]">{missionText}</span>
           <Sparkles className="h-2 w-2 text-[#FFC93C] animate-pulse" />
         </motion.div>
 
@@ -124,7 +139,7 @@ export default function FestBanner({ isVegMode, images = [], hideFoodImages = fa
             className="text-xl sm:text-2xl font-black text-[#FFC93C] italic tracking-tighter drop-shadow-md uppercase leading-none"
             style={{ WebkitTextStroke: '0.5px rgba(255,255,255,0.3)' }}
           >
-            {isVegMode ? 'VEGGIE DELIGHT' : 'FEAST BONANZA'}
+            {title}
           </h2>
         </motion.div>
 
@@ -135,7 +150,7 @@ export default function FestBanner({ isVegMode, images = [], hideFoodImages = fa
         >
           {isVegMode ? <Leaf className="h-3 w-3 text-emerald-400 fill-emerald-400" /> : <Flame className="h-3 w-3 text-[#FFC93C] fill-[#FFC93C] animate-bounce" />}
           <span className="text-xs font-black uppercase tracking-[0.08em]">
-            {isVegMode ? 'PURE VEG MAGIC' : 'UPTO 60% OFF NOW'}
+            {badgeText}
           </span>
           <ArrowRightCircle className="h-4 w-4 text-[#FFC93C] shadow-sm" />
         </motion.div>

@@ -355,6 +355,7 @@ export default function DesktopNavbar({ showLogo = true }) {
                             {/* Under 250 Tab */}
                             <Link
                                 to="/food/user/under-250"
+                                state={{ resetCategory: true, category: 'all' }}
                                 className={`flex flex-col items-center gap-1 px-2 py-1 transition-colors relative group ${isUnder250
                                     ? "text-primary"
                                     : "text-gray-600 dark:text-gray-400 hover:text-primary"

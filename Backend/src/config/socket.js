@@ -186,7 +186,7 @@ export const initSocket = async (server) => {
         if (userId && role) {
             if (role === 'RESTAURANT') socket.join(roomNames.restaurant(userId));
             if (role === 'USER') socket.join(roomNames.user(userId));
-            if (role === 'ADMIN') socket.join('admin'); // Admin panel broadcasts
+            if (['ADMIN', 'SUPER_ADMIN', 'SUB_ADMIN'].includes(role)) socket.join('admin'); // Admin panel broadcasts
             if (role === 'DELIVERY_PARTNER') {
                 socket.join(roomNames.delivery(userId));
                 socket.join('all_delivery'); // Global delivery broadcast room

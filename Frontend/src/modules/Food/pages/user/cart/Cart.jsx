@@ -23,6 +23,7 @@ import { getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailabil
 import useAppBackNavigation from "@food/hooks/useAppBackNavigation"
 import { persistDeliveryAddressMode, readDeliveryAddressMode, readStoredUserLocation } from "@food/utils/locationPersistence"
 import zoopSound from "@food/assets/audio/zomato_sms.mp3"
+import { useDataVersion } from "@food/utils/dataSync"
 const debugLog = (...args) => { }
 const debugWarn = (...args) => { }
 const debugError = (...args) => { }
@@ -124,6 +125,8 @@ export default function Cart() {
   const [couponCode, setCouponCode] = useState("")
   // Bumped when the server reports changed prices at checkout, to re-fetch the server quote
   const [pricingRefreshKey, setPricingRefreshKey] = useState(0)
+  // Fees/prices changed in admin or restaurant app: recalculate the bill
+  const dataVersion = useDataVersion()
   const [manualCouponCode, setManualCouponCode] = useState("")
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("cash")
   const [showPaymentSheet, setShowPaymentSheet] = useState(false)
@@ -972,7 +975,7 @@ export default function Cart() {
     }
 
     calculatePricing()
-  }, [cart, defaultAddress, appliedCoupon, couponCode, restaurantId, restaurantData, loadingRestaurant, pricingRefreshKey])
+  }, [cart, defaultAddress, appliedCoupon, couponCode, restaurantId, restaurantData, loadingRestaurant, pricingRefreshKey, dataVersion])
 
   // Fetch wallet balance
   useEffect(() => {

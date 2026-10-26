@@ -10,7 +10,7 @@ import { initializeQueues, closeBullMQConnection } from './src/queues/index.js';
 
 import { logger } from './src/utils/logger.js';
 import { initializeFirebaseRealtime } from './src/config/firebase.js';
-import { loadEnvFromDb } from './src/config/envLoader.js';
+import { loadEnvFromDb, startEnvAutoReload } from './src/config/envLoader.js';
 import { initRedisEmitter } from './src/config/socket.js';
 import { logVoipConfigurationWarnings } from './src/core/notifications/voip.service.js';
 
@@ -52,6 +52,7 @@ const startServer = async () => {
 
         // 1.5 Load Environment Variables from Database overrides
         await loadEnvFromDb();
+        startEnvAutoReload();
         initializeFirebaseRealtime();
         logVoipConfigurationWarnings();
 

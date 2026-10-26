@@ -1679,7 +1679,7 @@ export default function CategoryPage() {
                     // Trigger a gentle refresh to ensure data freshness
                     menuEnrichmentRequestRef.current += 1
                     setIsEnrichingMenus(false)
-                    setTimeout(() => setIsLoadingFilterResults(false), 500)
+                    setIsLoadingFilterResults(false)
                   }}
                 >
                   Clear all filters
@@ -1712,7 +1712,7 @@ export default function CategoryPage() {
                         setIsLoadingFilterResults(true)
                         setActiveFilters(new Set())
                         setSortBy(null)
-                        setTimeout(() => setIsLoadingFilterResults(false), 500)
+                        setIsLoadingFilterResults(false)
                       }}
                       className="text-primary font-medium text-sm md:text-base hover:underline"
                     >

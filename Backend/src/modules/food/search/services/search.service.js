@@ -26,7 +26,26 @@ export const searchUnified = async (query = {}, options = {}) => {
 
     const skip = (page - 1) * limit;
     const term = String(q || '').trim();
-    const regex = term ? new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') : null;
+
+    // Helper to generate a flexible singular/plural regex pattern
+    const buildSearchRegex = (input) => {
+        if (!input) return null;
+        const clean = input.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const lower = input.trim().toLowerCase();
+        let pattern = clean;
+        if (lower.endsWith('ies') && lower.length > 3) {
+            pattern = `${clean.slice(0, -3)}(y|ies)`;
+        } else if (lower.endsWith('es') && lower.length > 3) {
+            pattern = `${clean.slice(0, -2)}(es|s)?`;
+        } else if (lower.endsWith('s') && lower.length > 2) {
+            pattern = `${clean.slice(0, -1)}(s)?`;
+        } else {
+            pattern = `${clean}(s|es)?`;
+        }
+        return new RegExp(pattern, 'i');
+    };
+
+    const regex = buildSearchRegex(term);
 
     // 1. Initial Filter (approved status and basic conditions)
     const restaurantFilter = { status: 'approved' };
@@ -75,13 +94,42 @@ export const searchUnified = async (query = {}, options = {}) => {
 
     // 3. Search Matching
     if (regex) {
-        // A. Search by Restaurant Name / Cuisine
+        // Find any category that matches the search query (e.g. "Sweets / Desserts", "Desserts")
+        let matchedCategoryIds = [];
+        try {
+            const matchedCats = await FoodCategory.find({
+                $or: [
+                    { name: { $regex: regex } },
+                    { type: { $regex: regex } }
+                ]
+            }).select('_id').lean();
+            matchedCategoryIds = matchedCats.map(c => c._id);
+        } catch (catErr) {
+            console.warn('[Search-Service] Category lookup error:', catErr.message);
+        }
+
+        // Check if query is looking for common dessert keywords
+        const isDessertSearch = /dessert|sweet|mithai/i.test(term);
+
+        // A. Search Restaurants (by name, cuisines, description, or matching category offerings)
+        const restOrConditions = [
+            { restaurantName: { $regex: regex } },
+            { cuisines: { $regex: regex } }
+        ];
+
+        if (matchedCategoryIds.length > 0) {
+            const restIdsWithCategory = await FoodItem.find({
+                approvalStatus: 'approved',
+                categoryId: { $in: matchedCategoryIds }
+            }).distinct('restaurantId');
+            if (restIdsWithCategory.length > 0) {
+                restOrConditions.push({ _id: { $in: restIdsWithCategory } });
+            }
+        }
+
         const matchedRestaurants = await FoodRestaurant.find({
             ...restaurantFilter,
-            $or: [
-                { restaurantName: { $regex: regex } },
-                { cuisines: { $regex: regex } }
-            ]
+            $or: restOrConditions
         }).limit(limit * 2).lean();
 
         matchedRestaurants.forEach(r => {
@@ -89,7 +137,7 @@ export const searchUnified = async (query = {}, options = {}) => {
             restaurantDetailsMap.set(r._id.toString(), { ...r, matchType: 'restaurant' });
         });
 
-        // B. Search by Food Item Name
+        // B. Search Food Items (by name, description, categoryName, or matching categoryId)
         const validRestaurants = await FoodRestaurant.find(restaurantFilter).select('_id').lean();
         const validRestaurantIds = validRestaurants.map(r => r._id);
 
@@ -102,9 +150,26 @@ export const searchUnified = async (query = {}, options = {}) => {
         }
         if (isVeg === 'true') foodFilters.foodType = 'Veg';
         
+        const foodMatchOr = [
+            { name: { $regex: regex } },
+            { description: { $regex: regex } },
+            { categoryName: { $regex: regex } }
+        ];
+
+        if (matchedCategoryIds.length > 0) {
+            foodMatchOr.push({ categoryId: { $in: matchedCategoryIds } });
+        }
+
+        if (isDessertSearch) {
+            foodMatchOr.push(
+                { categoryName: { $regex: /dessert|sweet|bakery|ice cream|pastry|cake/i } },
+                { name: { $regex: /ice cream|gulab jamun|kheer|halwa|pastry|cake|brownie|rasgulla|jalebi|waffle/i } }
+            );
+        }
+
         const matchedFoods = await FoodItem.find({
             ...foodFilters,
-            name: { $regex: regex }
+            $or: foodMatchOr
         }).limit(limit * 5).lean();
 
         const foodRestaurantIds = matchedFoods.map(f => f.restaurantId.toString());

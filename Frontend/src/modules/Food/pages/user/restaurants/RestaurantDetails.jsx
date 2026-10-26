@@ -58,7 +58,7 @@ import {
   hasFoodVariants,
 } from "@food/utils/foodVariants"
 import { RestaurantDetailSkeleton } from "@food/components/ui/loading-skeletons"
-import MenuScanAnimation from "@food/components/user/MenuScanAnimation"
+import { useDataVersion } from "@food/utils/dataSync"
 
 const debugLog = (...args) => { }
 const debugWarn = (...args) => { }
@@ -156,7 +156,7 @@ function RestaurantDetailsContent() {
   const [selectedMenuCategory, setSelectedMenuCategory] = useState("all")
   const [visibleItemCount, setVisibleItemCount] = useState(20)
   const dishCardRefs = useRef({})
-  const [showScanAnimation, setShowScanAnimation] = useState(true)
+  const showScanAnimation = false
 
   const getLineItemIdForDish = (item, variant = null) =>
     buildCartLineId(item?.id || item?._id || "", variant?.id || variant?._id || "")
@@ -188,6 +188,8 @@ function RestaurantDetailsContent() {
   const fetchedRestaurantRef = useRef(false) // Track if restaurant has been fetched for current slug
   const fetchedSlugRef = useRef(null)
   const fetchedZoneIdRef = useRef(null)
+  const dataVersion = useDataVersion()
+  const lastDataVersionRef = useRef(0)
 
   // Public offers state for dynamic pricing
   const [publicOffers, setPublicOffers] = useState([])
@@ -267,6 +269,12 @@ function RestaurantDetailsContent() {
   useEffect(() => {
     const fetchRestaurant = async () => {
       if (!slug) return
+
+      // Admin/restaurant changed shared data (menu, prices, status...): reload in the background.
+      if (lastDataVersionRef.current !== dataVersion) {
+        lastDataVersionRef.current = dataVersion
+        if (dataVersion > 0) fetchedRestaurantRef.current = false
+      }
 
       // Prevent re-fetching for the same slug and zoneId. Mobile location/zone updates can
       // trigger transient refetch failures that clear already-rendered content.
@@ -1131,7 +1139,7 @@ function RestaurantDetailsContent() {
     }
 
     fetchRestaurant()
-  }, [slug, zoneId])
+  }, [slug, zoneId, dataVersion])
 
   // Track previous values to prevent unnecessary recalculations
   const prevCoordsRef = useRef({ userLat: null, userLng: null, restaurantLat: null, restaurantLng: null })
@@ -2452,12 +2460,6 @@ function RestaurantDetailsContent() {
   if (loadingRestaurant && !restaurant) {
     return (
       <>
-        {showScanAnimation && (
-          <MenuScanAnimation
-            duration={2200}
-            onComplete={() => setShowScanAnimation(false)}
-          />
-        )}
         <RestaurantDetailSkeleton />
       </>
     )
@@ -2511,13 +2513,6 @@ function RestaurantDetailsContent() {
       className={`min-h-screen bg-white dark:bg-[#1A0F09] flex flex-col transition-all duration-300 ${shouldShowGrayscale ? 'grayscale opacity-75' : ''
         }`}
     >
-      {/* ── Menu Scan Intro Animation ── */}
-      {showScanAnimation && (
-        <MenuScanAnimation
-          duration={2200}
-          onComplete={() => setShowScanAnimation(false)}
-        />
-      )}
 
       {/* Header - Back, Search, Menu (like reference image) */}
       <div className="px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 pt-3 md:pt-4 lg:pt-5 pb-2 md:pb-3 bg-white dark:bg-[#1A0F09]">

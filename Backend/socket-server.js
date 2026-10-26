@@ -7,7 +7,7 @@ import { connectRedis, closeRedis } from './src/config/redis.js';
 import { initSocket, getInternalEmitSecret } from './src/config/socket.js';
 import crypto from 'node:crypto';
 import { logger } from './src/utils/logger.js';
-import { loadEnvFromDb } from './src/config/envLoader.js';
+import { loadEnvFromDb, startEnvAutoReload } from './src/config/envLoader.js';
 import { connectDB, disconnectDB } from './src/config/db.js';
 import { initializeFirebaseRealtime } from './src/config/firebase.js';
 
@@ -25,6 +25,7 @@ const startSocketServer = async () => {
         );
         await connectDB();
         await loadEnvFromDb();
+        startEnvAutoReload();
         initializeFirebaseRealtime();
 
         const httpServer = http.createServer(app);

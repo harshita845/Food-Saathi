@@ -13,6 +13,7 @@ import { healthCheck } from './config/health.js';
 import { config } from './config/env.js';
 import compression from 'compression';
 import { optimizeImageUrls } from './middleware/optimizeImageUrls.js';
+import { broadcastDataChanges } from './middleware/broadcastDataChanges.js';
 import path from 'path';
 
 const app = express();
@@ -121,6 +122,9 @@ app.use((req, res, next) => {
 
 // Serve Cloudinary images optimized (WebP/AVIF, auto quality, width cap) in every API response
 app.use(optimizeImageUrls);
+
+// Tell every connected app when shared data (settings, menus, timings, banners...) changes
+app.use(broadcastDataChanges);
 
 // API Routes (supports both /api/v1/... and /v1/... paths)
 app.use('/api', routes);

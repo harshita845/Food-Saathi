@@ -13,7 +13,6 @@ export default function PageLoader() {
 
   useEffect(() => {
     if (
-      location.pathname.includes('/under-250') ||
       location.pathname.includes('/restaurants/') ||
       location.pathname.includes('/terms') ||
       location.pathname.includes('/privacy') ||

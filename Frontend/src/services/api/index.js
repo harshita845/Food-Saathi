@@ -1093,6 +1093,11 @@ export const restaurantAPI = {
   /** Public: get approved menu by restaurant id or slug */
   getMenuByRestaurantId: (id, config = {}) =>
     getPublicRestaurantMenuOnce(id, config),
+  /** Public: dishes at or under maxPrice for many restaurants in one call (max 100 ids). */
+  getItemsUnderPrice: (restaurantIds = [], maxPrice = 250) =>
+    userClient.get("/food/restaurant/restaurants/menus/under-price", {
+      params: { ids: (restaurantIds || []).map(String).join(","), maxPrice },
+    }),
   /** Public: get outlet timings by restaurant id */
   getOutletTimingsByRestaurantId: (id, config = {}) =>
     getPublicRestaurantOutletTimingsOnce(id, config),
@@ -1158,17 +1163,36 @@ function createInFlightCache({ ttlMs }) {
     return p;
   };
 
-  return { getOrCreate };
+  const clear = () => {
+    cached.clear();
+  };
+
+  return { getOrCreate, clear };
 }
+
+// Every shared response cache, so a data change (admin/restaurant edit) can drop them all at once.
+const allInFlightCaches = [];
+const registerCache = (cache) => {
+  allInFlightCaches.push(cache);
+  return cache;
+};
+
+/** Drop all cached public responses; the next request goes to the server. */
+export const invalidatePublicApiCaches = () => {
+  allInFlightCaches.forEach((cache) => cache.clear());
+};
 
 // Public user-app endpoints can be called by multiple components/effects on refresh (and React StrictMode in dev).
 // A small in-flight + short TTL cache collapses duplicate requests without changing functionality.
-const publicRestaurantsCache = createInFlightCache({ ttlMs: 1000 }); // 1 second for fast updates
-const publicRestaurantMenuCache = createInFlightCache({ ttlMs: 300000 });
-const publicRestaurantOutletTimingsCache = createInFlightCache({ ttlMs: 300000 });
-const publicCategoriesCache = createInFlightCache({ ttlMs: 300000 });
-const publicFoodsCache = createInFlightCache({ ttlMs: 300000 });
-const publicGenericGetCache = createInFlightCache({ ttlMs: 300000 });
+// Kept short: changes made in the admin/restaurant apps must reach customers quickly.
+// Live "app_data_changed" socket events also clear these caches immediately.
+const PUBLIC_CACHE_TTL_MS = 60 * 1000;
+const publicRestaurantsCache = registerCache(createInFlightCache({ ttlMs: 1000 })); // 1 second for fast updates
+const publicRestaurantMenuCache = registerCache(createInFlightCache({ ttlMs: PUBLIC_CACHE_TTL_MS }));
+const publicRestaurantOutletTimingsCache = registerCache(createInFlightCache({ ttlMs: PUBLIC_CACHE_TTL_MS }));
+const publicCategoriesCache = registerCache(createInFlightCache({ ttlMs: PUBLIC_CACHE_TTL_MS }));
+const publicFoodsCache = registerCache(createInFlightCache({ ttlMs: PUBLIC_CACHE_TTL_MS }));
+const publicGenericGetCache = registerCache(createInFlightCache({ ttlMs: PUBLIC_CACHE_TTL_MS }));
 
 export const publicGetOnce = (url, config = {}) => {
   const safeUrl = typeof url === "string" ? url.trim() : "";

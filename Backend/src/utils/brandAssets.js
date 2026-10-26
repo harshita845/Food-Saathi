@@ -22,3 +22,9 @@ export async function getNotificationLogoUrl() {
     cachedAt = Date.now();
     return cachedLogoUrl;
 }
+
+/** Forget the cached logo (called when business settings or the theme change). */
+export function resetNotificationLogoCache() {
+    cachedLogoUrl = null;
+    cachedAt = 0;
+}

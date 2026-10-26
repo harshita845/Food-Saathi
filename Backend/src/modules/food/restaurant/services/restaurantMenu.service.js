@@ -159,3 +159,58 @@ export async function syncMenuItemApprovalStatus(restaurantId, itemId, status, r
     // Kept to avoid breaking admin approval flows that call this helper.
     return;
 }
+
+/**
+ * Public: approved, available dishes priced at or under `maxPrice`, for many restaurants at once
+ * (one query instead of downloading every restaurant's full menu). Used by the "Under ₹250" page.
+ * @returns {Promise<Record<string, object[]>>} items keyed by restaurant id
+ */
+export async function getPublicItemsUnderPrice(restaurantIds = [], maxPrice = 250) {
+    const ids = [...new Set((Array.isArray(restaurantIds) ? restaurantIds : []).map(String))]
+        .filter((id) => mongoose.Types.ObjectId.isValid(id))
+        .slice(0, 1000);
+    const limit = Number(maxPrice);
+    if (!ids.length || !Number.isFinite(limit) || limit <= 0) return {};
+
+    const approvedRestaurants = await FoodRestaurant.find({ _id: { $in: ids }, status: 'approved' })
+        .select('_id')
+        .lean();
+    const allowedIds = approvedRestaurants.map((r) => r._id);
+    if (!allowedIds.length) return {};
+
+    const foods = await FoodItem.find({
+        restaurantId: { $in: allowedIds },
+        approvalStatus: 'approved',
+        isAvailable: { $ne: false },
+        $or: [{ price: { $lte: limit } }, { 'variants.price': { $lte: limit } }],
+    })
+        .select('restaurantId categoryId categoryName name description price priceOnOtherPlatforms otherPlatformGst variants image foodType isAvailable isRecommended preparationTime')
+        .lean();
+
+    const byRestaurant = {};
+    for (const food of foods) {
+        const price = getFoodDisplayPrice(food);
+        if (!(price <= limit)) continue;
+        const key = String(food.restaurantId);
+        (byRestaurant[key] ||= []).push({
+            id: String(food._id),
+            _id: food._id,
+            categoryId: food.categoryId ? String(food.categoryId) : null,
+            categoryName: food.categoryName || '',
+            category: food.categoryName || '',
+            name: food.name,
+            description: food.description || '',
+            price,
+            priceOnOtherPlatforms: food.priceOnOtherPlatforms || null,
+            otherPlatformGst: food.otherPlatformGst ?? null,
+            variants: serializeFoodVariants(food.variants),
+            variations: serializeFoodVariants(food.variants),
+            image: resolveStoredUploadPath(food.image || ''),
+            foodType: food.foodType || 'Non-Veg',
+            isAvailable: food.isAvailable !== false,
+            isRecommended: Boolean(food.isRecommended),
+            preparationTime: food.preparationTime || '',
+        });
+    }
+    return byRestaurant;
+}

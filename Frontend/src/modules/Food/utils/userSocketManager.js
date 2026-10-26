@@ -1,6 +1,7 @@
 import io from 'socket.io-client';
 import { isValidSocketOrigin, resolveSocketOrigin } from '@food/utils/socketOrigin';
 import { getModuleToken } from '@food/utils/auth';
+import { bindDataSync } from '@food/utils/dataSync';
 
 let socket = null;
 let connectionUserId = null;
@@ -53,6 +54,7 @@ function reconnectUserSocketWithToken(newToken) {
 }
 
 function attachCoreListeners(sock) {
+  bindDataSync(sock);
   sock.off('location-update');
   sock.on('location-update', (data) => notifyLocationListeners(data));
 

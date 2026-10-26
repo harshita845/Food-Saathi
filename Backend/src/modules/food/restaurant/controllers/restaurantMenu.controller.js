@@ -2,7 +2,8 @@ import { sendResponse } from '../../../../utils/response.js';
 import {
     getRestaurantMenu,
     updateRestaurantMenu,
-    getPublicApprovedRestaurantMenu
+    getPublicApprovedRestaurantMenu,
+    getPublicItemsUnderPrice
 } from '../services/restaurantMenu.service.js';
 
 export const getMenuController = async (req, res, next) => {
@@ -37,3 +38,14 @@ export const getPublicRestaurantMenuController = async (req, res, next) => {
     }
 };
 
+
+/** GET /restaurants/menus/under-price?ids=a,b,c&maxPrice=250 (ids capped at 100 per call) */
+export const getPublicItemsUnderPriceController = async (req, res, next) => {
+    try {
+        const ids = String(req.query.ids || '').split(',').map((v) => v.trim()).filter(Boolean).slice(0, 100);
+        const itemsByRestaurant = await getPublicItemsUnderPrice(ids, req.query.maxPrice);
+        return sendResponse(res, 200, 'Items fetched successfully', { itemsByRestaurant });
+    } catch (error) {
+        next(error);
+    }
+};

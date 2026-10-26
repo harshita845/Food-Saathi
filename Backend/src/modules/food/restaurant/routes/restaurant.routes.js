@@ -33,7 +33,7 @@ import {
     updateCategoryController,
     deleteCategoryController
 } from '../controllers/restaurantCategory.controller.js';
-import { getMenuController, updateMenuController, getPublicRestaurantMenuController } from '../controllers/restaurantMenu.controller.js';
+import { getMenuController, updateMenuController, getPublicRestaurantMenuController, getPublicItemsUnderPriceController } from '../controllers/restaurantMenu.controller.js';
 import { getPublicRestaurantAddonsController } from '../controllers/publicAddons.controller.js';
 import * as feedbackExperienceController from '../../admin/controllers/feedbackExperience.controller.js';
 import {
@@ -85,6 +85,7 @@ router.post('/register', uploadFields, registerRestaurantController);
 
 // Public: approved restaurants list (for user app)
 router.get('/restaurants', cacheResponse(300, 'restaurants'), listApprovedRestaurantsController);
+router.get('/restaurants/menus/under-price', getPublicItemsUnderPriceController);
 router.get('/restaurants/:id', cacheResponse(600, 'restaurant_detail'), getApprovedRestaurantController);
 router.get('/restaurants/:id/menu', cacheResponse(600, 'restaurant_menu'), getPublicRestaurantMenuController);
 router.get('/restaurants/:id/outlet-timings', cacheResponse(600, 'restaurant_timings'), getOutletTimingsByRestaurantIdController);

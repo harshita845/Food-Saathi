@@ -1,10 +1,9 @@
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useLocation as useRouterLocation } from "react-router-dom"
 import { useState, useMemo, useCallback, useEffect, useRef } from "react"
 import { Star, Clock, MapPin, ArrowDownUp, Timer, ArrowRight, ChevronDown, Bookmark, Share2, Plus, Minus, X, UtensilsCrossed, ArrowLeft, Search } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import AnimatedPage from "@food/components/user/AnimatedPage"
-import MenuScanAnimation from "@food/components/user/MenuScanAnimation"
 import { Card, CardContent } from "@food/components/ui/card"
 import { Button } from "@food/components/ui/button"
 import { useLocationSelector } from "@food/components/user/UserLayout"
@@ -15,11 +14,11 @@ import AddToCartAnimation from "@food/components/user/AddToCartAnimation"
 import OptimizedImage from "@food/components/OptimizedImage"
 import api, { restaurantAPI, getPublicLandingSettings, getPublicCategories } from "@food/api"
 import { isModuleAuthenticated } from "@food/utils/auth"
-import { flattenMenuItems, getMenuFromResponse } from "@food/utils/menuItems"
 import { calculateDistance, formatDistance } from "@food/utils/common"
 import { getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailability"
 import { readScopedValue, removeScopedValue, writeScopedValue } from "@food/utils/appStorage"
 import { getDiscountedItemPrice } from "@food/utils/itemDiscount"
+import { useDataVersion, DATA_CHANGED_EVENT } from "@food/utils/dataSync"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -301,18 +300,54 @@ const pageCache = {
   fetchedIds: null,
 };
 
+// Admin/restaurant edits arrive as a data-change event: forget cached page data so it reloads.
+if (typeof window !== "undefined") {
+  window.addEventListener(DATA_CHANGED_EVENT, () => {
+    pageCache.zoneId = null;
+    pageCache.categories = null;
+    pageCache.bannerImages = null;
+  });
+}
+
 export default function Under250() {
+  const routerLocation = useRouterLocation()
   const initialFiltersRef = useRef(readUnder250Filters())
   const { location, zoneId, zoneStatus, isInService, isOutOfService, serviceUnavailableMessage } = useAppLocation()
+  const dataVersion = useDataVersion()
   // Initialize state from cache if zoneId matches
   const isCacheValid = pageCache.zoneId === zoneId;
   // Always show scan animation on page load, even if cached, because user likes the animation
-  const [showScanAnimation, setShowScanAnimation] = useState(true)
+  const showScanAnimation = false
   const navigate = useNavigate()
   const { addToCart, updateQuantity, removeFromCart, getCartItem, cart } = useCart()
   const [showSearch, setShowSearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const [activeCategory, setActiveCategory] = useState(initialFiltersRef.current.activeCategory)
+  const [activeCategory, setActiveCategory] = useState(() => {
+    if (
+      routerLocation?.state?.resetCategory ||
+      routerLocation?.state?.category === "all" ||
+      (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("category") === "all")
+    ) {
+      return null
+    }
+    return initialFiltersRef.current.activeCategory
+  })
+
+  // Listen for navigation state / params to ensure View All opens "All"
+  useEffect(() => {
+    const params = new URLSearchParams(routerLocation.search)
+    const categoryParam = params.get("category")
+    if (
+      routerLocation.state?.resetCategory ||
+      routerLocation.state?.category === "all" ||
+      categoryParam === "all"
+    ) {
+      setActiveCategory(null)
+      removeScopedValue(UNDER_250_FILTERS_SCOPE, UNDER_250_FILTERS_NAME, { storage: "session" })
+    } else if (categoryParam) {
+      setActiveCategory(categoryParam)
+    }
+  }, [routerLocation.search, routerLocation.state])
   const [isSwitchingCategory, setIsSwitchingCategory] = useState(false)
   const [showSortPopup, setShowSortPopup] = useState(false)
   const [selectedSort, setSelectedSort] = useState(initialFiltersRef.current.selectedSort)
@@ -418,12 +453,8 @@ export default function Under250() {
   }
 
   const handleCategorySwitch = useCallback((categoryId) => {
-    setIsSwitchingCategory(true)
+    // Filtering is local, so switch instantly (no placeholder delay)
     setActiveCategory(categoryId)
-    // Small artificial delay to show skeleton and allow images to load gracefully
-    setTimeout(() => {
-      setIsSwitchingCategory(false)
-    }, 400)
   }, [])
 
   // Helper function to parse distance (e.g., "0.4 km" -> 0.4)
@@ -563,7 +594,7 @@ export default function Under250() {
         if (!cancelled) setLoadingBanner(false)
       })
     return () => { cancelled = true }
-  }, [zoneId])
+  }, [zoneId, dataVersion])
 
   // Fetch landing settings to get dynamic price limit
   useEffect(() => {
@@ -579,7 +610,7 @@ export default function Under250() {
         setUnder250PriceLimit(250)
       })
     return () => { cancelled = true }
-  }, [zoneId])
+  }, [zoneId, dataVersion])
 
   useEffect(() => {
     setCurrentBannerIndex((prev) => {
@@ -704,7 +735,7 @@ export default function Under250() {
     
     fetchRestaurantsList()
     return () => { cancelled = true }
-  }, [zoneId, isOutOfService])
+  }, [zoneId, isOutOfService, dataVersion])
 
   // 2. Fetch menus for the current chunk when visible count increases
   useEffect(() => {
@@ -735,16 +766,21 @@ export default function Under250() {
 
         const userLat = Number(location?.latitude)
         const userLng = Number(location?.longitude)
-        
+
+        // One request for the whole chunk: the server returns only dishes within the price limit.
+        const chunkIds = newRestaurantsToFetch
+          .map((r) => String(r?.restaurantId || r?._id || ""))
+          .filter(Boolean)
+        const itemsResponse = await restaurantAPI.getItemsUnderPrice(chunkIds, under250PriceLimit)
+        const itemsByRestaurant = itemsResponse?.data?.data?.itemsByRestaurant || {}
+
         const newRestaurantsWithUnder250Dishes = await Promise.all(
           newRestaurantsToFetch.map(async (restaurant) => {
             const restaurantId = restaurant?.restaurantId || restaurant?._id
             if (!restaurantId) return null
 
             try {
-              const menuResponse = await restaurantAPI.getMenuByRestaurantId(restaurantId)
-              const menu = getMenuFromResponse(menuResponse)
-              const menuItems = flattenMenuItems(menu)
+              const menuItems = (itemsByRestaurant[String(restaurantId)] || [])
                 .filter((item) => Number(item?.price || 0) <= under250PriceLimit && item?.isAvailable !== false)
                 .map((item) => {
                   const foodType = String(item?.foodType || "").toLowerCase()
@@ -862,7 +898,9 @@ export default function Under250() {
     fetchMenusForChunk()
     
     return () => { cancelled = true }
-  }, [allRawRestaurants, visibleRestaurantCount, location?.latitude, location?.longitude, under250PriceLimit])
+    // location is read when a chunk loads; GPS updates must not cancel and restart the fetch
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allRawRestaurants, visibleRestaurantCount, under250PriceLimit])
 
   // 3. Intersection Observer for Infinite Scroll
   useEffect(() => {
@@ -944,7 +982,7 @@ export default function Under250() {
     return () => {
       cancelled = true
     }
-  }, [zoneId])
+  }, [zoneId, dataVersion])
 
   // Sync quantities from cart on mount
   useEffect(() => {
@@ -1252,13 +1290,6 @@ export default function Under250() {
 
   return (
     <div className={`relative min-h-screen bg-white dark:bg-[#1A0F09] ${shouldShowGrayscale ? 'grayscale opacity-75' : ''}`}>
-      {/* ── Menu Scan Intro Animation ── */}
-      {showScanAnimation && (
-        <MenuScanAnimation
-          duration={2200}
-          onComplete={() => setShowScanAnimation(false)}
-        />
-      )}
       
       {/* Header removed */}
 
@@ -1480,7 +1511,7 @@ export default function Under250() {
 
         {/* Restaurant Menu Sections */}
         <div className="px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 pt-4">
-        {loadingRestaurants || isSwitchingCategory ? (
+        {loadingRestaurants || isSwitchingCategory || (loadingMore && under250Restaurants.length === 0) ? (
           <div className="space-y-8 sm:space-y-10 md:space-y-12">
             {Array.from({ length: 3 }).map((_, rIndex) => (
               <section key={`skel-rest-${rIndex}`} className="pt-4 sm:pt-6 md:pt-8 lg:pt-10">

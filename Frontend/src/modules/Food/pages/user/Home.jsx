@@ -108,6 +108,7 @@ import exploreOffers from "@food/assets/explore more icons/offers.png";
 import exploreGourmet from "@food/assets/explore more icons/gourmet.png";
 import exploreTop10 from "@food/assets/explore more icons/top 10.png";
 import exploreCollection from "@food/assets/explore more icons/collection.png";
+import { useDataVersion, DATA_CHANGED_EVENT } from "@food/utils/dataSync";
 
 // Animated placeholder for search - moved outside component to prevent recreation
 const placeholders = [
@@ -141,6 +142,15 @@ const homePageCache = {
   gourmetRestaurants: null,
   showGourmet: true,
 };
+
+// Admin/restaurant edits arrive as a data-change event: forget cached home data so it reloads.
+if (typeof window !== "undefined") {
+  window.addEventListener(DATA_CHANGED_EVENT, () => {
+    homePageCache.landingExploreFetched = false;
+    homePageCache.heroBannersFetched = false;
+    homePageCache.adsBannersFetched = false;
+  });
+}
 
 const roundCoord = (value) =>
   Number.isFinite(Number(value))
@@ -232,6 +242,7 @@ export default function Home() {
   const [landingExploreMore, setLandingExploreMore] = useState(() => homePageCache.landingExploreMore || []);
   const [exploreMoreHeading, setExploreMoreHeading] = useState(() => homePageCache.exploreMoreHeading || "Explore More");
   const [festBannerImages, setFestBannerImages] = useState(() => homePageCache.festBannerImages ?? []);
+  const [festBannerSettings, setFestBannerSettings] = useState(() => homePageCache.festBannerSettings ?? null);
   const [bgIndex, setBgIndex] = useState(0);
   const [recommendedRestaurantIds, setRecommendedRestaurantIds] = useState(() => homePageCache.recommendedRestaurantIds || []);
   const [under250PriceLimit, setUnder250PriceLimit] = useState(() => homePageCache.under250PriceLimit || 250);
@@ -660,6 +671,7 @@ export default function Home() {
     getDefaultAddress,
   } = profileContext;
   const { addToCart, cart } = useCart();
+  const dataVersion = useDataVersion();
   const { location, loading: effectiveZoneLoading, requestLocation, zoneId: effectiveZoneId, zoneStatus: effectiveZoneStatus, isOutOfService: isEffectiveLocationOutOfService, isOutOfZone: isEffectiveLocationOutOfZone, isOutOfRadius: isEffectiveLocationOutOfRadius, serviceUnavailableMessage: effectiveServiceUnavailableMessage } = useAppLocation();
   const [showToast, setShowToast] = useState(false);
   const [showManageCollections, setShowManageCollections] = useState(false);
@@ -795,7 +807,7 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, [effectiveZoneId, effectiveZoneLoading, normalizeImageUrl]);
+  }, [effectiveZoneId, effectiveZoneLoading, normalizeImageUrl, dataVersion]);
 
   // Fetch explore icons and landing settings from public APIs
   useEffect(() => {
@@ -840,6 +852,7 @@ export default function Home() {
 
         const images = Array.isArray(settingsData.festBannerImages) ? settingsData.festBannerImages : [];
         setFestBannerImages(images);
+        setFestBannerSettings(settingsData.festBanner || null);
 
         const gourmetList = hasZone && Array.isArray(gourmetData) ? gourmetData : [];
         setGourmetRestaurants(gourmetList);
@@ -852,6 +865,7 @@ export default function Home() {
         homePageCache.under250PriceLimit = Number(settingsData.under250PriceLimit) || 250;
         homePageCache.recommendedRestaurantsFromSettings = recRest;
         homePageCache.festBannerImages = images;
+        homePageCache.festBannerSettings = settingsData.festBanner || null;
         homePageCache.gourmetRestaurants = gourmetList;
         homePageCache.showGourmet = settingsData.showGourmet ?? true;
         homePageCache.landingExploreFetched = true;
@@ -875,7 +889,7 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, [effectiveZoneId, effectiveZoneLoading]);
+  }, [effectiveZoneId, effectiveZoneLoading, dataVersion]);
 
   // Fetch hero banners from public API (no auth required)
   useEffect(() => {
@@ -923,7 +937,7 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, [effectiveZoneId, effectiveZoneLoading]);
+  }, [effectiveZoneId, effectiveZoneLoading, dataVersion]);
 
   // Fetch ads banners from public API (no auth required)
   useEffect(() => {
@@ -971,7 +985,7 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, [effectiveZoneId, effectiveZoneLoading]);
+  }, [effectiveZoneId, effectiveZoneLoading, dataVersion]);
 
   const shouldShowOutOfZoneHome =
     !effectiveZoneLoading &&
@@ -1523,7 +1537,7 @@ export default function Home() {
   // Fetch restaurants when appliedFilters change
   useEffect(() => {
     fetchRestaurants(appliedFilters);
-  }, [appliedFilters, fetchRestaurants]);
+  }, [appliedFilters, fetchRestaurants, dataVersion]);
 
   // Recalculate distances when user location updates
   useEffect(() => {
@@ -2248,17 +2262,14 @@ export default function Home() {
 
             {activeTab === "food" && (
               <div id="fest-banner-wrapper" className="w-full">
-                {festVideoActive ? (
-                  <div className="w-full h-3 sm:h-4" />
-                ) : (
-                  <div className="pb-1 sm:pb-2">
-                    <FestBanner
-                      isVegMode={vegMode}
-                      images={festBannerImages}
-                      hideFoodImages={false}
-                    />
-                  </div>
-                )}
+                <div className="pb-1 sm:pb-2">
+                  <FestBanner
+                    isVegMode={vegMode}
+                    images={festBannerImages}
+                    settings={festBannerSettings}
+                    hideFoodImages={false}
+                  />
+                </div>
               </div>
             )}
             
@@ -2284,7 +2295,11 @@ export default function Home() {
                   <div className={`flex items-center gap-2 min-w-0 ${isCategoryStuck ? 'hidden' : ''}`}>
                     <h2 className="font-display text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white min-w-0 flex-shrink leading-tight">What's on your mind today?</h2>
                     <div className="h-[1px] bg-gray-100 dark:bg-gray-800 flex-1"></div>
-                    <Link to="/food/user/under-250" className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-0.5 whitespace-nowrap shrink-0 hover:text-gray-900 dark:hover:text-white transition-colors">
+                    <Link
+                      to="/food/user/under-250"
+                      state={{ resetCategory: true, category: 'all' }}
+                      className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-0.5 whitespace-nowrap shrink-0 hover:text-gray-900 dark:hover:text-white transition-colors"
+                    >
                       View All <ArrowDownUp className="h-3 w-3 rotate-90" />
                     </Link>
                   </div>
@@ -2305,6 +2320,7 @@ export default function Home() {
                       <Link
                         key={category.id || index}
                         to={category.slug === 'all' ? '/food/user/under-250' : `/food/user/category/${category.slug || category.name.toLowerCase().replace(/\s+/g, "-")}`}
+                        state={category.slug === 'all' ? { resetCategory: true, category: 'all' } : undefined}
                         onClick={() => setSelectedCategory(category.name)}
                         className={`flex-shrink-0 flex flex-col items-center gap-1.5 group w-[76px] transition-transform ${isActive ? 'scale-105' : ''}`}
                       >

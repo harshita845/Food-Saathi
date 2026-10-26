@@ -435,6 +435,8 @@ export async function notifyRestaurantNewOrder(orderDoc) {
         `[RestaurantOrders] Emitting new_order to ${rooms.restaurant(orderDoc.restaurantId)} for order ${orderDoc._id?.toString?.() || ''}`,
       );
       io.to(rooms.restaurant(orderDoc.restaurantId)).emit("new_order", payload);
+      // Admin panel: live new-order alert (Orders page listens for this)
+      io.to("admin").emit("admin_new_order", payload);
     }
 
     const pushTargets = await listOwnerUrgentPushTargets({ ownerType: "RESTAURANT", ownerId: orderDoc.restaurantId });
