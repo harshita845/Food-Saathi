@@ -125,9 +125,12 @@ export default function Orders() {
         transformedStatus.toLowerCase() === 'delivered' ||
         transformedStatus.toLowerCase() === 'completed'
 
-      const hasRestaurantRating = Number.isFinite(Number(order.restaurantRating))
-      const hasDeliveryPartner = !!(order.deliveryPartnerId || order.deliveryPartnerName)
-      const hasDeliveryRating = Number.isFinite(Number(order.deliveryPartnerRating))
+      const restRatingNum = Number(order.restaurantRating || order.ratings?.restaurant?.rating)
+      const hasRestaurantRating = Number.isFinite(restRatingNum) && restRatingNum > 0
+      const isTakeaway = order.orderType === 'takeaway' || order.deliveryType === 'takeaway'
+      const hasDeliveryPartner = !isTakeaway || !!(order.deliveryPartnerId || order.deliveryPartnerName)
+      const delivRatingNum = Number(order.deliveryPartnerRating || order.ratings?.deliveryPartner?.rating)
+      const hasDeliveryRating = Number.isFinite(delivRatingNum) && delivRatingNum > 0
       const hasRating = hasRestaurantRating && (!hasDeliveryPartner || hasDeliveryRating)
 
       const orderId = order.id || order._id || order.mongoId
@@ -330,9 +333,9 @@ export default function Orders() {
               estimatedDeliveryTime: order.estimatedDeliveryTime || 30,
               preparationTime: order.preparationTime || 0,
               deliveredAt: order.deliveredAt || null,
-              deliveryPartnerId: order.deliveryPartnerId?._id || order.deliveryPartnerId || null,
-              deliveryPartnerName: order.deliveryPartnerId?.name || order.deliveryPartnerName || null,
-              deliveryPartnerPhone: order.deliveryPartnerId?.phone || order.deliveryPartnerPhone || null,
+              deliveryPartnerId: order.deliveryPartnerId?._id || order.deliveryPartnerId || order.dispatch?.deliveryPartnerId?._id || order.dispatch?.deliveryPartnerId || null,
+              deliveryPartnerName: order.deliveryPartnerId?.name || order.deliveryPartnerName || order.dispatch?.deliveryPartnerId?.name || null,
+              deliveryPartnerPhone: order.deliveryPartnerId?.phone || order.deliveryPartnerPhone || order.dispatch?.deliveryPartnerId?.phone || null,
               note: order.note || null
             }
           })

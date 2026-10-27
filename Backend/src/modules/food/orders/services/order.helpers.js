@@ -408,6 +408,23 @@ export function buildDeliverySocketPayload(orderDoc, restaurantDoc = null) {
     deliveryFee: order?.pricing?.deliveryFee || 0,
     deliveryFleet: order?.deliveryFleet,
     dispatch: order?.dispatch,
+    orderStatus: orderDoc?.orderStatus || order?.orderStatus,
+    ratings: order?.ratings || {},
+    restaurantRating: order?.ratings?.restaurant?.rating ?? null,
+    deliveryPartnerRating: order?.ratings?.deliveryPartner?.rating ?? null,
+    deliveryPartnerId:
+      order?.dispatch?.deliveryPartnerId?._id?.toString?.() ||
+      order?.dispatch?.deliveryPartnerId?.toString?.() ||
+      order?.deliveryPartnerId?._id?.toString?.() ||
+      order?.deliveryPartnerId?.toString?.() ||
+      null,
+    deliveryPartner: (order?.dispatch?.deliveryPartnerId && typeof order.dispatch.deliveryPartnerId === 'object') ? {
+      _id: order.dispatch.deliveryPartnerId._id,
+      name: order.dispatch.deliveryPartnerId.name || order.dispatch.deliveryPartnerId.fullName || 'Delivery Partner',
+      phone: order.dispatch.deliveryPartnerId.phone || order.dispatch.deliveryPartnerId.phoneNumber || '',
+      avatar: order.dispatch.deliveryPartnerId.avatar || order.dispatch.deliveryPartnerId.profileImage || null,
+      rating: order.dispatch.deliveryPartnerId.rating || 5,
+    } : null,
     createdAt: order?.createdAt,
     updatedAt: order?.updatedAt,
   };

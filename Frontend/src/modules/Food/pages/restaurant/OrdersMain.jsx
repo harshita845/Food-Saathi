@@ -34,6 +34,7 @@ import usePaginatedRestaurantOrders, {
 } from "@food/hooks/usePaginatedRestaurantOrders";
 import RestaurantOrdersPagination from "@food/components/restaurant/RestaurantOrdersPagination";
 import RestaurantBentoGrid from "@food/components/restaurant/RestaurantBentoGrid";
+import SlideToAcceptSlider from "@food/components/restaurant/SlideToAcceptSlider";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import ResendNotificationButton from "@food/components/restaurant/ResendNotificationButton";
@@ -1207,13 +1208,9 @@ export default function OrdersMain() {
   const [showCancelPopup, setShowCancelPopup] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [orderToCancel, setOrderToCancel] = useState(null);
-  const [acceptSwipeProgress, setAcceptSwipeProgress] = useState(0);
   const [isAcceptingOrder, setIsAcceptingOrder] = useState(false);
   const audioRef = useRef(null);
   const shownOrdersRef = useRef(new Set()); // Track orders already shown in popup
-  const acceptSliderRef = useRef(null);
-  const acceptSwipeStartXRef = useRef(0);
-  const acceptSwipeActiveRef = useRef(false);
   const [restaurantStatus, setRestaurantStatus] = useState({
     isActive: null,
     rejectionReason: null,
@@ -1232,6 +1229,7 @@ export default function OrdersMain() {
   // Refs to always have latest popup order & dismiss helper available in event listeners
   const popupOrderRef = useRef(null);
   const cancelDismissRef = useRef(null);
+  const handleAcceptOrderRef = useRef(null);
 
   const stopPopupOrderSound = () => {
     if (!audioRef.current) return;
@@ -1574,7 +1572,7 @@ export default function OrdersMain() {
       if (!hasOrderBeenShown(newOrder)) {
         markOrderAsShown(newOrder);
         if (!showNewOrderPopupRef.current) {
-          // Popup is free — show it immediately
+          popupOrderRef.current = newOrder;
           setPopupOrder(newOrder);
           setShowNewOrderPopup(true);
           setCountdown(getInitialCountdown(newOrder));
@@ -1784,6 +1782,7 @@ export default function OrdersMain() {
 
             // Transform order to match newOrder format (include payment so COD shows correctly)
             const orderForPopup = {
+              _id: orderToPopup._id,
               orderId: orderToPopup.orderId,
               orderMongoId: orderToPopup._id,
               restaurantId: orderToPopup.restaurantId,
@@ -1806,6 +1805,7 @@ export default function OrdersMain() {
 
             debugLog("?? Found order ready for popup:", orderForPopup);
             markOrderAsShown({ orderId, _id: orderToPopup._id });
+            popupOrderRef.current = orderForPopup;
             setPopupOrder(orderForPopup);
             setShowNewOrderPopup(true);
             setCountdown(getInitialCountdown(orderForPopup)); // Calculate relative to createdAt
@@ -1878,113 +1878,28 @@ export default function OrdersMain() {
 
   useEffect(() => {
     if (!showNewOrderPopup) {
-      setAcceptSwipeProgress(0);
       setIsAcceptingOrder(false);
-      acceptSwipeActiveRef.current = false;
-      acceptSwipeStartXRef.current = 0;
     }
   }, [showNewOrderPopup]);
 
   // Removed the 2.5s delay on cancellation; it is now handled instantly via socket event
-
-  useEffect(() => {
-    const handleMouseMove = (event) => {
-      if (acceptSwipeActiveRef.current) {
-        handleAcceptSwipeMove(event.clientX);
-      }
-    };
-
-    const handleTouchMove = (event) => {
-      if (acceptSwipeActiveRef.current && event.touches[0]) {
-        // Prevent page scroll while swiping the slider
-        if (typeof event.preventDefault === "function") event.preventDefault();
-        handleAcceptSwipeMove(event.touches[0].clientX);
-      }
-    };
-
-    const handlePointerEnd = () => {
-      if (acceptSwipeActiveRef.current) {
-        handleAcceptSwipeEnd();
-      }
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handlePointerEnd);
-    // passive: false is required to allow preventDefault() during swipe
-    window.addEventListener("touchmove", handleTouchMove, { passive: false });
-    window.addEventListener("touchend", handlePointerEnd);
-    window.addEventListener("touchcancel", handlePointerEnd);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handlePointerEnd);
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("touchend", handlePointerEnd);
-      window.removeEventListener("touchcancel", handlePointerEnd);
-    };
-  }, [isAcceptingOrder]);
-
-  // Format countdown time
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const getAcceptSliderMetrics = () => {
-    const sliderWidth = acceptSliderRef.current?.offsetWidth || 320;
-    const handleWidth = 56;
-    const horizontalPadding = 8;
-    const maxTravel = Math.max(
-      sliderWidth - handleWidth - horizontalPadding * 2,
-      1,
-    );
-    return { maxTravel };
-  };
-
-  const triggerSwipeAccept = () => {
-    if (isAcceptingOrder) return;
-    setAcceptSwipeProgress(1);
-    setTimeout(() => {
-      handleAcceptOrder();
-    }, 160);
-  };
-
-  const handleAcceptSwipeStart = (clientX) => {
-    if (isAcceptingOrder) return;
-    acceptSwipeStartXRef.current = clientX;
-    acceptSwipeActiveRef.current = true;
-  };
-
-  const handleAcceptSwipeMove = (clientX) => {
-    if (!acceptSwipeActiveRef.current || isAcceptingOrder) return;
-    const deltaX = Math.max(clientX - acceptSwipeStartXRef.current, 0);
-    const { maxTravel } = getAcceptSliderMetrics();
-    setAcceptSwipeProgress(Math.min(deltaX / maxTravel, 1));
-  };
-
-  const handleAcceptSwipeEnd = () => {
-    if (!acceptSwipeActiveRef.current || isAcceptingOrder) return;
-    acceptSwipeActiveRef.current = false;
-
-    if (acceptSwipeProgress >= 0.45) {
-      triggerSwipeAccept();
-      return;
-    }
-
-    setAcceptSwipeProgress(0);
-  };
 
   // Handle accept order
   const handleAcceptOrder = async () => {
     if (isAcceptingOrder) return;
     setIsAcceptingOrder(true);
 
-    // Use popupOrder (from Socket.IO or API fallback) or newOrder (from hook)
-    const orderToAccept = popupOrder || newOrder;
+    // Use popupOrder (from Socket.IO or API fallback) or newOrder (from hook) with refs to avoid stale closures
+    const orderToAccept =
+      popupOrderRef.current ||
+      popupOrder ||
+      newOrderRef.current ||
+      newOrder;
 
     // Ensure this order can't re-trigger fallback popup by using a different id key.
-    markOrderAsShown(orderToAccept);
+    if (orderToAccept) {
+      markOrderAsShown(orderToAccept);
+    }
 
     // Accept order via API if we have a real order
     let orderId = resolveOrderActionId(orderToAccept);
@@ -1994,7 +1909,7 @@ export default function OrdersMain() {
         const orders = latest?.data?.data?.orders || [];
         const target = orders.find((o) => {
           const s = String(o?.status || o?.orderStatus || "").toLowerCase();
-          return s === "confirmed" || s === "created";
+          return s === "confirmed" || s === "created" || s === "pending";
         });
         orderId = resolveOrderActionId(target);
       } catch (_) {
@@ -2026,28 +1941,36 @@ export default function OrdersMain() {
           toast.error(errorMessage);
         }
         setIsAcceptingOrder(false);
-        setAcceptSwipeProgress(0);
         return;
       }
     } else {
       toast.error("Unable to accept this order: order id missing");
       setIsAcceptingOrder(false);
-      setAcceptSwipeProgress(0);
       return;
     }
 
     setShowNewOrderPopup(false);
+    popupOrderRef.current = null;
     setPopupOrder(null);
     stopPopupOrderSound();
     clearNewOrder();
     setCountdown(180);
     setPrepTime(11);
-    setAcceptSwipeProgress(0);
     setIsAcceptingOrder(false);
 
     // Note: PreparingOrders component will automatically refresh orders via its own useEffect
     // No need to manually refresh here as the component polls every 10 seconds
   };
+
+  // Format countdown time
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  // Keep callback ref pointing to latest version
+  handleAcceptOrderRef.current = handleAcceptOrder;
 
   // Handle reject order
   const handleRejectClick = () => {
@@ -2057,13 +1980,17 @@ export default function OrdersMain() {
   const handleRejectConfirm = async () => {
     if (!rejectReason) return;
 
-    // Use popupOrder (from Socket.IO or API fallback) or newOrder (from hook)
-    const orderToReject = popupOrder || newOrder;
+    // Use popupOrder (from Socket.IO or API fallback) or newOrder (from hook) with refs
+    const orderToReject =
+      popupOrderRef.current ||
+      popupOrder ||
+      newOrderRef.current ||
+      newOrder;
 
     // Reject order via API if we have a real order
-    if (orderToReject?.orderMongoId || orderToReject?.orderId) {
+    const orderId = resolveOrderActionId(orderToReject);
+    if (orderId) {
       try {
-        const orderId = orderToReject.orderMongoId || orderToReject.orderId;
         await restaurantAPI.rejectOrder(orderId, rejectReason);
         debugLog("? Order rejected:", orderId);
         requestOrdersRefresh();
@@ -2077,6 +2004,7 @@ export default function OrdersMain() {
     stopPopupOrderSound();
     setShowRejectPopup(false);
     setShowNewOrderPopup(false);
+    popupOrderRef.current = null;
     setPopupOrder(null);
     clearNewOrder();
     setRejectReason("");
@@ -3125,59 +3053,18 @@ export default function OrdersMain() {
 
                     return (
                       <div className="space-y-3">
-                        <div
-                          ref={acceptSliderRef}
-                          className="relative h-14 rounded-2xl bg-gray-900 overflow-hidden select-none touch-pan-y md:hidden">
-                          <motion.div
-                            className="absolute inset-y-0 left-0 bg-blue-600"
-                            initial={{ width: "100%" }}
-                            animate={{ width: `${(countdown / 180) * 100}%` }}
-                            transition={{ duration: 1, ease: "linear" }}
+                        <div className="md:hidden">
+                          <SlideToAcceptSlider
+                            onAccept={handleAcceptOrder}
+                            countdown={countdown}
+                            maxCountdown={180}
+                            isAccepting={isAcceptingOrder}
+                            formatTime={formatTime}
                           />
-                          <div className="absolute inset-0 flex items-center justify-center px-16">
-                            <span className="relative z-10 text-sm font-semibold text-white text-center">
-                              {isAcceptingOrder
-                                ? "Accepting order..."
-                                : `Slide to accept (${formatTime(countdown)})`}
-                            </span>
-                          </div>
-                          <motion.button
-                            type="button"
-                            className="absolute left-2 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-xl bg-white text-gray-900 shadow-md disabled:cursor-not-allowed"
-                            style={{
-                              x: (() => {
-                                const sliderWidth =
-                                  acceptSliderRef.current?.offsetWidth || 320;
-                                const handleWidth = 40;
-                                const maxTravel = Math.max(
-                                  sliderWidth - handleWidth - 16,
-                                  0,
-                                );
-                                return acceptSwipeProgress * maxTravel;
-                              })(),
-                            }}
-                            onMouseDown={(e) => handleAcceptSwipeStart(e.clientX)}
-                            onTouchStart={(e) =>
-                              handleAcceptSwipeStart(e.touches[0].clientX)
-                            }
-                            onMouseMove={(e) => {
-                              if (acceptSwipeActiveRef.current)
-                                handleAcceptSwipeMove(e.clientX);
-                            }}
-                            onTouchMove={(e) =>
-                              handleAcceptSwipeMove(e.touches[0].clientX)
-                            }
-                            onMouseUp={handleAcceptSwipeEnd}
-                            onTouchEnd={handleAcceptSwipeEnd}
-                            onTouchCancel={handleAcceptSwipeEnd}
-                            onClick={triggerSwipeAccept}
-                            disabled={isAcceptingOrder}>
-                            <span className="text-lg font-bold">›</span>
-                          </motion.button>
                         </div>
 
                         <button
-                          onClick={triggerSwipeAccept}
+                          onClick={handleAcceptOrder}
                           disabled={isAcceptingOrder}
                           className="hidden md:block w-full bg-blue-600 text-white py-3.5 rounded-2xl font-bold text-sm hover:bg-blue-700 transition-colors disabled:opacity-60">
                           {isAcceptingOrder ? "Accepting order..." : `Accept Order (${formatTime(countdown)})`}
@@ -3528,6 +3415,26 @@ export default function OrdersMain() {
                   <p className="text-[9px] text-gray-500 font-medium leading-tight">Will be shown when the delivery partner reaches the restaurant.</p>
                 </div>
               ) : null}
+
+              {["confirmed", "created", "pending"].includes(String(selectedOrder.status || "").toLowerCase()) && (
+                <button
+                  className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-sm font-bold shadow transition-colors flex items-center justify-center gap-2"
+                  onClick={async () => {
+                    const orderId = selectedOrder.mongoId || selectedOrder.orderId;
+                    if (orderId) {
+                      try {
+                        await restaurantAPI.acceptOrder(orderId, prepTime);
+                        toast.success("Order accepted successfully");
+                        requestOrdersRefresh();
+                        setIsSheetOpen(false);
+                      } catch (err) {
+                        toast.error(err.response?.data?.message || err.message || "Failed to accept order");
+                      }
+                    }
+                  }}>
+                  Accept Order
+                </button>
+              )}
 
               <div className="flex gap-3 mt-4">
                 <button

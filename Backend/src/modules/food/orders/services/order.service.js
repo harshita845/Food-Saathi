@@ -1087,12 +1087,10 @@ export async function submitOrderRatings(orderId, userId, dto) {
     throw new ValidationError("Delivery partner rating is required");
   }
 
-  const restaurantAlreadyRated = Number.isFinite(
-    Number(order?.ratings?.restaurant?.rating),
-  );
-  const deliveryAlreadyRated = Number.isFinite(
-    Number(order?.ratings?.deliveryPartner?.rating),
-  );
+  const rRatingNum = Number(order?.ratings?.restaurant?.rating);
+  const restaurantAlreadyRated = Number.isFinite(rRatingNum) && rRatingNum > 0;
+  const dRatingNum = Number(order?.ratings?.deliveryPartner?.rating);
+  const deliveryAlreadyRated = Number.isFinite(dRatingNum) && dRatingNum > 0;
   if (restaurantAlreadyRated || (hasDeliveryPartner && deliveryAlreadyRated)) {
     throw new ValidationError("Ratings already submitted for this order");
   }
@@ -1105,7 +1103,7 @@ export async function submitOrderRatings(orderId, userId, dto) {
     ratedAt: now,
   };
 
-  if (hasDeliveryPartner) {
+  if (dto.deliveryPartnerRating) {
     order.ratings.deliveryPartner = {
       rating: dto.deliveryPartnerRating,
       comment: dto.deliveryPartnerComment || "",
@@ -1128,14 +1126,20 @@ export async function submitOrderRatings(orderId, userId, dto) {
       : Promise.resolve(),
   ]);
 
-    await order.save();
-    enqueueOrderEvent('order_ratings_submitted', {
-        orderMongoId: order._id?.toString?.(),
-        orderId: order._id.toString(),
-        userId,
-        restaurantRating: dto.restaurantRating,
-        deliveryPartnerRating: hasDeliveryPartner ? dto.deliveryPartnerRating : null
-    });
+  await order.save();
+  enqueueOrderEvent('order_ratings_submitted', {
+    orderMongoId: order._id?.toString?.(),
+    orderId: order._id.toString(),
+    userId,
+    restaurantRating: dto.restaurantRating,
+    deliveryPartnerRating: hasDeliveryPartner ? dto.deliveryPartnerRating : null
+  });
+
+  if (order.dispatch?.deliveryPartnerId) {
+    await order.populate("dispatch.deliveryPartnerId", "name fullName phone phoneNumber rating totalRatings profileImage avatar");
+  }
+
+  return normalizeOrderForClient(order);
 }
 
 export async function updateOrderInstructions(orderId, userId, instructions) {

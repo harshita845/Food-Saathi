@@ -5,10 +5,14 @@ import RestaurantModal from './RestaurantModal';
 export default function GlobalPickupOtpModal() {
   const { pickupOtpReveal, clearPickupOtpReveal } = useRestaurantNotifications();
 
+  const handleClose = () => {
+    clearPickupOtpReveal(pickupOtpReveal?.orderMongoId || pickupOtpReveal?.orderId);
+  };
+
   return (
     <RestaurantModal
       open={Boolean(pickupOtpReveal)}
-      onClose={clearPickupOtpReveal}
+      onClose={handleClose}
       size="sm"
       showClose={false}
     >
@@ -26,7 +30,7 @@ export default function GlobalPickupOtpModal() {
         </div>
         <p className="text-[11px] text-gray-400 font-medium mb-4">Tell this code to the delivery partner so they can complete the pickup.</p>
         <button
-          onClick={clearPickupOtpReveal}
+          onClick={handleClose}
           className="w-full py-3 rounded-xl bg-gray-900 text-white font-bold text-sm"
         >
           Got it

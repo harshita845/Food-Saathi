@@ -93,17 +93,43 @@ export const useRestaurantNotifications = () => {
   const socketRef = useRef(null);
   const [orderQueue, setOrderQueue] = useState([]); // Queue of pending orders
   const [newReservation, setNewReservation] = useState(null);
+  const dismissedOtpOrderIdsRef = useRef(new Set((() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('restaurant_dismissedOtpOrderIds');
+        return saved ? JSON.parse(saved) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
+  })()));
+
   const [pickupOtpReveal, setPickupOtpRevealState] = useState(() => {
     if (typeof window !== 'undefined') {
       try {
+        const dismissed = JSON.parse(localStorage.getItem('restaurant_dismissedOtpOrderIds') || '[]');
         const saved = localStorage.getItem('restaurant_pickupOtpReveal');
-        return saved ? JSON.parse(saved) : null;
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          const id = parsed?.orderMongoId || parsed?.orderId;
+          if (id && dismissed.includes(String(id))) {
+            localStorage.removeItem('restaurant_pickupOtpReveal');
+            return null;
+          }
+          return parsed;
+        }
       } catch (e) {
         return null;
       }
     }
     return null;
   }); // { orderId, otp, message }
+
+  const pickupOtpRevealRef = useRef(pickupOtpReveal);
+  useEffect(() => {
+    pickupOtpRevealRef.current = pickupOtpReveal;
+  }, [pickupOtpReveal]);
 
   const setPickupOtpReveal = (data) => {
     setPickupOtpRevealState(data);
@@ -115,6 +141,24 @@ export const useRestaurantNotifications = () => {
       }
     }
   };
+
+  const clearPickupOtpReveal = useCallback((orderMongoIdOrId) => {
+    const idToDismiss = orderMongoIdOrId || pickupOtpRevealRef.current?.orderMongoId || pickupOtpRevealRef.current?.orderId;
+    if (idToDismiss) {
+      const sId = String(idToDismiss).trim();
+      dismissedOtpOrderIdsRef.current.add(sId);
+      if (typeof window !== 'undefined') {
+        try {
+          const dismissed = JSON.parse(localStorage.getItem('restaurant_dismissedOtpOrderIds') || '[]');
+          if (!dismissed.includes(sId)) {
+            dismissed.push(sId);
+            localStorage.setItem('restaurant_dismissedOtpOrderIds', JSON.stringify(dismissed.slice(-50)));
+          }
+        } catch (_) {}
+      }
+    }
+    setPickupOtpReveal(null);
+  }, []);
   const [isConnected, setIsConnected] = useState(false);
   const audioRef = useRef(null);
   const activeOrderRef = useRef(null);
@@ -414,11 +458,24 @@ export const useRestaurantNotifications = () => {
         }
 
         const otpRequests = rows.filter(o => {
+          const status = String(o?.orderStatus || o?.status || '').toLowerCase().trim().replace(/\s+/g, '_');
+          // If order is already picked up, delivered, completed, or cancelled, do NOT show OTP
+          if (['picked_up', 'delivered', 'completed', 'cancelled', 'cancelled_by_user', 'cancelled_by_restaurant', 'cancelled_by_admin'].includes(status)) {
+            return false;
+          }
+
           const reqAt = o?.deliveryVerification?.pickupOtp?.requestedAt;
-          const isVerified = o?.deliveryVerification?.pickupOtp?.verified;
+          const isVerified = o?.deliveryVerification?.pickupOtp?.verified || o?.deliveryVerification?.pickupOtpVerified;
           const pickupOtp = o?.pickupOtp;
           
           if (!reqAt || isVerified || !pickupOtp) return false;
+
+          const oId = String(o._id || '');
+          const customId = String(o.orderId || o.order_id || '');
+          // Do not show if dismissed by user
+          if (dismissedOtpOrderIdsRef.current.has(oId) || (customId && dismissedOtpOrderIdsRef.current.has(customId))) {
+            return false;
+          }
           
           // Only show if requested within last 15 minutes
           const requestedTime = new Date(reqAt).getTime();
@@ -426,7 +483,9 @@ export const useRestaurantNotifications = () => {
           if (now - requestedTime > 15 * 60000) return false;
           
           // Don't show if we are already showing it
-          if (currentOtpRevealObj && currentOtpRevealObj.orderMongoId === o._id) return false;
+          if (currentOtpRevealObj && (currentOtpRevealObj.orderMongoId === oId || currentOtpRevealObj.orderId === customId)) {
+            return false;
+          }
           
           return true;
         }).sort((a, b) => new Date(b.deliveryVerification.pickupOtp.requestedAt).getTime() - new Date(a.deliveryVerification.pickupOtp.requestedAt).getTime());
@@ -808,13 +867,29 @@ export const useRestaurantNotifications = () => {
     socketRef.current.on('order_status_update', (data) => {
       debugLog('?? Order status update:', data);
 
-      // Track cancelled order IDs so REST polling never resurrects them
       const statusRaw = String(data?.orderStatus || data?.status || '').toLowerCase().trim().replace(/\s+/g, '_');
+      const eventIds = [data?.orderMongoId, data?.orderId, data?._id, data?.id]
+        .map(v => v == null ? '' : String(v).trim())
+        .filter(Boolean);
+
+      // If order is picked up, delivered, completed, or cancelled:
+      const isFinished = ['picked_up', 'delivered', 'completed', 'cancelled_by_user', 'cancelled_by_restaurant', 'cancelled_by_admin', 'cancelled'].includes(statusRaw);
+      if (isFinished) {
+        for (const id of eventIds) {
+          dismissedOtpOrderIdsRef.current.add(id);
+        }
+        // Auto-dismiss the OTP modal if it's currently displaying this order!
+        const currentReveal = pickupOtpRevealRef.current;
+        if (currentReveal) {
+          const currentRevealIds = [currentReveal.orderMongoId, currentReveal.orderId].filter(Boolean).map(String);
+          if (currentRevealIds.some(id => eventIds.includes(id))) {
+            clearPickupOtpReveal();
+          }
+        }
+      }
+
       if (statusRaw === 'cancelled_by_user' || statusRaw === 'cancelled_by_restaurant' || statusRaw === 'cancelled_by_admin' || statusRaw === 'cancelled') {
-        const ids = [data?.orderMongoId, data?.orderId, data?._id, data?.id]
-          .map(v => v == null ? '' : String(v).trim())
-          .filter(Boolean);
-        for (const id of ids) {
+        for (const id of eventIds) {
           cancelledOrderIdsRef.current.add(id);
           removeOrderFromQueue(id);
         }
@@ -832,6 +907,11 @@ export const useRestaurantNotifications = () => {
     // Listen for pickup OTP reveal (rider pressed "Request OTP" button)
     socketRef.current.on('pickup_otp_reveal', (data) => {
       debugLog('?? Pickup OTP reveal received:', data);
+      const dataIds = [data?.orderMongoId, data?.orderId, data?._id].filter(Boolean).map(String);
+      if (dataIds.some(id => dismissedOtpOrderIdsRef.current.has(id))) {
+        debugLog('Ignoring pickup_otp_reveal for already dismissed/picked-up order:', dataIds);
+        return;
+      }
       setPickupOtpReveal(data);
       if (typeof window !== 'undefined') {
         window.dispatchEvent(
@@ -938,7 +1018,7 @@ export const useRestaurantNotifications = () => {
     orderQueue,
     newReservation,
     pickupOtpReveal,
-    clearPickupOtpReveal: () => setPickupOtpReveal(null),
+    clearPickupOtpReveal,
     clearNewOrder,
     clearNewReservation: () => {
       setNewReservation(null);

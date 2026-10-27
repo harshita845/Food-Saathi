@@ -1020,6 +1020,10 @@ export const restaurantAPI = {
       });
     } catch (error) {
       const statusCode = Number(error?.response?.status || 0);
+      const errMsg = String(error?.response?.data?.message || "");
+      if (statusCode === 400 && (errMsg.includes("further ahead") || errMsg.includes("preparing"))) {
+        return { data: { success: true, message: "Order is already accepted" } };
+      }
       if (statusCode === 400) {
         // Compatibility fallback: some backends treat "confirmed" as accept action.
         return restaurantAPI.updateOrderStatus(orderId, {

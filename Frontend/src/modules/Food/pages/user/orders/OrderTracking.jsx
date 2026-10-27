@@ -371,12 +371,33 @@ const transformOrderForTracking = (apiOrder, previousOrder = null, explicitResta
     total: apiOrder?.pricing?.total || previousOrder?.total || 0,
     // Backend canonical field is orderStatus; keep legacy `status` for UI compatibility.
     status: apiOrder?.orderStatus || apiOrder?.status || previousOrder?.status || 'pending',
-    deliveryPartner: apiOrder?.deliveryPartnerId ? {
-      name: apiOrder.deliveryPartnerId.name || apiOrder.deliveryPartnerId.fullName || 'Delivery Partner',
-      phone: apiOrder.deliveryPartnerId.phone || apiOrder.deliveryPartnerId.phoneNumber || '',
-      avatar: apiOrder.deliveryPartnerId.avatar || apiOrder.deliveryPartnerId.profilePicture || null
-    } : (previousOrder?.deliveryPartner || null),
-    deliveryPartnerId: apiOrder?.deliveryPartnerId?._id || apiOrder?.deliveryPartnerId || apiOrder?.dispatch?.deliveryPartnerId?._id || apiOrder?.dispatch?.deliveryPartnerId || apiOrder?.assignmentInfo?.deliveryPartnerId || null,
+    ...(() => {
+      const partnerCandidate =
+        apiOrder?.deliveryPartner ||
+        apiOrder?.dispatch?.deliveryPartnerId ||
+        apiOrder?.deliveryPartnerId ||
+        previousOrder?.deliveryPartner ||
+        null;
+      const partnerIsObj = partnerCandidate && typeof partnerCandidate === 'object';
+      const partnerName = partnerIsObj
+        ? (partnerCandidate.name || partnerCandidate.fullName || '')
+        : (typeof partnerCandidate === 'string' && partnerCandidate.length > 2 ? partnerCandidate : (apiOrder?.deliveryPartnerName || previousOrder?.deliveryPartnerName || ''));
+      const partnerPhone = partnerIsObj ? (partnerCandidate.phone || partnerCandidate.phoneNumber || '') : (previousOrder?.deliveryPartner?.phone || '');
+      const partnerAvatar = partnerIsObj ? (partnerCandidate.avatar || partnerCandidate.profileImage || partnerCandidate.profilePicture || null) : (previousOrder?.deliveryPartner?.avatar || null);
+      const partnerId = partnerIsObj
+        ? (partnerCandidate._id || partnerCandidate.id || null)
+        : (typeof partnerCandidate === 'string' ? partnerCandidate : (apiOrder?.dispatch?.deliveryPartnerId?._id || apiOrder?.dispatch?.deliveryPartnerId || null));
+
+      return {
+        deliveryPartner: (partnerName || partnerId) ? {
+          name: partnerName || 'Delivery Partner',
+          phone: partnerPhone,
+          avatar: partnerAvatar
+        } : (previousOrder?.deliveryPartner || null),
+        deliveryPartnerId: partnerId || apiOrder?.deliveryPartnerId || apiOrder?.dispatch?.deliveryPartnerId?._id || apiOrder?.dispatch?.deliveryPartnerId || null,
+        deliveryPartnerName: partnerName || previousOrder?.deliveryPartnerName || '',
+      };
+    })(),
     dispatch: apiOrder?.dispatch || previousOrder?.dispatch || null,
     assignmentInfo: apiOrder?.assignmentInfo || previousOrder?.assignmentInfo || null,
     tracking: apiOrder?.tracking || previousOrder?.tracking || {},
@@ -425,6 +446,8 @@ const transformOrderForTracking = (apiOrder, previousOrder = null, explicitResta
       return merged
     })(),
     cancellationReason: apiOrder?.cancellationReason || previousOrder?.cancellationReason || null,
+    orderType: apiOrder?.orderType || previousOrder?.orderType || 'delivery',
+    deliveryType: apiOrder?.deliveryType || previousOrder?.deliveryType || 'delivery',
     ratings: apiOrder?.ratings || previousOrder?.ratings || {},
     restaurantRating: apiOrder?.ratings?.restaurant?.rating || apiOrder?.restaurantRating || previousOrder?.restaurantRating || null,
     deliveryPartnerRating: apiOrder?.ratings?.deliveryPartner?.rating || apiOrder?.deliveryPartnerRating || previousOrder?.deliveryPartnerRating || null,
@@ -554,57 +577,66 @@ export default function OrderTracking() {
   const [deliveryFeedbackText, setDeliveryFeedbackText] = useState("")
   const [submittingRating, setSubmittingRating] = useState(false)
 
-  // Check if order is already rated
-  const hasRestaurantRating = Number.isFinite(Number(order?.ratings?.restaurant?.rating || order?.restaurantRating))
-  const hasDeliveryPartner = !!(order?.deliveryPartnerId || order?.deliveryPartnerName)
-  const hasDeliveryRating = Number.isFinite(Number(order?.ratings?.deliveryPartner?.rating || order?.deliveryPartnerRating))
-  const isOrderRated = hasRestaurantRating && (!hasDeliveryPartner || hasDeliveryRating)
+  // Check if order is already rated (must be a valid rating > 0, since Number(null) is 0 and Number.isFinite(0) is true)
+  const restRatingNum = Number(order?.ratings?.restaurant?.rating ?? order?.restaurantRating);
+  const hasRestaurantRating = Number.isFinite(restRatingNum) && restRatingNum > 0;
+
+  const delivRatingNum = Number(order?.ratings?.deliveryPartner?.rating ?? order?.deliveryPartnerRating);
+  const hasDeliveryRating = Number.isFinite(delivRatingNum) && delivRatingNum > 0;
+
+  const isTakeaway = order?.orderType === 'takeaway' || order?.deliveryType === 'takeaway';
+  const hasDeliveryPartner = !isTakeaway || !!(order?.deliveryPartnerId || order?.deliveryPartnerName || order?.deliveryPartner?.name);
+
+  const isOrderRated = hasRestaurantRating && (!hasDeliveryPartner || hasDeliveryRating);
 
   const handleOpenRating = () => {
-    setSelectedRestaurantRating(order?.ratings?.restaurant?.rating || order?.restaurantRating || null)
-    setSelectedDeliveryRating(order?.ratings?.deliveryPartner?.rating || order?.deliveryPartnerRating || null)
-    setRestaurantFeedbackText(order?.ratings?.restaurant?.comment || "")
-    setDeliveryFeedbackText(order?.ratings?.deliveryPartner?.comment || "")
-    setShowRatingModal(true)
-  }
+    const rRating = order?.ratings?.restaurant?.rating ?? order?.restaurantRating;
+    const dRating = order?.ratings?.deliveryPartner?.rating ?? order?.deliveryPartnerRating;
+    setSelectedRestaurantRating(Number(rRating) > 0 ? Number(rRating) : null);
+    setSelectedDeliveryRating(Number(dRating) > 0 ? Number(dRating) : null);
+    setRestaurantFeedbackText(order?.ratings?.restaurant?.comment || "");
+    setDeliveryFeedbackText(order?.ratings?.deliveryPartner?.comment || "");
+    setShowRatingModal(true);
+  };
 
   const handleSubmitRating = async () => {
-    const deliveryPartnerCheck = !!(order?.deliveryPartnerId || order?.deliveryPartnerName)
-    const isMissingDeliveryRating = deliveryPartnerCheck && selectedDeliveryRating === null
+    const isMissingDeliveryRating = hasDeliveryPartner && selectedDeliveryRating === null;
     if (!order || selectedRestaurantRating === null || isMissingDeliveryRating) {
-      toast.error("Please select all required ratings first")
-      return
+      toast.error("Please select all required ratings first");
+      return;
     }
 
     try {
-      setSubmittingRating(true)
+      setSubmittingRating(true);
       const response = await orderAPI.submitOrderRatings(order.mongoId || order._id || order.id, {
         restaurantRating: selectedRestaurantRating,
-        deliveryPartnerRating: deliveryPartnerCheck ? selectedDeliveryRating : undefined,
+        deliveryPartnerRating: hasDeliveryPartner ? selectedDeliveryRating : undefined,
         restaurantComment: restaurantFeedbackText || undefined,
-        deliveryPartnerComment: deliveryPartnerCheck ? (deliveryFeedbackText || undefined) : undefined,
-      })
+        deliveryPartnerComment: hasDeliveryPartner ? (deliveryFeedbackText || undefined) : undefined,
+      });
       
-      const updatedOrderData = response?.data?.data?.order || response?.data?.order
-      if (updatedOrderData) {
-        setOrder(prev => ({
-          ...prev,
-          ...updatedOrderData,
-          ratings: updatedOrderData.ratings,
-          restaurantRating: updatedOrderData.ratings?.restaurant?.rating,
-          deliveryPartnerRating: updatedOrderData.ratings?.deliveryPartner?.rating
-        }))
-      }
+      const updatedOrderData = response?.data?.data?.order || response?.data?.order;
+      setOrder(prev => ({
+        ...prev,
+        ...(updatedOrderData || {}),
+        ratings: {
+          restaurant: { rating: selectedRestaurantRating, comment: restaurantFeedbackText },
+          deliveryPartner: hasDeliveryPartner ? { rating: selectedDeliveryRating, comment: deliveryFeedbackText } : undefined,
+          ...(updatedOrderData?.ratings || {})
+        },
+        restaurantRating: selectedRestaurantRating,
+        deliveryPartnerRating: hasDeliveryPartner ? selectedDeliveryRating : null
+      }));
 
-      toast.success("Thanks for your feedback!")
-      setShowRatingModal(false)
+      toast.success("Thanks for your feedback!");
+      setShowRatingModal(false);
     } catch (error) {
-      debugError("Error submitting order ratings:", error)
-      toast.error(error?.response?.data?.message || "Failed to submit ratings")
+      debugError("Error submitting order ratings:", error);
+      toast.error(error?.response?.data?.message || "Failed to submit ratings");
     } finally {
-      setSubmittingRating(false)
+      setSubmittingRating(false);
     }
-  }
+  };
 
   const handleEtaUpdate = useCallback((newEta) => {
     if (typeof newEta === 'string') {
@@ -1850,7 +1882,7 @@ export default function OrderTracking() {
                     <Star
                       key={`res-rated-${star}`}
                       className={`w-3.5 h-3.5 ${
-                        star <= (order?.ratings?.restaurant?.rating || order?.restaurantRating)
+                        star <= Number(order?.ratings?.restaurant?.rating ?? order?.restaurantRating ?? 0)
                           ? "text-yellow-400 fill-yellow-400"
                           : "text-gray-200 dark:text-gray-800"
                       }`}
@@ -1862,7 +1894,9 @@ export default function OrderTracking() {
               {hasDeliveryPartner && (
                 <div className="flex items-center justify-between">
                   <div className="flex flex-col">
-                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">Delivery Service</span>
+                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                      {order?.deliveryPartner?.name || order?.deliveryPartnerName ? `Delivery (${order.deliveryPartner?.name || order.deliveryPartnerName})` : "Delivery Service"}
+                    </span>
                     {order?.ratings?.deliveryPartner?.comment && (
                       <span className="text-[10px] text-gray-500 dark:text-gray-400 italic mt-0.5 line-clamp-1">"{order.ratings.deliveryPartner.comment}"</span>
                     )}
@@ -1872,7 +1906,7 @@ export default function OrderTracking() {
                       <Star
                         key={`del-rated-${star}`}
                         className={`w-3.5 h-3.5 ${
-                          star <= (order?.ratings?.deliveryPartner?.rating || order?.deliveryPartnerRating)
+                          star <= Number(order?.ratings?.deliveryPartner?.rating ?? order?.deliveryPartnerRating ?? 0)
                             ? "text-yellow-400 fill-yellow-400"
                             : "text-gray-200 dark:text-gray-800"
                         }`}
@@ -2442,7 +2476,7 @@ export default function OrderTracking() {
                   ))}
                 </div>
                 <Textarea
-                  placeholder={`How was ${order?.deliveryPartnerName || 'the rider'}? (optional)`}
+                  placeholder={`How was ${order?.deliveryPartner?.name || order?.deliveryPartnerName || 'the delivery service'}? (optional)`}
                   value={deliveryFeedbackText}
                   onChange={(e) => setDeliveryFeedbackText(e.target.value)}
                   className="min-h-[80px] text-sm bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-800 resize-none rounded-xl"
