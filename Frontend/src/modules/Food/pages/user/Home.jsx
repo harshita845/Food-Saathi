@@ -1018,6 +1018,10 @@ export default function Home() {
 
   useEffect(() => {
     const calculateHeight = () => {
+      // The search row is sticky, so its offsetTop grows once the page is scrolled.
+      // Mobile browsers fire resize while scrolling (address bar show/hide), so only
+      // measure at the top of the page; otherwise the orange header stretches down.
+      if (window.scrollY > 1) return;
       const locEl = document.getElementById('home-header-loc-row');
       const searchEl = document.getElementById('home-header-search-row');
       const festEl = document.getElementById('fest-banner-wrapper');
@@ -1042,13 +1046,19 @@ export default function Home() {
       }
     };
 
+    const onScroll = () => {
+      if (window.scrollY <= 1) calculateHeight();
+    };
+
     calculateHeight();
     window.addEventListener('resize', calculateHeight);
+    window.addEventListener('scroll', onScroll, { passive: true });
     const timeout = setTimeout(calculateHeight, 100);
     const timeout2 = setTimeout(calculateHeight, 500);
-    
+
     return () => {
       window.removeEventListener('resize', calculateHeight);
+      window.removeEventListener('scroll', onScroll);
       clearTimeout(timeout);
       clearTimeout(timeout2);
     };
