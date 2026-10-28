@@ -168,15 +168,15 @@ export default function DeliverySignIn() {
             {/* Pill-shaped Glassmorphic Input */}
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-[#FFE4D1] to-[#FFEDC9] dark:from-gray-800 dark:to-gray-800 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-500"></div>
-              <div className="relative flex items-center bg-white/70 dark:bg-[#2A1A11]/80 backdrop-blur-xl border border-white/50 dark:border-gray-800 rounded-[2rem] p-2 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-                
+              <div className="relative flex items-center overflow-hidden bg-white/70 dark:bg-[#2A1A11]/80 backdrop-blur-xl border border-white/50 dark:border-gray-800 rounded-[2rem] p-2 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+
                 {/* Prefix Section */}
-                <div className="flex items-center pl-4 pr-3 border-r border-gray-200 dark:border-gray-700">
+                <div className="flex shrink-0 items-center pl-4 pr-3 border-r border-gray-200 dark:border-gray-700">
                   <img src="https://flagcdn.com/w20/in.png" alt="India" className="w-5 h-auto mr-2 rounded-sm" />
                   <span className="text-base font-bold text-gray-800 dark:text-gray-200 mr-2">+91</span>
                 </div>
                 
-                <div className="pl-3 pr-2 text-gray-400">
+                <div className="shrink-0 pl-3 pr-2 text-gray-400">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
                   </svg>
@@ -194,9 +194,9 @@ export default function DeliverySignIn() {
                     localStorage.setItem("delivery_draft_phone", val);
                   }}
                   maxLength={10}
-                  className="flex-1 bg-transparent border-0 outline-none focus:border-transparent focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 text-gray-900 dark:text-white font-bold text-lg placeholder:text-gray-400 placeholder:font-medium placeholder:text-sm py-2 px-1"
-                  style={{ boxShadow: "none", border: "none", outline: "none" }}
-                  placeholder="Enter your 10-digit registered..."
+                  className="flex-1 min-w-0 w-full bg-transparent border-0 outline-none focus:border-transparent focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 text-gray-900 dark:text-white font-bold text-lg placeholder:text-gray-400 placeholder:font-medium placeholder:text-sm py-2 px-1"
+                  style={{ boxShadow: "none", border: "none", outline: "none", backgroundColor: "transparent" }}
+                  placeholder="10-digit mobile number"
                 />
               </div>
             </div>
