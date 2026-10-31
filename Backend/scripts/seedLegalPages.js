@@ -180,7 +180,7 @@ async function seedLegalPages() {
         console.log('✅ Connected to MongoDB');
 
         const db = mongoose.connection.db;
-        const collection = db.collection('foodpagecontents');
+        const collection = db.collection('food_page_contents');
 
         // Upsert Terms
         console.log('📄 Seeding Terms and Conditions...');

@@ -66,8 +66,7 @@ const DeliveryV2Router = () => {
         <Route path="help/tickets/create" element={<ProtectedRoute><CreateSupportTicketV2 /></ProtectedRoute>} />
         <Route path="help/tickets/:ticketId" element={<ProtectedRoute><ViewSupportTicketV2 /></ProtectedRoute>} />
         <Route path="help/id-card" element={<ProtectedRoute><ShowIdCardV2 /></ProtectedRoute>} />
-        <Route path="profile/terms" element={<ProtectedRoute><TermsAndConditionsV2 /></ProtectedRoute>} />
-        <Route path="profile/privacy" element={<ProtectedRoute><PrivacyPolicyV2 /></ProtectedRoute>} />
+        {/* profile/terms and profile/privacy are public — see lines 48-49 */}
         
         {/* Financial Deep-Pages */}
         <Route path="pocket/payout" element={<ProtectedRoute><PayoutV2 /></ProtectedRoute>} />

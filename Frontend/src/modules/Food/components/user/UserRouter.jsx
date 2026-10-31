@@ -223,14 +223,8 @@ export default function UserRouter() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="profile/support"
-            element={
-              <ProtectedRoute requiredRole="user" loginPath="/user/auth/login">
-                <Support />
-              </ProtectedRoute>
-            }
-          />
+          {/* Public — accessible without login for Play Store review */}
+          <Route path="profile/support" element={<Support />} />
           <Route
             path="profile/coupons"
             element={

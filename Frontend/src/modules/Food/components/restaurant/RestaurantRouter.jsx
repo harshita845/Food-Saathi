@@ -73,6 +73,9 @@ export default function RestaurantRouter() {
           <Route path="terms" element={<TermsAndConditionsPage />} />
           <Route path="profile/privacy" element={<PrivacyPolicyPage />} />
           <Route path="profile/terms" element={<TermsAndConditionsPage />} />
+          {/* Public — accessible without login for Play Store review */}
+          <Route path="help-centre/support" element={<RestaurantSupport />} />
+          <Route path="support" element={<RestaurantSupport />} />
 
           {/* Protected Routes Wrapped in RestaurantBlockGuard */}
           <Route element={
@@ -102,7 +105,7 @@ export default function RestaurantRouter() {
             <Route path="feedback" element={<Feedback />} />
             <Route path="share-feedback" element={<ShareFeedback />} />
             <Route path="dish-ratings" element={<DishRatings />} />
-            <Route path="help-centre/support" element={<RestaurantSupport />} />
+            {/* help-centre/support is public — see above */}
             <Route path="fssai" element={<FssaiDetails />} />
             <Route path="fssai/update" element={<FssaiUpdate />} />
             <Route path="hyperpure" element={<Hyperpure />} />
