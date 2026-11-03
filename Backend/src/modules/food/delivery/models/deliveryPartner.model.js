@@ -30,6 +30,19 @@ const deliveryPartnerSchema = new mongoose.Schema(
         city: {
             type: String
         },
+        zone: {
+            type: String,
+            trim: true
+        },
+        zoneName: {
+            type: String,
+            trim: true
+        },
+        zoneId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'FoodZone',
+            index: true
+        },
         state: {
             type: String
         },
