@@ -16,21 +16,15 @@ const maskPhone = (phone) => {
 };
 
 /**
- * Sends a DLT-approved OTP message through SMSWala India.
- * Form-encoded POST keeps the API key out of request URLs and application logs.
+ * Sends a DLT-approved OTP message through SMS India Hub.
+ * Uses GET request to cloud.smsindiahub.in/api/mt/SendSMS endpoint.
  */
-const sendSmsViaSmsWala = async (phone, otp) => {
-    const requiredConfig = {
-        SMSWALA_API_KEY: config.smsWalaApiKey,
-        SMSWALA_SENDER_ID: config.smsWalaSenderId,
-        SMSWALA_TEMPLATE_ID: config.smsWalaTemplateId,
-        SMSWALA_PE_ID: config.smsWalaPeId,
-    };
-    const missing = Object.entries(requiredConfig)
-        .filter(([, value]) => !String(value || '').trim())
-        .map(([key]) => key);
-    if (missing.length > 0) {
-        throw new Error(`SMSWala configuration missing: ${missing.join(', ')}`);
+const sendSmsViaIndiaHub = async (phone, otp) => {
+    const apiKey = config.smsIndiaHubApiKey;
+    const senderId = config.smsIndiaHubSenderId || 'BGADPL';
+
+    if (!apiKey) {
+        throw new Error('SMS_INDIA_HUB_API_KEY is not configured');
     }
 
     const digits = String(phone || '').replace(/\D/g, '');
@@ -39,42 +33,51 @@ const sendSmsViaSmsWala = async (phone, otp) => {
         throw new ValidationError('A valid Indian mobile number is required');
     }
 
-    const form = new URLSearchParams({
-        key: config.smsWalaApiKey,
-        campaign: String(config.smsWalaCampaignId || '16541'),
-        routeid: String(config.smsWalaRouteId || '30'),
-        type: 'text',
-        contacts: mobile,
-        senderid: config.smsWalaSenderId,
-        msg: `Welcome to TUGGO IT Services, Your OTP is ${otp} for Verification.`,
-        template_id: config.smsWalaTemplateId,
-        pe_id: config.smsWalaPeId,
+    const number = `91${mobile}`;
+    const text = `Welcome to Food Saathi, powered by Food Saathi. Your OTP for registration is ${otp}. This OTP is valid for 10 minutes. Please do not share it with anyone.BGADPL`;
+
+    const params = new URLSearchParams({
+        APIKey: apiKey,
+        senderid: senderId,
+        channel: config.smsIndiaHubChannel || 'Trans',
+        DCS: config.smsIndiaHubDcs || '0',
+        flashsms: config.smsIndiaHubFlashSms || '0',
+        number,
+        text,
     });
+
+    // Add DLT fields only if configured (required for TRAI compliance in production)
+    if (config.smsIndiaHubEntityId) params.set('EntityId', config.smsIndiaHubEntityId);
+    if (config.smsIndiaHubTemplateId) params.set('dlttemplateid', config.smsIndiaHubTemplateId);
+
+    const url = `https://cloud.smsindiahub.in/api/mt/SendSMS?${params.toString()}`;
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
-    try {
-        logger.info(`[SMS] Sending OTP to ${maskPhone(mobile)} via SMSWala...`);
-        const response = await fetch(config.smsWalaApiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: form.toString(),
-            signal: controller.signal,
-        });
-        const resultText = (await response.text()).trim();
-        const indicatesFailure = /\b(error|invalid|failed|failure|insufficient|unauthori[sz]ed)\b/i.test(resultText);
 
-        if (!response.ok || !resultText || indicatesFailure) {
-            logger.error(`[SMS] SMSWala rejected OTP for ${maskPhone(mobile)} (HTTP ${response.status})`);
-            throw new Error('SMS provider rejected the OTP request');
+    try {
+        logger.info(`[SMS] Sending OTP to ${maskPhone(mobile)} via SMS India Hub with SenderId ${senderId}...`);
+        const response = await fetch(url, { signal: controller.signal });
+        const resultText = (await response.text()).trim();
+
+        let resultJson = null;
+        try {
+            resultJson = JSON.parse(resultText);
+        } catch (_) {}
+
+        const isSuccess = response.ok && resultJson && resultJson.ErrorCode === '000';
+        if (!isSuccess) {
+            const errDetail = resultJson?.ErrorMessage || resultText;
+            logger.error(`[SMS] SMS India Hub rejected OTP for ${maskPhone(mobile)} (ErrorCode ${resultJson?.ErrorCode || response.status}): ${errDetail}`);
+            throw new Error(`SMS provider rejected the OTP request: ${errDetail}`);
         }
 
-        logger.info(`[SMS] OTP accepted by SMSWala for ${maskPhone(mobile)}`);
+        logger.info(`[SMS] OTP accepted by SMS India Hub for ${maskPhone(mobile)}: JobId ${resultJson.JobId}`);
     } catch (error) {
         const message = error?.name === 'AbortError'
             ? 'SMS provider request timed out'
             : error.message;
-        logger.error(`[SMS] SMSWala OTP delivery failed for ${maskPhone(mobile)}: ${message}`);
+        logger.error(`[SMS] SMS India Hub OTP delivery failed for ${maskPhone(mobile)}: ${message}`);
         throw new Error(message);
     } finally {
         clearTimeout(timeoutId);
@@ -151,7 +154,7 @@ export const createOrUpdateOtp = async (phone) => {
 
     // Only send SMS if not in default OTP mode
     if (!useFixedOtp) {
-        await sendSmsViaSmsWala(phone, otp);
+        await sendSmsViaIndiaHub(phone, otp);
     }
 
     return otp;

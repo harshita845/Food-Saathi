@@ -54,7 +54,16 @@ export const config = {
     defaultOtpTestPhones: process.env.DEFAULT_OTP_TEST_PHONES || '',
     defaultOtpCode: process.env.DEFAULT_OTP_CODE || '123456',
 
-    // SMSWala India
+    // SMS India Hub (active provider)
+    smsIndiaHubApiKey: process.env.SMS_INDIA_HUB_API_KEY,
+    smsIndiaHubSenderId: process.env.SMS_INDIA_HUB_SENDER_ID || 'BGADPL',
+    smsIndiaHubChannel: process.env.SMS_INDIA_HUB_CHANNEL || 'Trans',
+    smsIndiaHubDcs: process.env.SMS_INDIA_HUB_DCS || '0',
+    smsIndiaHubFlashSms: process.env.SMS_INDIA_HUB_FLASH_SMS || '0',
+    smsIndiaHubEntityId: process.env.SMS_INDIA_HUB_ENTITY_ID || '',
+    smsIndiaHubTemplateId: process.env.SMS_INDIA_HUB_TEMPLATE_ID || '',
+
+    // SMSWala India (legacy / fallback)
     smsWalaApiUrl: process.env.SMSWALA_API_URL || 'https://sms.smswala.in/app/smsapi/index.php',
     smsWalaApiKey: process.env.SMSWALA_API_KEY,
     smsWalaCampaignId: process.env.SMSWALA_CAMPAIGN_ID || '16541',
@@ -165,6 +174,13 @@ export const updateConfig = () => {
     config.useDefaultOtp = process.env.USE_DEFAULT_OTP === 'true';
     config.defaultOtpTestPhones = process.env.DEFAULT_OTP_TEST_PHONES || config.defaultOtpTestPhones;
     config.defaultOtpCode = process.env.DEFAULT_OTP_CODE || config.defaultOtpCode;
+    config.smsIndiaHubApiKey = process.env.SMS_INDIA_HUB_API_KEY || config.smsIndiaHubApiKey;
+    config.smsIndiaHubSenderId = process.env.SMS_INDIA_HUB_SENDER_ID || config.smsIndiaHubSenderId;
+    config.smsIndiaHubChannel = process.env.SMS_INDIA_HUB_CHANNEL || config.smsIndiaHubChannel;
+    config.smsIndiaHubDcs = process.env.SMS_INDIA_HUB_DCS || config.smsIndiaHubDcs;
+    config.smsIndiaHubFlashSms = process.env.SMS_INDIA_HUB_FLASH_SMS || config.smsIndiaHubFlashSms;
+    config.smsIndiaHubEntityId = process.env.SMS_INDIA_HUB_ENTITY_ID || config.smsIndiaHubEntityId;
+    config.smsIndiaHubTemplateId = process.env.SMS_INDIA_HUB_TEMPLATE_ID || config.smsIndiaHubTemplateId;
     config.smsWalaApiUrl = process.env.SMSWALA_API_URL || config.smsWalaApiUrl;
     config.smsWalaApiKey = process.env.SMSWALA_API_KEY || config.smsWalaApiKey;
     config.smsWalaCampaignId = process.env.SMSWALA_CAMPAIGN_ID || config.smsWalaCampaignId;
