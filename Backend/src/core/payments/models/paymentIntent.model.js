@@ -17,8 +17,11 @@ const paymentIntentSchema = new mongoose.Schema(
         /** The user (wallet top-up) or delivery partner (cash deposit) who is paying */
         ownerId: { type: mongoose.Schema.Types.ObjectId, required: true, index: true },
         gatewayOrderId: { type: String, required: true, trim: true },
-        /** Amount the Razorpay order was created for, in whole paise */
-        amountPaise: { type: Number, required: true, min: 1, validate: { validator: Number.isInteger, message: 'amountPaise must be whole paise' } },
+        paymentSessionId: { type: String, default: '' },
+        /** Amount in rupees (Cashfree) */
+        amount: { type: Number, default: 0 },
+        /** Amount in paise (legacy compatibility) */
+        amountPaise: { type: Number, default: 0 },
         status: { type: String, enum: ['created', 'completed'], default: 'created', index: true },
         gatewayPaymentId: { type: String, default: '' },
         completedAt: { type: Date, default: null },

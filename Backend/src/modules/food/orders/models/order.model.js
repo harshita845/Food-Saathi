@@ -61,7 +61,7 @@ const paymentSchema = new mongoose.Schema(
     {
         method: {
             type: String,
-            enum: ['cash', 'razorpay', 'razorpay_qr', 'wallet'],
+            enum: ['cash', 'cashfree', 'online', 'card', 'wallet', 'razorpay', 'cashfree_qr', 'razorpay_qr'],
             required: true
         },
         status: {
@@ -78,6 +78,14 @@ const paymentSchema = new mongoose.Schema(
             default: 'cod_pending'
         },
         amountDue: { type: Number, min: 0 },
+        paymentSessionId: { type: String },
+        gateway: {
+            provider: { type: String, default: 'cashfree' },
+            orderId: { type: String },
+            paymentId: { type: String },
+            signature: { type: String },
+            paymentSessionId: { type: String }
+        },
         razorpay: {
             orderId: { type: String },
             paymentId: { type: String },

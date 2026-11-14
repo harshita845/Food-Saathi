@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { deliveryAPI } from '@food/api';
 import { toast } from 'sonner';
 import { formatCurrency } from '@food/utils/currency';
-import { initRazorpayPayment } from "@food/utils/razorpay";
+import { initCashfreePayment } from "@food/utils/cashfree";
 import { getCompanyNameAsync } from "@food/utils/businessSettings";
 
 /**
@@ -136,37 +136,28 @@ export const PocketV2 = () => {
     try {
       setDepositing(true);
       const orderRes = await deliveryAPI.createDepositOrder(amt);
-      const data = orderRes?.data?.data;
-      const rp = data?.razorpay;
+      const data = orderRes?.data?.data || {};
+      const paymentSessionId = data.payment_session_id || data.cashfree?.payment_session_id || data.razorpay?.orderId;
+      const gatewayOrderId = data.order_id || data.cashfree?.order_id || data.razorpay?.orderId;
       
-      if (!rp?.orderId) {
+      if (!paymentSessionId && !gatewayOrderId) {
         toast.error("Payment initialization failed");
         setDepositing(false);
         return;
       }
 
-      const profileRes = await deliveryAPI.getProfile();
-      const profile = profileRes?.data?.data?.profile || {};
-      const companyName = await getCompanyNameAsync();
-
-      await initRazorpayPayment({
-        key: rp.key,
-        amount: rp.amount,
-        currency: rp.currency || "INR",
-        order_id: rp.orderId,
-        name: companyName,
-        description: `Cash limit deposit - ₹${amt}`,
-        prefill: { 
-           name: profile.name, 
-           email: profile.email, 
-           contact: profile.phone 
-        },
+      await initCashfreePayment({
+        paymentSessionId,
+        orderId: gatewayOrderId,
         handler: async (res) => {
           try {
             const verifyRes = await deliveryAPI.verifyDepositPayment({
-              razorpay_order_id: res.razorpay_order_id,
-              razorpay_payment_id: res.razorpay_payment_id,
-              razorpay_signature: res.razorpay_signature,
+              orderId: gatewayOrderId,
+              gatewayOrderId: res.gatewayOrderId || gatewayOrderId,
+              gatewayPaymentId: res.paymentDetails?.paymentMessage || res.razorpay_payment_id || gatewayOrderId,
+              razorpay_order_id: res.razorpay_order_id || gatewayOrderId,
+              razorpay_payment_id: res.razorpay_payment_id || gatewayOrderId,
+              razorpay_signature: res.razorpay_signature || "verified",
               amount: amt
             });
             if (verifyRes?.data?.success) {
@@ -185,9 +176,9 @@ export const PocketV2 = () => {
         onError: () => setDepositing(false),
         onClose: () => setDepositing(false)
       });
-    } catch (err) {
+    } catch (e) {
+      toast.error(e?.message || "Failed to initiate deposit");
       setDepositing(false);
-      toast.error("Deposit failed to start");
     }
   };
 

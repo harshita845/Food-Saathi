@@ -16,6 +16,7 @@ import * as businessSettingsController from '../modules/food/admin/controllers/b
 import { requireRoles } from '../core/roles/role.middleware.js';
 import { getQueuesController } from '../controllers/admin.controller.js';
 import webhookRoutes from '../core/payments/routes/webhook.routes.js';
+import paymentRoutes from '../core/payments/routes/payment.routes.js';
 import searchRoutes from '../modules/food/search/routes/search.routes.js';
 import appConfigRoutes from '../core/appConfig/appConfig.routes.js';
 import promocodeRoutes from './promocodeRoutes.js';
@@ -70,6 +71,7 @@ router.use('/v1/food/user', authMiddleware, requireRoles('USER'), userRoutes);
 router.use('/v1/food/notifications', authMiddleware, requireRoles('USER', 'RESTAURANT', 'DELIVERY_PARTNER'), notificationRoutes);
 router.use('/v1/food/orders', authMiddleware, requireRoles('USER'), orderUserRoutes);
 router.use('/v1/payments/webhook', webhookRoutes);
+router.use('/v1/payments', paymentRoutes);
 router.use('/v1/fcm-tokens', fcmRoutes);
 router.use('/fcm-tokens', fcmRoutes);
 

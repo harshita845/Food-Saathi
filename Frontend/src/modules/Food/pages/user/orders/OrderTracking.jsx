@@ -838,6 +838,44 @@ export default function OrderTracking() {
   const resolveOrderFromList = useCallback((id) => stableOpsRef.current.resolveOrderFromList(id), [])
   const fetchOrderDetailsWithFallback = useCallback((opts) => stableOpsRef.current.fetchOrderDetailsWithFallback(opts), [])
 
+  // Auto-verify payment on mount when returning from Cashfree (e.g. ?cashfree_return=true or ?confirmed=true)
+  useEffect(() => {
+    const isReturn = searchParams.get("cashfree_return") === "true" || searchParams.get("confirmed") === "true"
+    const targetOrderId = orderId || lookupIdFromQuery
+    if (!targetOrderId || !isReturn) return
+
+    let isMounted = true
+
+    const verifyOnReturn = async () => {
+      try {
+        const verifyRes = await orderAPI.verifyPayment({ orderId: targetOrderId })
+        if (!isMounted) return
+
+        if (verifyRes.data?.success) {
+          toast.success("Payment verified! Your order is placed.")
+          try {
+            localStorage.removeItem('cart_items')
+            window.dispatchEvent(new CustomEvent('cart-updated'))
+          } catch {}
+
+          const refreshed = await fetchOrderDetailsWithFallback({ force: true })
+          if (refreshed?.data?.data?.order || refreshed?.data?.order) {
+            const freshDoc = refreshed.data.data?.order || refreshed.data.order
+            setOrder(prev => transformOrderForTracking(freshDoc, prev))
+          }
+        }
+      } catch (err) {
+        // Non-blocking: background polling or webhook will sync status
+      }
+    }
+
+    verifyOnReturn()
+
+    return () => {
+      isMounted = false
+    }
+  }, [orderId, lookupIdFromQuery, searchParams, fetchOrderDetailsWithFallback])
+
   // Clear OTP when order is finalized.
   useEffect(() => {
     if (!order) return
@@ -1286,7 +1324,7 @@ export default function OrderTracking() {
     const method = String(order?.payment?.method || order?.paymentMethod || "").toLowerCase()
     const status = String(order?.payment?.status || "").toLowerCase()
     const isRazorpayPaid =
-      method === "razorpay" && ["paid", "authorized", "captured", "settled", "refunded"].includes(status)
+      ["razorpay", "cashfree", "online"].includes(method) && ["paid", "authorized", "captured", "settled", "refunded"].includes(status)
 
     setRefundDestination(isRazorpayPaid ? "source" : "wallet")
 
@@ -1306,7 +1344,7 @@ export default function OrderTracking() {
       const method = String(order?.payment?.method || order?.paymentMethod || "").toLowerCase()
       const status = String(order?.payment?.status || "").toLowerCase()
       const isRazorpayPaid =
-        method === "razorpay" && ["paid", "authorized", "captured", "settled", "refunded"].includes(status)
+        ["razorpay", "cashfree", "online"].includes(method) && ["paid", "authorized", "captured", "settled", "refunded"].includes(status)
 
       const payload = {
         reason: cancellationReason.trim(),
@@ -2154,7 +2192,7 @@ export default function OrderTracking() {
               const method = String(order?.payment?.method || order?.paymentMethod || "").toLowerCase()
               const status = String(order?.payment?.status || "").toLowerCase()
               const isRazorpayPaid =
-                method === "razorpay" && ["paid", "authorized", "captured", "settled", "refunded"].includes(status)
+                ["razorpay", "cashfree", "online"].includes(method) && ["paid", "authorized", "captured", "settled", "refunded"].includes(status)
 
               if (!isRazorpayPaid) return null
 
@@ -2234,20 +2272,20 @@ export default function OrderTracking() {
 
       {/* Order Details Dialog */}
       <Dialog open={showOrderDetails} onOpenChange={setShowOrderDetails}>
-        <DialogContent className="max-w-[calc(100vw-32px)] sm:max-w-md bg-white dark:bg-[#2A1A11] rounded-2xl p-0 overflow-hidden border-none outline-none">
-          <DialogHeader className="p-6 pb-4 border-b border-gray-100 dark:border-gray-800 pr-12">
+        <DialogContent className="w-[92vw] max-w-md bg-white dark:bg-[#1E120B] rounded-3xl p-0 overflow-hidden border border-gray-100 dark:border-gray-800 shadow-2xl flex flex-col max-h-[85vh] outline-none">
+          <DialogHeader className="p-5 pb-3 border-b border-gray-100 dark:border-gray-800 pr-12 shrink-0">
             <div className="flex items-center justify-between">
-              <DialogTitle className="text-xl font-bold text-gray-900">Order Details</DialogTitle>
+              <DialogTitle className="text-lg font-bold text-gray-900 dark:text-gray-100">Order Details</DialogTitle>
             </div>
           </DialogHeader>
 
-          <div className="p-6 pt-4 space-y-6 max-h-[70vh] overflow-y-auto">
+          <div className="p-5 space-y-5 overflow-y-auto flex-1 min-h-0">
             {/* Order Meta Info */}
-            <div className="flex flex-col gap-1 b">
-              <div className="flex items-center gap-4 mt-2">
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider">Date & Time</p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-4 bg-gray-50/70 dark:bg-white/5 p-3 rounded-2xl border border-gray-100 dark:border-gray-800">
+                <div className="flex-1">
+                  <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Date & Time</p>
+                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mt-0.5">
                     {order?.createdAt ? new Date(order.createdAt).toLocaleString('en-IN', {
                       day: '2-digit',
                       month: 'short',
@@ -2258,11 +2296,11 @@ export default function OrderTracking() {
                     }) : 'N/A'}
                   </p>
                 </div>
-                <div className="h-8 w-px bg-gray-100" />
+                <div className="h-7 w-px bg-gray-200 dark:bg-gray-700" />
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider">Status</p>
-                  <span className="text-sm font-bold text-green-600 uppercase">
-                    {order?.status?.replace('_', ' ')}
+                  <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Status</p>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-green-50 text-green-700 dark:bg-green-950/60 dark:text-green-400 border border-green-200/80 dark:border-green-800/60">
+                    {order?.status?.replace('_', ' ') || 'CREATED'}
                   </span>
                 </div>
               </div>
@@ -2270,11 +2308,11 @@ export default function OrderTracking() {
 
             {/* Delivery Instructions Section */}
             {order?.note && (
-              <div className="bg-orange-50/50 rounded-xl p-4 border border-orange-100 flex gap-3">
-                <MessageSquare className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+              <div className="bg-orange-50/60 dark:bg-orange-950/30 rounded-2xl p-3.5 border border-orange-100 dark:border-orange-900/40 flex gap-3">
+                <MessageSquare className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-xs text-#C93C0E font-bold uppercase tracking-wider mb-1">Delivery Instructions</p>
-                  <p className="text-sm text-gray-800 leading-relaxed font-medium capitalize">
+                  <p className="text-[11px] text-primary font-bold uppercase tracking-wider mb-0.5">Delivery Instructions</p>
+                  <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
                     {order.note}
                   </p>
                 </div>
@@ -2283,92 +2321,95 @@ export default function OrderTracking() {
 
             {/* Items Section */}
             <div>
-              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Order Items</p>
-              <div className="space-y-4">
-                {order?.items?.map((item, index) => (
-                  <div key={index} className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className="w-5 h-5 rounded border border-green-600 flex items-center justify-center mt-0.5 shrink-0">
-                        <div className="w-2.5 h-2.5 rounded-full bg-green-600" />
+              <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2.5">Order Items</p>
+              <div className="space-y-3 bg-gray-50/50 dark:bg-white/[0.02] p-3 rounded-2xl border border-gray-100 dark:border-gray-800/80">
+                {order?.items?.map((item, index) => {
+                  const isVegItem = item?.isVeg !== false && String(item?.foodType || '').toLowerCase() !== 'non-veg'
+                  return (
+                    <div key={index} className="flex items-start justify-between gap-3 text-xs">
+                      <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                        <div className={`w-4 h-4 rounded border flex items-center justify-center mt-0.5 shrink-0 ${isVegItem ? 'border-green-600' : 'border-red-600'}`}>
+                          <div className={`w-2 h-2 rounded-full ${isVegItem ? 'bg-green-600' : 'bg-red-600'}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-gray-900 dark:text-gray-100 truncate leading-snug">{item.name}</p>
+                          {item.variantName ? (
+                            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{item.variantName}</p>
+                          ) : null}
+                          <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Qty: {item.quantity}</p>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-gray-900 leading-tight">{item.name}</p>
-                        {item.variantName ? (
-                          <p className="text-sm text-gray-500 mt-0.5">{item.variantName}</p>
-                        ) : null}
-                        <p className="text-sm text-gray-500 mt-0.5">Quantity: {item.quantity}</p>
-                      </div>
+                      <p className="font-bold text-gray-900 dark:text-gray-100 shrink-0">₹{((item?.price || 0) * (item?.quantity || 0)).toFixed(2)}</p>
                     </div>
-                    <p className="font-semibold text-gray-900">₹{((item?.price || 0) * (item?.quantity || 0)).toFixed(2)}</p>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
 
             {/* Bill Summary */}
-            <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-              <p className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-1">Bill Summary</p>
+            <div className="bg-orange-50/30 dark:bg-white/5 rounded-2xl p-4 border border-orange-100/70 dark:border-gray-800 space-y-2.5">
+              <p className="text-xs font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider mb-1">Bill Summary</p>
               
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600">Item Total</span>
-                <span className="text-gray-900 font-medium">₹{Number(order?.subtotal || 0).toFixed(2)}</span>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-gray-500 dark:text-gray-400">Item Total</span>
+                <span className="text-gray-900 dark:text-gray-200 font-semibold">₹{Number(order?.subtotal || 0).toFixed(2)}</span>
               </div>
 
               {Number(order?.packagingFee) > 0 && (
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-600">Packaging Charges</span>
-                  <span className="text-gray-900 font-medium">₹{Number(order.packagingFee).toFixed(2)}</span>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-gray-500 dark:text-gray-400">Packaging Charges</span>
+                  <span className="text-gray-900 dark:text-gray-200 font-semibold">₹{Number(order.packagingFee).toFixed(2)}</span>
                 </div>
               )}
 
               {Number(order?.platformFee) > 0 && (
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-600">Platform Fee</span>
-                  <span className="text-gray-900 font-medium">₹{Number(order.platformFee).toFixed(2)}</span>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-gray-500 dark:text-gray-400">Platform Fee</span>
+                  <span className="text-gray-900 dark:text-gray-200 font-semibold">₹{Number(order.platformFee).toFixed(2)}</span>
                 </div>
               )}
 
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600">Delivery Fee</span>
-                <span className="text-gray-900 font-medium">₹{Number(order?.deliveryFee || 0).toFixed(2)}</span>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-gray-500 dark:text-gray-400">Delivery Fee</span>
+                <span className="text-gray-900 dark:text-gray-200 font-semibold">₹{Number(order?.deliveryFee || 0).toFixed(2)}</span>
               </div>
 
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600">GST</span>
-                <span className="text-gray-900 font-medium">₹{Number(order?.gst || 0).toFixed(2)}</span>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-gray-500 dark:text-gray-400">GST</span>
+                <span className="text-gray-900 dark:text-gray-200 font-semibold">₹{Number(order?.gst || 0).toFixed(2)}</span>
               </div>
 
               {Number(order?.discount) > 0 && (
-                <div className="flex justify-between items-center text-sm text-green-600 font-medium">
+                <div className="flex justify-between items-center text-xs text-green-600 dark:text-green-400 font-semibold">
                   <span>Discount Applied</span>
                   <span>-₹{Number(order.discount).toFixed(2)}</span>
                 </div>
               )}
 
-              <div className="pt-2 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center">
-                <span className="text-base font-bold text-gray-900 dark:text-white">Total Amount</span>
-                <span className="text-lg font-bold text-gray-900 dark:text-white">₹{Number(order?.totalAmount || 0).toFixed(2)}</span>
+              <div className="pt-2.5 border-t border-gray-200/80 dark:border-gray-700/80 flex justify-between items-center">
+                <span className="text-sm font-bold text-gray-900 dark:text-white">Total Amount</span>
+                <span className="text-base font-black text-primary">₹{Number(order?.totalAmount || 0).toFixed(2)}</span>
               </div>
-            </div>
 
-            {/* Payment Method */}
-            {order?.paymentMethod && (
-              <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Shield className="w-4 h-4" />
-                  <span className="text-sm font-medium">Payment Method</span>
+              {/* Payment Method nested nicely within Bill Card */}
+              {order?.paymentMethod && (
+                <div className="pt-2 border-t border-dashed border-gray-200/80 dark:border-gray-700/80 flex justify-between items-center">
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                    <Shield className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span>Paid via</span>
+                  </div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60">
+                    {order.paymentMethod}
+                  </span>
                 </div>
-                <span className="text-sm font-bold text-gray-900 uppercase tracking-wide">
-                  {order.paymentMethod}
-                </span>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
-          <div className="p-6 border-t border-gray-100">
+          <div className="p-4 bg-white dark:bg-[#1E120B] border-t border-gray-100 dark:border-gray-800 shrink-0">
             <Button
               onClick={() => setShowOrderDetails(false)}
-              className="w-full bg-gray-900 text-white font-bold h-12 rounded-xl"
+              className="w-full bg-gradient-to-r from-primary to-orange-600 hover:from-primary/95 hover:to-orange-700 text-white font-bold h-11 rounded-2xl shadow-md shadow-primary/25 transition-all text-sm active:scale-[0.99]"
             >
               Okay
             </Button>

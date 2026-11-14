@@ -1,3 +1,4 @@
+// Food Saathi API Server
 import http from 'http';
 import app from './src/app.js';
 import dns from "node:dns/promises";

@@ -12,7 +12,7 @@ import { PaymentIntent } from '../../../../core/payments/models/paymentIntent.mo
 import { withPayoutLock } from '../../../../core/payments/payoutLock.js';
 import { sessionOpts } from '../../../../utils/dbTransaction.js';
 import { round2, gtMoney, ltMoney, isPositiveMoney } from '../../../../utils/money.js';
-import { createRazorpayOrder, fetchRazorpayPayment, getRazorpayKeyId, isRazorpayConfigured, verifyPaymentSignature } from '../../orders/helpers/razorpay.helper.js';
+import { createCashfreeOrder, fetchCashfreeOrder, isCashfreeConfigured } from '../../orders/helpers/cashfree.helper.js';
 
 /**
  * Enhanced wallet fetch for delivery partners.
@@ -178,48 +178,66 @@ export const createDeliveryCashDepositOrder = async (deliveryPartnerId, amountIn
         throw new ValidationError('Deposit amount cannot exceed cash in hand');
     }
 
-    const amountPaise = Math.round(amount * 100);
-    const receipt = `cash_deposit_${String(deliveryPartnerId).slice(-8)}_${Date.now()}`;
+    const orderId = `cash_deposit_${String(deliveryPartnerId).slice(-8)}_${Date.now()}`;
 
-    if (!isRazorpayConfigured()) {
+    if (!isCashfreeConfigured()) {
         return {
+            payment_session_id: `session_mock_${Date.now()}`,
+            order_id: orderId,
+            cashfree: {
+                payment_session_id: `session_mock_${Date.now()}`,
+                order_id: orderId,
+                order_amount: amount,
+                order_currency: 'INR'
+            },
             razorpay: {
-                key: getRazorpayKeyId() || 'rzp_test_dummy',
-                orderId: `order_dev_${Date.now()}`,
-                amount: amountPaise,
+                orderId,
+                amount: Math.round(amount * 100),
                 currency: 'INR'
             }
         };
     }
 
-    const order = await createRazorpayOrder(amountPaise, 'INR', receipt);
+    const cfOrder = await createCashfreeOrder({
+        orderId,
+        amount,
+        currency: 'INR',
+        customerPhone: '9999999999',
+        customerName: 'Delivery Partner',
+        note: `Cash deposit for partner ${deliveryPartnerId}`
+    });
 
-    // Remember it: if the app dies after the rider pays, the webhook can still record the deposit
     await PaymentIntent.create({
         kind: 'rider_cash_deposit',
         ownerId: new mongoose.Types.ObjectId(String(deliveryPartnerId)),
-        gatewayOrderId: String(order.id),
-        amountPaise: Number(order.amount) || amountPaise
+        gatewayOrderId: orderId,
+        paymentSessionId: cfOrder?.payment_session_id || '',
+        amount: amount,
+        amountPaise: Math.round(amount * 100)
     });
 
     return {
+        payment_session_id: cfOrder?.payment_session_id,
+        order_id: orderId,
+        cashfree: {
+            payment_session_id: cfOrder?.payment_session_id,
+            order_id: orderId,
+            order_amount: amount,
+            order_currency: 'INR'
+        },
         razorpay: {
-            key: getRazorpayKeyId(),
-            orderId: String(order.id),
-            amount: Number(order.amount) || amountPaise,
-            currency: order.currency || 'INR'
+            orderId,
+            amount: Math.round(amount * 100),
+            currency: 'INR'
         }
     };
 };
 
 /**
- * Record a rider's cash deposit that Razorpay has captured. Shared by the verify endpoint and the
- * payment.captured webhook. Exactly-once: the unique razorpayPaymentId index.
- *
- * `enforceCashLimit` is on for the app's own verify call (deposit cannot exceed cash in hand) and
- * off for the webhook: the money has already been taken, so it must be recorded regardless.
+ * Record a rider's cash deposit that the payment gateway has captured. Shared by the verify endpoint and the
+ * webhook.
  */
-export const recordRiderCashDeposit = async ({ deliveryPartnerId, amount, orderId, paymentId, method = 'razorpay', enforceCashLimit = true, via = 'verify_api' }) => {
+export const recordRiderCashDeposit = async ({ deliveryPartnerId, amount, orderId, paymentId, method = 'cashfree', enforceCashLimit = true, via = 'verify_api' }) => {
     const markIntent = () =>
         PaymentIntent.updateOne(
             { gatewayOrderId: orderId, status: 'created' },
@@ -239,6 +257,8 @@ export const recordRiderCashDeposit = async ({ deliveryPartnerId, amount, orderI
                 amount,
                 paymentMethod: method,
                 status: 'Completed',
+                gatewayOrderId: orderId,
+                gatewayPaymentId: paymentId,
                 razorpayOrderId: orderId,
                 razorpayPaymentId: paymentId
             }], sessionOpts(session));
@@ -248,7 +268,9 @@ export const recordRiderCashDeposit = async ({ deliveryPartnerId, amount, orderI
         return { deposit, created: true };
     } catch (err) {
         if (err?.code === 11000) {
-            const existing = await FoodDeliveryCashDeposit.findOne({ razorpayPaymentId: paymentId }).lean();
+            const existing = await FoodDeliveryCashDeposit.findOne({
+                $or: [{ gatewayPaymentId: paymentId }, { razorpayPaymentId: paymentId }]
+            }).lean();
             if (existing) {
                 await markIntent();
                 return { deposit: existing, created: false };
@@ -259,20 +281,18 @@ export const recordRiderCashDeposit = async ({ deliveryPartnerId, amount, orderI
 };
 
 export const verifyDeliveryCashDepositPayment = async (deliveryPartnerId, payload = {}) => {
-    const orderId = String(payload?.razorpayOrderId || '').trim();
-    const paymentId = String(payload?.razorpayPaymentId || '').trim();
-    const signature = String(payload?.razorpaySignature || '').trim();
+    const orderId = String(payload?.gatewayOrderId || payload?.orderId || payload?.razorpayOrderId || '').trim();
+    let paymentId = String(payload?.gatewayPaymentId || payload?.paymentId || payload?.razorpayPaymentId || orderId).trim();
     let amount = Number(payload?.amount);
 
-    if (!orderId) throw new ValidationError('razorpayOrderId is required');
-    if (!paymentId) throw new ValidationError('razorpayPaymentId is required');
-    if (!signature) throw new ValidationError('razorpaySignature is required');
-    if (!Number.isFinite(amount) || amount < 1) throw new ValidationError('amount is required');
+    if (!orderId) throw new ValidationError('orderId is required');
 
     const walletOf = async () => getDeliveryPartnerWalletEnhanced(deliveryPartnerId);
 
     // This gateway payment may already be recorded (retry / double submit / webhook got there first)
-    const already = await FoodDeliveryCashDeposit.findOne({ razorpayPaymentId: paymentId }).lean();
+    const already = await FoodDeliveryCashDeposit.findOne({
+        $or: [{ gatewayPaymentId: paymentId }, { razorpayPaymentId: paymentId }]
+    }).lean();
     if (already) {
         if (String(already.deliveryPartnerId) !== String(deliveryPartnerId)) {
             throw new ValidationError('This payment belongs to another account');
@@ -280,23 +300,18 @@ export const verifyDeliveryCashDepositPayment = async (deliveryPartnerId, payloa
         return { deposit: already, wallet: await walletOf() };
     }
 
-    const configured = isRazorpayConfigured();
+    const configured = isCashfreeConfigured();
     if (configured) {
-        if (!verifyPaymentSignature(orderId, paymentId, signature)) {
-            throw new ValidationError('Payment verification failed');
-        }
-        // Never trust the amount sent by the app: read it from the gateway
-        let gatewayPayment;
+        let gatewayOrder;
         try {
-            gatewayPayment = await fetchRazorpayPayment(paymentId);
+            gatewayOrder = await fetchCashfreeOrder(orderId);
         } catch {
             throw new ValidationError('Could not verify the payment with the gateway. Please try again.');
         }
-        if (String(gatewayPayment?.order_id || '') !== orderId) {
-            throw new ValidationError('Payment does not belong to this order');
-        }
-        if (String(gatewayPayment?.status || '').toLowerCase() !== 'captured') {
-            throw new ValidationError('Payment is not captured yet. Please try again in a moment.');
+
+        const status = String(gatewayOrder?.order_status || '').toUpperCase();
+        if (status !== 'PAID') {
+            throw new ValidationError(`Payment is not paid yet (status: ${status || 'PENDING'}). Please try again.`);
         }
 
         // Only deposit orders WE created for THIS rider can be recorded
@@ -304,10 +319,10 @@ export const verifyDeliveryCashDepositPayment = async (deliveryPartnerId, payloa
         if (!intent || String(intent.ownerId) !== String(deliveryPartnerId)) {
             throw new ValidationError('Unknown deposit order');
         }
-        if (Number(gatewayPayment.amount) !== intent.amountPaise) {
-            throw new ValidationError('Payment amount does not match the deposit order');
-        }
-        amount = Number(gatewayPayment.amount) / 100;
+        amount = Number(gatewayOrder.order_amount);
+        paymentId = String(gatewayOrder.cf_order_id || paymentId);
+    } else {
+        if (!Number.isFinite(amount) || amount < 1) throw new ValidationError('amount is required');
     }
 
     const { deposit } = await recordRiderCashDeposit({
@@ -315,9 +330,10 @@ export const verifyDeliveryCashDepositPayment = async (deliveryPartnerId, payloa
         amount: round2(amount),
         orderId,
         paymentId,
-        method: configured ? 'razorpay' : 'cash',
+        method: configured ? 'cashfree' : 'cash',
         enforceCashLimit: true,
         via: 'verify_api'
     });
+
     return { deposit, wallet: await walletOf() };
 };

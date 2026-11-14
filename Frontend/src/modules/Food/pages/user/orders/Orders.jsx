@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { ArrowLeft, Search, MoreVertical, ChevronRight, Star, RotateCcw, AlertCircle, Loader2, Clock, X, Share2, MessageCircle, Send, Copy, Mail, MessagesSquare, Link2, Phone } from "lucide-react"
 import { orderAPI } from "@food/api"
 import { useCart } from "@food/context/CartContext"
@@ -13,10 +13,12 @@ const debugError = (...args) => {}
 
 export default function Orders() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { replaceCart } = useCart()
   const isAuthenticated = isModuleAuthenticated("user")
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
+  const [verifyingPayment, setVerifyingPayment] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState('today') // 'today' or 'past'
   const [ratingModal, setRatingModal] = useState({ open: false, order: null })
@@ -189,6 +191,48 @@ export default function Orders() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orders, shownRatingForOrders, ratingModal.open])
+
+  // Handle return redirect from Cashfree (e.g. ?order_id=xyz)
+  useEffect(() => {
+    const orderIdFromUrl = searchParams.get("order_id")
+    if (!orderIdFromUrl) return
+
+    let isMounted = true
+
+    const verifyCashfreeOrder = async () => {
+      setVerifyingPayment(true)
+      try {
+        const verifyRes = await orderAPI.verifyPayment({ orderId: orderIdFromUrl })
+        if (!isMounted) return
+
+        if (verifyRes.data?.success) {
+          toast.success("Payment successful! Your order is confirmed.")
+          replaceCart([])
+          try {
+            localStorage.removeItem('cart_items')
+            window.dispatchEvent(new CustomEvent('cart-updated'))
+          } catch {}
+          // Navigate immediately to live tracking page for this order
+          window.location.replace(`/food/user/orders/${orderIdFromUrl}?confirmed=true`)
+          return
+        } else {
+          toast.error(verifyRes.data?.message || "Payment verification incomplete.")
+          setVerifyingPayment(false)
+        }
+      } catch (err) {
+        if (!isMounted) return
+        const errMsg = err?.response?.data?.message || err?.message || "Payment verification pending."
+        toast.info(errMsg)
+        setVerifyingPayment(false)
+      }
+    }
+
+    verifyCashfreeOrder()
+
+    return () => {
+      isMounted = false
+    }
+  }, [searchParams, replaceCart])
 
   // Fetch orders from backend API
   useEffect(() => {
@@ -462,19 +506,6 @@ export default function Orders() {
       return
     }
 
-    // Past orders stay in history wherever you are, but you can only reorder
-    // from a restaurant that delivers to your current location.
-    let currentZoneId = null
-    try {
-      currentZoneId = localStorage.getItem('userZoneId')
-    } catch {
-      currentZoneId = null
-    }
-    if (order.zoneId && currentZoneId && String(order.zoneId) !== String(currentZoneId)) {
-      toast.error(`${order.restaurant || 'This restaurant'} doesn't deliver to your current location.`)
-      return
-    }
-
     const reorderItems = order.items
       .map((item, index) => {
         const itemId = item.id || item.itemId || item._id
@@ -716,6 +747,18 @@ Order again from this restaurant in the ${companyName} app.`
     } finally {
       setSubmittingRating(false)
     }
+  }
+
+  if (verifyingPayment) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-[#1A0F09] flex flex-col items-center justify-center p-6 text-center">
+        <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Confirming Your Order...</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 max-w-sm">
+          Please wait while we verify your payment with Cashfree. You will be redirected to live tracking in a moment.
+        </p>
+      </div>
+    )
   }
 
   if (loading) {

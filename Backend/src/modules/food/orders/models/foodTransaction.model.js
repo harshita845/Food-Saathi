@@ -41,6 +41,13 @@ const foodTransactionSchema = new mongoose.Schema({
         method: { type: String, default: 'cash', trim: true },
         status: { type: String, default: 'cod_pending', trim: true },
         amountDue: { type: Number, default: 0 },
+        paymentSessionId: { type: String, default: '' },
+        gateway: {
+            orderId: { type: String, default: '' },
+            paymentId: { type: String, default: '' },
+            signature: { type: String, default: '' },
+            paymentSessionId: { type: String, default: '' }
+        },
         razorpay: {
             orderId: { type: String, default: '' },
             paymentId: { type: String, default: '' },
@@ -73,7 +80,11 @@ const foodTransactionSchema = new mongoose.Schema({
 
     // Gateway / Provider Metadata
     gateway: {
-        provider: { type: String, default: 'razorpay' },
+        provider: { type: String, default: 'cashfree' },
+        gatewayOrderId: String,
+        gatewayPaymentId: String,
+        gatewaySignature: String,
+        paymentSessionId: String,
         razorpayOrderId: String,
         razorpayPaymentId: String,
         razorpaySignature: String,
@@ -164,10 +175,15 @@ foodTransactionSchema.index({ createdAt: -1 });
 foodTransactionSchema.index({ 'settlement.isRestaurantSettled': 1, restaurantId: 1 });
 foodTransactionSchema.index({ 'status': 1, paymentMethod: 1 });
 // Gateway lookups used by webhooks and reconciliation
+foodTransactionSchema.index({ 'payment.gateway.orderId': 1 }, { sparse: true });
 foodTransactionSchema.index({ 'payment.razorpay.orderId': 1 }, { sparse: true });
 foodTransactionSchema.index({ 'payment.qr.qrId': 1 }, { sparse: true });
 foodTransactionSchema.index({ 'refund.status': 1, updatedAt: 1 });
-// One Razorpay payment can pay for exactly one order
+// One gateway payment can pay for exactly one order
+foodTransactionSchema.index(
+    { 'gateway.gatewayPaymentId': 1 },
+    { unique: true, partialFilterExpression: { 'gateway.gatewayPaymentId': { $gt: '' } } }
+);
 foodTransactionSchema.index(
     { 'gateway.razorpayPaymentId': 1 },
     { unique: true, partialFilterExpression: { 'gateway.razorpayPaymentId': { $gt: '' } } }

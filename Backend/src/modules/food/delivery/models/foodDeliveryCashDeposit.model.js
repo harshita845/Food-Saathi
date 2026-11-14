@@ -15,7 +15,7 @@ const foodDeliveryCashDepositSchema = new mongoose.Schema({
     },
     paymentMethod: {
         type: String,
-        enum: ['cash', 'razorpay', 'upi', 'bank_transfer'],
+        enum: ['cash', 'cashfree', 'online', 'razorpay', 'upi', 'bank_transfer'],
         default: 'cash'
     },
     status: {
@@ -24,6 +24,11 @@ const foodDeliveryCashDepositSchema = new mongoose.Schema({
         default: 'Pending',
         index: true
     },
+    gatewayOrderId: {
+        type: String,
+        default: ''
+    },
+    gatewayPaymentId: String,
     razorpayOrderId: {
         type: String,
         default: ''
@@ -42,7 +47,11 @@ const foodDeliveryCashDepositSchema = new mongoose.Schema({
 });
 
 foodDeliveryCashDepositSchema.index({ createdAt: -1 });
-// One Razorpay payment can be recorded as exactly one cash deposit
+// One gateway payment can be recorded as exactly one cash deposit
+foodDeliveryCashDepositSchema.index(
+    { gatewayPaymentId: 1 },
+    { unique: true, partialFilterExpression: { gatewayPaymentId: { $gt: '' } } }
+);
 foodDeliveryCashDepositSchema.index(
     { razorpayPaymentId: 1 },
     { unique: true, partialFilterExpression: { razorpayPaymentId: { $gt: '' } } }

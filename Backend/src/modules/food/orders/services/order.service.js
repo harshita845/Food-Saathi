@@ -18,12 +18,11 @@ import { FoodTransaction } from '../models/foodTransaction.model.js';
 import { FoodSupportTicket } from '../../user/models/supportTicket.model.js';
 import { config } from '../../../../config/env.js';
 import {
-    createRazorpayOrder,
-    verifyPaymentSignature,
-    getRazorpayKeyId,
-    isRazorpayConfigured,
-    initiateRazorpayRefund
-} from '../helpers/razorpay.helper.js';
+    createCashfreeOrder,
+    fetchCashfreeOrder,
+    isCashfreeConfigured,
+    initiateCashfreeRefund
+} from '../helpers/cashfree.helper.js';
 import { getIO, rooms } from '../../../../config/socket.js';
 import { addOrderJob } from '../../../../queues/producers/order.producer.js';
 import { fetchPolyline } from '../utils/googleMaps.js';
@@ -356,24 +355,56 @@ export async function createOrder(userId, dto) {
     platformProfit,
   });
 
-  let razorpayPayload = null;
+  let cashfreePayload = null;
+  const isOnlinePayment = paymentMethod === "cashfree" || paymentMethod === "razorpay" || paymentMethod === "online";
 
-  if (paymentMethod === "razorpay" && isRazorpayConfigured()) {
-    const amountPaise = Math.round((normalizedPricing.total ?? 0) * 100);
-    if (amountPaise < 100)
+  if (isOnlinePayment) {
+    if (!isCashfreeConfigured()) {
+      logger.error("[order.service] Cashfree credentials missing during online order placement");
+      throw new ValidationError(
+        "Cashfree Payment Gateway is not configured. Please set CASHFREE_APP_ID and CASHFREE_SECRET_KEY in Backend/.env"
+      );
+    }
+
+    const amountRupees = Number(normalizedPricing.total ?? 0);
+    if (amountRupees < 1)
       throw new ValidationError("Amount too low for online payment");
     try {
-      const rzOrder = await createRazorpayOrder(amountPaise, "INR", order._id.toString());
-      razorpayPayload = {
-        key: getRazorpayKeyId(),
-        orderId: rzOrder.id,
-        amount: rzOrder.amount,
-        currency: rzOrder.currency || "INR",
+      const user = await FoodUser.findById(userId).lean();
+      const cfOrder = await createCashfreeOrder({
+        orderId: String(order._id),
+        amount: amountRupees,
+        customerId: String(userId),
+        customerPhone: dto.customerPhone || user?.phone || recipientPhone,
+        customerName: dto.customerName || user?.name || recipientName,
+        customerEmail: user?.email,
+        note: `Order ${order._id}`
+      });
+      if (!cfOrder?.payment_session_id) {
+        logger.error("[order.service] Cashfree did not return payment_session_id:", cfOrder);
+        throw new ValidationError("Cashfree order creation failed to generate a payment session ID.");
+      }
+      cashfreePayload = {
+        payment_session_id: cfOrder.payment_session_id,
+        paymentSessionId: cfOrder.payment_session_id,
+        order_id: cfOrder.order_id,
+        orderId: cfOrder.order_id,
+        amount: cfOrder.order_amount,
+        currency: cfOrder.order_currency || "INR",
       };
-      // Store Razorpay order id in local payment snapshot (ledger will store it)
-      payment.razorpay = { orderId: rzOrder.id, paymentId: "", signature: "" };
+      // Store gateway order details in local payment snapshot
+      payment.gateway = {
+        provider: 'cashfree',
+        orderId: cfOrder.order_id,
+        paymentSessionId: cfOrder.payment_session_id,
+        paymentId: '',
+        signature: ''
+      };
+      payment.paymentSessionId = cfOrder.payment_session_id;
+      payment.razorpay = { orderId: cfOrder.order_id, paymentId: "", signature: "" };
       payment.status = "created";
     } catch (err) {
+      logger.error("[order.service] Cashfree create order failed:", err);
       throw new ValidationError(err?.message || "Payment gateway error");
     }
   }
@@ -448,7 +479,7 @@ export async function createOrder(userId, dto) {
     // Don't block order placement on socket failures.
   }
   // Online orders count a coupon use only once payment is captured (see afterOnlinePaymentCaptured).
-  if (paymentMethod !== "razorpay") {
+  if (!isOnlinePayment) {
     await recordCouponUsage(order);
   }
 
@@ -474,7 +505,13 @@ export async function createOrder(userId, dto) {
   }
 
   const saved = normalizeOrderForClient(order);
-  return { order: saved, razorpay: razorpayPayload };
+  return {
+    order: saved,
+    cashfree: cashfreePayload,
+    payment_session_id: cashfreePayload?.payment_session_id || null,
+    order_id: cashfreePayload?.order_id || null,
+    razorpay: cashfreePayload,
+  };
 }
 
 
@@ -506,24 +543,37 @@ export async function verifyPayment(userId, dto) {
     userId: new mongoose.Types.ObjectId(userId),
   });
   if (!order) throw new NotFoundError("Order not found");
-  if (order.payment.status === "paid")
+  if (order.payment?.status === "paid")
     return { order: normalizeOrderForClient(order), payment: order.payment };
 
-  const valid = verifyPaymentSignature(
-    dto.razorpayOrderId,
-    dto.razorpayPaymentId,
-    dto.razorpaySignature,
+  const gatewayOrderId = String(
+    dto.gatewayOrderId ||
+    dto.orderId ||
+    dto.razorpayOrderId ||
+    order.payment?.gateway?.orderId ||
+    order.payment?.razorpay?.orderId ||
+    order._id
   );
-  if (!valid) throw new ValidationError("Payment verification failed");
+
+  // Server-side verification: fetch order directly from Cashfree (Never trust client)
+  let cfPaymentId = dto.gatewayPaymentId || dto.razorpayPaymentId || gatewayOrderId;
+  if (isCashfreeConfigured()) {
+    const cfOrder = await fetchCashfreeOrder(gatewayOrderId);
+    const orderStatus = String(cfOrder?.order_status || '').toUpperCase();
+    if (orderStatus !== 'PAID') {
+      throw new ValidationError(`Payment not completed. Status: ${orderStatus || 'PENDING'}`);
+    }
+    cfPaymentId = String(cfOrder?.cf_order_id || cfPaymentId);
+  }
 
   // Finance service captures the payment (transaction + order snapshot, atomically, once).
   const capture = await financeService.capturePayment(order._id, {
-    method: "razorpay",
+    method: "cashfree",
     source: "verify_api",
     actor: { role: "USER", id: userId },
-    gatewayPaymentId: dto.razorpayPaymentId,
-    gatewayOrderId: dto.razorpayOrderId,
-    signature: dto.razorpaySignature,
+    gatewayPaymentId: cfPaymentId,
+    gatewayOrderId: gatewayOrderId,
+    signature: dto.signature || dto.razorpaySignature || "",
   });
   if (!capture.applied && !String(capture.reason || "").startsWith("already_")) {
     throw new ValidationError("Payment could not be applied to this order");
@@ -536,10 +586,16 @@ export async function verifyPayment(userId, dto) {
       byId: userId,
       from: fresh.orderStatus,
       to: "created",
-      note: "Payment verified",
+      note: "Payment verified via Cashfree",
     });
     await fresh.save();
-    await afterOnlinePaymentCaptured(fresh);
+    // Non-blocking: Run restaurant notifications, FCM push, and auto-dispatch in the background
+    // so verifyPayment responds to the user's browser in under 300ms.
+    setImmediate(() => {
+      afterOnlinePaymentCaptured(fresh).catch(err => {
+        logger.error(`[order.service] Background afterOnlinePaymentCaptured error for order ${fresh._id}:`, err);
+      });
+    });
   }
 
   return { order: normalizeOrderForClient(fresh), payment: fresh.payment };
@@ -620,9 +676,9 @@ export async function listOrdersUser(userId, query) {
   const { page, limit, skip } = buildPaginationOptions(query);
   const filter = {
     userId: new mongoose.Types.ObjectId(userId),
-    // Exclude unpaid Razorpay orders (payment failed / user closed gateway)
+    // Exclude unpaid online orders (payment failed / user closed gateway / abandoned)
     $nor: [
-      { "payment.method": "razorpay", "payment.status": "created" }
+      { "payment.method": { $in: ["razorpay", "cashfree", "online"] }, "payment.status": "created" }
     ]
   };
   const [docs, total] = await Promise.all([

@@ -89,9 +89,10 @@ app.use(morgan('dev'));
 app.use(express.json({
     limit: '15mb',
     verify: (req, res, buf) => {
-        // ✅ Store rawBody for signature verification (Razorpay Webhooks)
-        if (req.originalUrl && req.originalUrl.includes('/webhook/razorpay')) {
-            req.rawBody = buf;
+        // Store rawBody for signature verification (Cashfree & payment webhooks)
+        if (req.originalUrl && (req.originalUrl.includes('/webhook') || req.originalUrl.includes('/cashfree'))) {
+            req.rawBody = buf.toString('utf-8');
+            req.rawBodyBuffer = buf;
         }
     }
 }));

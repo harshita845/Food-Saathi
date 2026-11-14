@@ -6,7 +6,7 @@ import { ValidationError, NotFoundError } from '../../../../core/auth/errors.js'
 import { logger } from '../../../../utils/logger.js';
 import { withTransaction, sessionOpts } from '../../../../utils/dbTransaction.js';
 import { toPaise, fromPaise, gtMoney, isPositiveMoney } from '../../../../utils/money.js';
-import { initiateRazorpayRefund, getRazorpayInstance } from '../helpers/razorpay.helper.js';
+import { initiateCashfreeRefund } from '../helpers/cashfree.helper.js';
 import { refundWalletBalance } from '../../user/services/userWallet.service.js';
 
 /**
@@ -49,7 +49,7 @@ const TRANSITIONS = Object.freeze({
 
 export const canTransition = (from, to) => (TRANSITIONS[from] || []).includes(to);
 
-const GATEWAY_METHODS = new Set(['razorpay', 'razorpay_qr']);
+const GATEWAY_METHODS = new Set(['cashfree', 'online', 'cashfree_qr', 'razorpay', 'razorpay_qr']);
 const CAPTURABLE_FROM = ['pending', 'authorized', 'failed'];
 
 const toObjectId = (value) => {
@@ -114,8 +114,8 @@ export async function capturePayment(orderId, opts = {}) {
                 throw new ValidationError(`Payment cannot be captured from status '${tx.status}'`);
             }
 
-            // Gateway sanity checks: right Razorpay order, and enough money
-            const knownGatewayOrderId = String(tx.payment?.razorpay?.orderId || '');
+            // Gateway sanity checks: right gateway order, and enough money
+            const knownGatewayOrderId = String(tx.payment?.gateway?.orderId || tx.payment?.razorpay?.orderId || '');
             if (gatewayOrderId && knownGatewayOrderId && gatewayOrderId !== knownGatewayOrderId) {
                 logger.warn(`Capture rejected: gateway order mismatch for order ${orderId}`);
                 return { applied: false, reason: 'gateway_order_mismatch', transaction: tx.toObject() };
@@ -134,14 +134,22 @@ export async function capturePayment(orderId, opts = {}) {
                 set['payment.method'] = method;
             }
             if (gatewayPaymentId) {
+                set['payment.gateway.paymentId'] = gatewayPaymentId;
+                set['gateway.gatewayPaymentId'] = gatewayPaymentId;
                 set['payment.razorpay.paymentId'] = gatewayPaymentId;
                 set['gateway.razorpayPaymentId'] = gatewayPaymentId;
             }
+            if (gatewayOrderId) {
+                set['payment.gateway.orderId'] = gatewayOrderId;
+                set['gateway.gatewayOrderId'] = gatewayOrderId;
+            }
             if (signature) {
+                set['payment.gateway.signature'] = signature;
+                set['gateway.gatewaySignature'] = signature;
                 set['payment.razorpay.signature'] = signature;
                 set['gateway.razorpaySignature'] = signature;
             }
-            if (method === 'razorpay_qr') set['payment.qr.status'] = 'paid';
+            if (method === 'razorpay_qr' || method === 'cashfree_qr') set['payment.qr.status'] = 'paid';
 
             // Conditional update: only one caller can win the transition to 'captured'
             const updated = await FoodTransaction.findOneAndUpdate(
@@ -162,9 +170,18 @@ export async function capturePayment(orderId, opts = {}) {
 
             const orderSet = { 'payment.status': 'paid' };
             if (method) orderSet['payment.method'] = method;
-            if (gatewayPaymentId) orderSet['payment.razorpay.paymentId'] = gatewayPaymentId;
-            if (signature) orderSet['payment.razorpay.signature'] = signature;
-            if (method === 'razorpay_qr') orderSet['payment.qr.status'] = 'paid';
+            if (gatewayPaymentId) {
+                orderSet['payment.gateway.paymentId'] = gatewayPaymentId;
+                orderSet['payment.razorpay.paymentId'] = gatewayPaymentId;
+            }
+            if (gatewayOrderId) {
+                orderSet['payment.gateway.orderId'] = gatewayOrderId;
+            }
+            if (signature) {
+                orderSet['payment.gateway.signature'] = signature;
+                orderSet['payment.razorpay.signature'] = signature;
+            }
+            if (method === 'razorpay_qr' || method === 'cashfree_qr') orderSet['payment.qr.status'] = 'paid';
             await mirrorToOrder(tx.orderId, orderSet, session);
 
             return { applied: true, transaction: updated.toObject() };
@@ -340,7 +357,7 @@ function resolveRefundDestination(tx, requested) {
     const method = String(tx.payment?.method || tx.paymentMethod || '').toLowerCase();
     if (method === 'wallet') return 'wallet';
     if (String(requested || '').toLowerCase() === 'wallet') return 'wallet';
-    const paymentId = String(tx.payment?.razorpay?.paymentId || tx.gateway?.razorpayPaymentId || '');
+    const paymentId = String(tx.payment?.gateway?.paymentId || tx.payment?.gateway?.orderId || tx.payment?.razorpay?.paymentId || tx.gateway?.gatewayPaymentId || tx.gateway?.razorpayPaymentId || '');
     if (GATEWAY_METHODS.has(method) && paymentId) return 'source';
     if (GATEWAY_METHODS.has(method)) return 'wallet'; // no gateway payment id to refund against
     return 'manual'; // cash: nothing digital to give back
@@ -614,13 +631,13 @@ export async function refundOrder(orderId, { destination, amount, reason = '', a
             return await done('processed', {}, { note: 'Refunded to wallet' });
         }
 
-        const paymentId = String(existing.payment?.razorpay?.paymentId || existing.gateway?.razorpayPaymentId || '');
+        const orderGatewayId = String(existing.payment?.gateway?.orderId || existing.payment?.razorpay?.orderId || existing.gateway?.gatewayOrderId || existing.orderId || '');
         const receipt = key === FULL_KEY ? `refund_${orderRef}` : `rf_${orderRef.slice(-12)}_${crypto.createHash('sha1').update(key).digest('hex').slice(0, 10)}`;
-        const result = await initiateRazorpayRefund(paymentId, amountRupees, { receipt, reason: reason || 'Order cancelled' });
+        const result = await initiateCashfreeRefund({ orderId: orderGatewayId, refundAmount: amountRupees, refundId: receipt, note: reason || 'Order cancelled' });
         if (!result.success) {
             return await done('failed', { error: result.error }, { error: result.error || 'Gateway refund failed' });
         }
-        const processed = String(result.status || 'processed').toLowerCase() === 'processed';
+        const processed = String(result.status || 'processed').toLowerCase() === 'success' || String(result.status || '').toLowerCase() === 'processed';
         return await done(processed ? 'processed' : 'pending', { gatewayRefundId: result.refundId }, {
             gatewayRefundId: result.refundId || '',
             note: processed ? 'Refunded to original payment method' : 'Gateway accepted the refund; waiting for confirmation'
@@ -829,7 +846,7 @@ export async function recoverStuckRefund(orderId, { actor = { role: 'SYSTEM' } }
     }
 
     // Gateway refund: ask Razorpay what exists for this payment
-    const paymentId = String(tx.payment?.razorpay?.paymentId || tx.gateway?.razorpayPaymentId || '');
+    const paymentId = String(tx.payment?.gateway?.paymentId || tx.payment?.gateway?.orderId || tx.payment?.razorpay?.paymentId || tx.gateway?.gatewayPaymentId || tx.gateway?.razorpayPaymentId || '');
     const instance = getRazorpayInstance();
     if (!instance || !paymentId) {
         await finalizeRefund(orderId, entry.key, 'failed', { error: 'Gateway unavailable during recovery', actor });

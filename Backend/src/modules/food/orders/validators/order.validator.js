@@ -88,8 +88,8 @@ export function validateCreateOrderDto(body) {
         note: z.string().optional(),
         restaurantNote: z.string().optional(),
         sendCutlery: z.boolean().optional(),
-        // 'razorpay_qr' means COD-style flow, but payment is collected via Razorpay QR at delivery.
-        paymentMethod: z.enum(['cash', 'razorpay', 'razorpay_qr', 'card', 'wallet']),
+        // Online payment via Cashfree or cash/wallet/card
+        paymentMethod: z.enum(['cash', 'cashfree', 'online', 'card', 'wallet', 'razorpay', 'cashfree_qr', 'razorpay_qr']),
         zoneId: z.string().nullable().optional(),
         scheduledAt: z.string().datetime({ offset: true }).nullable().optional()
     });
@@ -104,9 +104,12 @@ export function validateCreateOrderDto(body) {
 export function validateVerifyPaymentDto(body) {
     const schema = z.object({
         orderId: z.string().min(1, 'Order id required'),
-        razorpayOrderId: z.string().min(1, 'Razorpay order id required'),
-        razorpayPaymentId: z.string().min(1, 'Razorpay payment id required'),
-        razorpaySignature: z.string().min(1, 'Razorpay signature required')
+        gatewayOrderId: z.string().optional(),
+        gatewayPaymentId: z.string().optional(),
+        paymentSessionId: z.string().optional(),
+        razorpayOrderId: z.string().optional(),
+        razorpayPaymentId: z.string().optional(),
+        razorpaySignature: z.string().optional()
     });
     const result = schema.safeParse(body);
     if (!result.success) {

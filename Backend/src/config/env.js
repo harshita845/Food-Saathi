@@ -116,10 +116,10 @@ export const config = {
     // Socket.io
     socketCorsOrigin: process.env.SOCKET_CORS_ORIGIN || '*',
 
-    // Razorpay (payments)
-    razorpayKeyId: process.env.RAZORPAY_KEY_ID,
-    razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET,
-    razorpayWebhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET,
+    // Cashfree (payments)
+    cashfreeAppId: process.env.CASHFREE_APP_ID,
+    cashfreeSecretKey: process.env.CASHFREE_SECRET_KEY,
+    cashfreeEnv: (process.env.CASHFREE_ENV || 'sandbox').toLowerCase().trim(),
 
     // Email (SMTP) – for admin forgot password OTP etc.
     emailHost: process.env.EMAIL_HOST,
@@ -216,9 +216,9 @@ export const updateConfig = () => {
     config.apnsVoipTopicDelivery = process.env.APNS_VOIP_TOPIC_DELIVERY || process.env.APNS_TOPIC_DELIVERY || config.apnsVoipTopicDelivery;
     config.apnsProduction = process.env.APNS_PRODUCTION || config.apnsProduction;
     config.socketCorsOrigin = process.env.SOCKET_CORS_ORIGIN || config.socketCorsOrigin;
-    config.razorpayKeyId = process.env.RAZORPAY_KEY_ID || config.razorpayKeyId;
-    config.razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET || config.razorpayKeySecret;
-    config.razorpayWebhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || config.razorpayWebhookSecret;
+    config.cashfreeAppId = process.env.CASHFREE_APP_ID || config.cashfreeAppId;
+    config.cashfreeSecretKey = process.env.CASHFREE_SECRET_KEY || config.cashfreeSecretKey;
+    config.cashfreeEnv = (process.env.CASHFREE_ENV || config.cashfreeEnv || 'sandbox').toLowerCase().trim();
     config.emailHost = process.env.EMAIL_HOST || config.emailHost;
     config.emailPort = Number(process.env.EMAIL_PORT) || config.emailPort;
     config.emailUser = process.env.EMAIL_USER || config.emailUser;
