@@ -178,6 +178,65 @@ function resolveRiderHeading(dataHeading, prevPos, newLat, newLng, routePath) {
   return head ?? prevPos?.heading ?? 0;
 }
 
+/**
+ * Fetch route points from OSRM or smooth interpolation if Google Directions API is not enabled or denied.
+ */
+async function fetchFallbackDrivingRoute(origin, destination) {
+  if (!origin?.lat || !origin?.lng || !destination?.lat || !destination?.lng) return null;
+
+  // 1. Try public OSRM router
+  try {
+    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?overview=full&geometries=geojson`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(osrmUrl, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data = await res.json();
+      const coords = data.routes?.[0]?.geometry?.coordinates;
+      if (Array.isArray(coords) && coords.length > 1) {
+        const points = coords.map(([lng, lat]) => ({ lat: Number(lat), lng: Number(lng) }));
+        const durationSec = Math.round(Number(data.routes?.[0]?.duration) || 0);
+        const mins = Math.max(1, Math.round(durationSec / 60));
+        return {
+          path: points,
+          durationText: `${mins} min${mins > 1 ? 's' : ''}`,
+        };
+      }
+    }
+  } catch (err) {
+    debugLog('OSRM fallback route failed:', err?.message);
+  }
+
+  // 2. Linear interpolated steps so polyline and rider tracking still render
+  const numSteps = 12;
+  const path = [];
+  for (let i = 0; i <= numSteps; i++) {
+    const fraction = i / numSteps;
+    const lat = origin.lat + (destination.lat - origin.lat) * fraction;
+    const lng = origin.lng + (destination.lng - origin.lng) * fraction;
+    path.push({ lat, lng });
+  }
+
+  let approxDistMeters = 1000;
+  if (window.google?.maps?.geometry?.spherical) {
+    approxDistMeters = window.google.maps.geometry.spherical.computeDistanceBetween(
+      new window.google.maps.LatLng(origin.lat, origin.lng),
+      new window.google.maps.LatLng(destination.lat, destination.lng)
+    );
+  } else {
+    const dLat = (destination.lat - origin.lat) * 111000;
+    const dLng = (destination.lng - origin.lng) * 111000 * Math.cos((origin.lat * Math.PI) / 180);
+    approxDistMeters = Math.sqrt(dLat * dLat + dLng * dLng);
+  }
+  const estMins = Math.max(1, Math.round((approxDistMeters / 1000) * 2.4));
+
+  return {
+    path,
+    durationText: `${estMins} mins`,
+  };
+}
+
 const DeliveryTrackingMapInner = ({
   orderId,
   orderTrackingIds = [],
@@ -211,6 +270,7 @@ const DeliveryTrackingMapInner = ({
   const lastUpdateAtRef = useRef(0);
   const lastSmoothSetRef = useRef(0);
   const baselineRequestedRef = useRef(false);
+  const directionsApiDeniedRef = useRef(false);
   const lastEncodedPolylineRef = useRef('');
   const lastLiveRouteAtRef = useRef(0);
   const liveRouteOriginRef = useRef(null);
@@ -473,12 +533,25 @@ const DeliveryTrackingMapInner = ({
         setCurrentEta(durationText);
         if (onEtaUpdate) onEtaUpdate(durationText);
       }
-    } else if (status !== 'OK') {
-      console.error('[DeliveryTrackingMap] Baseline DirectionsService failed:', status);
+    } else {
+      debugLog('[DeliveryTrackingMap] Baseline DirectionsService status:', status, '— using fallback road routing');
+      if (status === 'REQUEST_DENIED' || status === 'OVER_QUERY_LIMIT' || status === 'UNKNOWN_ERROR') {
+        directionsApiDeniedRef.current = true;
+      }
+      fetchFallbackDrivingRoute(restaurantCoords, customerCoords).then((fallback) => {
+        if (fallback?.path?.length > 1) {
+          setFullRoutePath(fallback.path);
+          if (fallback.durationText && !currentEta) {
+            setCurrentEta(fallback.durationText);
+            onEtaUpdate?.(fallback.durationText);
+          }
+        }
+      });
     }
-  }, [currentEta, onEtaUpdate]);
+  }, [currentEta, onEtaUpdate, restaurantCoords, customerCoords]);
 
   const baselineDirectionsOptions = useMemo(() => {
+    if (directionsApiDeniedRef.current) return null;
     if (!restaurantCoords || !customerCoords) return null;
     if (fullRoutePath?.length) return null;
     return {
@@ -495,6 +568,7 @@ const DeliveryTrackingMapInner = ({
   ]);
 
   const liveRiderDirectionsOptions = useMemo(() => {
+    if (directionsApiDeniedRef.current) return null;
     const origin = liveRouteOriginRef.current;
     if (!origin || !routeDestination || !isRiderOffRoute) return null;
     return {
@@ -510,19 +584,55 @@ const DeliveryTrackingMapInner = ({
   ]);
 
   const liveDirectionsCallback = useCallback((result, status) => {
-    if (status !== 'OK' || !result) return;
-    const rawPath = result.routes?.[0]?.overview_path || [];
-    const plain = rawPath.map(normPt).filter(Boolean);
-    if (plain.length > 1) {
-      setFullRoutePath(plain);
-      debugLog(`✅ Live off-route path: ${plain.length} points`);
+    if (status === 'OK' && result) {
+      const rawPath = result.routes?.[0]?.overview_path || [];
+      const plain = rawPath.map(normPt).filter(Boolean);
+      if (plain.length > 1) {
+        setFullRoutePath(plain);
+        debugLog(`✅ Live off-route path: ${plain.length} points`);
+      }
+      const durationText = result?.routes?.[0]?.legs?.[0]?.duration?.text;
+      if (durationText) {
+        setCurrentEta(durationText);
+        onEtaUpdate?.(durationText);
+      }
+    } else {
+      debugLog('[DeliveryTrackingMap] Live DirectionsService status:', status, '— using fallback road routing');
+      if (status === 'REQUEST_DENIED' || status === 'OVER_QUERY_LIMIT') {
+        directionsApiDeniedRef.current = true;
+      }
+      const origin = liveRouteOriginRef.current;
+      if (origin && routeDestination) {
+        fetchFallbackDrivingRoute(origin, routeDestination).then((fallback) => {
+          if (fallback?.path?.length > 1) {
+            setFullRoutePath(fallback.path);
+            if (fallback.durationText) {
+              setCurrentEta(fallback.durationText);
+              onEtaUpdate?.(fallback.durationText);
+            }
+          }
+        });
+      }
     }
-    const durationText = result?.routes?.[0]?.legs?.[0]?.duration?.text;
-    if (durationText) {
-      setCurrentEta(durationText);
-      onEtaUpdate?.(durationText);
+  }, [onEtaUpdate, routeDestination]);
+
+  // If directions API was denied or not activated on this project key, fetch fallback road route
+  useEffect(() => {
+    if (!restaurantCoords || !customerCoords) return;
+    if (fullRoutePath?.length) return;
+
+    if (directionsApiDeniedRef.current) {
+      fetchFallbackDrivingRoute(restaurantCoords, customerCoords).then((fallback) => {
+        if (fallback?.path?.length > 1) {
+          setFullRoutePath(fallback.path);
+          if (fallback.durationText && !currentEta) {
+            setCurrentEta(fallback.durationText);
+            onEtaUpdate?.(fallback.durationText);
+          }
+        }
+      });
     }
-  }, [onEtaUpdate]);
+  }, [restaurantCoords, customerCoords, fullRoutePath, currentEta, onEtaUpdate]);
 
   /**
    * SPLIT POLYLINE LOGIC:
