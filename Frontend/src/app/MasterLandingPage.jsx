@@ -15,6 +15,7 @@ import {
   ArrowRight,
   Bike,
   Store,
+  X,
   Instagram,
   Twitter,
   Facebook,
@@ -23,6 +24,11 @@ import {
 } from "lucide-react"
 import FoodSaathiLogo, { SaathiWordmark, logoMark, BRAND_TAGLINE } from "@/shared/components/brand/FoodSaathiLogo"
 import { FloatingFoods, fadeUp, stagger, spring } from "@/shared/components/brand/Motion"
+
+const USER_APP_PLAYSTORE_URL = "https://play.google.com/store/apps/details?id=com.foodsaathi.user&hl=en_IN"
+const RESTAURANT_APP_PLAYSTORE_URL = "https://play.google.com/store/apps/details?id=com.foodsaathi.restaurent&hl=en_IN"
+const DELIVERY_APP_PLAYSTORE_URL = "https://play.google.com/store/apps/details?id=com.foodsaathi.delivery&hl=en_IN"
+const ALL_APPS_PLAYSTORE_URL = "https://play.google.com/store/search?q=Food+Saathi&c=apps"
 
 const SLIDES = [
   {
@@ -96,6 +102,7 @@ export default function MasterLandingPage() {
   const arcRotate = useTransform(scrollYProgress, [0, 0.4], [0, 12])
   const [currentSlide, setCurrentSlide] = useState(0)
   const [landingSettings, setLandingSettings] = useState(null)
+  const [showWorkWithUsModal, setShowWorkWithUsModal] = useState(false)
 
   const activeSlides = landingSettings?.heroSlides?.length > 0 ? landingSettings.heroSlides : SLIDES;
 
@@ -107,6 +114,9 @@ export default function MasterLandingPage() {
   }, [activeSlides.length])
 
   useEffect(() => {
+    try {
+      sessionStorage.setItem('fromLanding', 'true')
+    } catch {}
     api.get('/food/landing/settings/public').then(res => {
       if (res.data?.success) {
         setLandingSettings(res.data.data)
@@ -128,27 +138,10 @@ export default function MasterLandingPage() {
         <div className="mx-auto mt-3 flex max-w-6xl items-center justify-between rounded-full fs-glass border border-white/60 px-3 py-2 shadow-[0_10px_30px_-18px_rgba(58,28,16,0.5)] md:px-5 w-[calc(100%-1.5rem)]">
           <FoodSaathiLogo variant="lockup" size="text-xl md:text-2xl" imgClassName="h-8 md:h-10" animated />
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => navigate("/admin/food/restaurant-delay-alerts")}
-              className="hidden sm:inline-flex items-center gap-2 rounded-full border border-[#F1E2D0] bg-white px-4 py-2 text-sm font-semibold text-[#3A1C10] hover:border-[#F2541B]/40"
-              aria-label="Open admin restaurant delay alerts"
-            >
-              <ShieldCheck className="h-4 w-4 text-[#F2541B]" />
-              Admin Delay Alerts
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/admin/food/restaurant-delay-alerts")}
-              className="sm:hidden inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#F1E2D0] bg-white"
-              aria-label="Open admin restaurant delay alerts"
-            >
-              <ShieldCheck className="h-5 w-5 text-[#F2541B]" />
-            </button>
             <motion.button
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/food/user")}
+              onClick={() => window.open(USER_APP_PLAYSTORE_URL, "_blank", "noopener,noreferrer")}
               className="inline-flex items-center gap-1.5 rounded-full fs-gradient px-4 py-2.5 text-sm font-bold text-white fs-shadow"
             >
               Order now <ArrowRight className="h-4 w-4" />
@@ -194,7 +187,7 @@ export default function MasterLandingPage() {
                 whileHover={{ y: -3 }}
                 whileTap={{ scale: 0.96 }}
                 transition={spring}
-                onClick={() => navigate("/food/user")}
+                onClick={() => window.open(USER_APP_PLAYSTORE_URL, "_blank", "noopener,noreferrer")}
                 className="fs-shine inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl fs-gradient px-5 py-3.5 text-[15px] font-bold text-white fs-shadow"
               >
                 <UtensilsCrossed className="h-5 w-5" /> Order food
@@ -203,7 +196,7 @@ export default function MasterLandingPage() {
                 whileHover={{ y: -3 }}
                 whileTap={{ scale: 0.96 }}
                 transition={spring}
-                onClick={() => navigate("/food/restaurant")}
+                onClick={() => window.open(RESTAURANT_APP_PLAYSTORE_URL, "_blank", "noopener,noreferrer")}
                 className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl border-2 border-[#3A1C10]/10 bg-white px-4 py-3.5 text-[15px] font-bold text-[#3A1C10] hover:border-[#F2541B]/40"
               >
                 <Store className="h-5 w-5 text-[#F2541B]" /> Partner with us
@@ -212,7 +205,7 @@ export default function MasterLandingPage() {
                 whileHover={{ y: -3 }}
                 whileTap={{ scale: 0.96 }}
                 transition={spring}
-                onClick={() => navigate("/food/delivery")}
+                onClick={() => window.open(DELIVERY_APP_PLAYSTORE_URL, "_blank", "noopener,noreferrer")}
                 className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl border-2 border-[#3A1C10]/10 bg-white px-4 py-3.5 text-[15px] font-bold text-[#3A1C10] hover:border-[#FFA51F]/60"
               >
                 <Bike className="h-5 w-5 text-[#FFA51F]" /> Ride with us
@@ -323,7 +316,7 @@ export default function MasterLandingPage() {
               key={i}
               whileHover={{ y: -4, rotate: -2 }}
               whileTap={{ scale: 0.94 }}
-              onClick={() => navigate("/food/user")}
+              onClick={() => window.open(USER_APP_PLAYSTORE_URL, "_blank", "noopener,noreferrer")}
               className="flex items-center gap-2 rounded-full border border-[#F1E2D0] bg-[#FFF9F0] px-5 py-3 text-base font-bold text-[#3A1C10] hover:border-[#F2541B]/40"
             >
               <span className="text-2xl">{c.emoji}</span> {c.name}
@@ -434,7 +427,7 @@ export default function MasterLandingPage() {
                   src="https://b.zmtcdn.com/data/webuikit/23e930757c3df49840c482a8638bf5c31556001144.png"
                   alt="Google Play"
                   className="h-12 cursor-pointer object-contain"
-                  onClick={() => window.open(landingSettings?.appLinks?.playStore || 'https://play.google.com/store/apps/details?id=com.foodsaathi.user', '_blank')}
+                  onClick={() => window.open(landingSettings?.appLinks?.playStore || USER_APP_PLAYSTORE_URL, '_blank', 'noopener,noreferrer')}
                 />
                 <motion.img
                   whileHover={{ y: -3 }}
@@ -483,14 +476,70 @@ export default function MasterLandingPage() {
                 <h4 className="mb-5 text-sm font-bold uppercase tracking-wider text-[#FFC93C]">About Food Saathi</h4>
                 <ul className="space-y-3 font-medium text-white/60">
                   {(landingSettings?.footerLinks?.about || [
-                    { label: 'Who We Are', url: '#' },
+                    { label: 'Who We Are', url: '/food/profile/about' },
                     { label: 'Blog', url: '#' },
                     { label: 'Work With Us', url: '#' },
                     { label: 'Investor Relations', url: '#' },
-                    { label: 'Report Fraud', url: '#' }
-                  ]).map((link, i) => (
-                    <li key={i}><a href={link.url} className="transition-colors hover:text-white">{link.label}</a></li>
-                  ))}
+                    { label: 'Report Fraud', url: '/food/profile/support' }
+                  ]).map((link, i) => {
+                    const labelLower = (link.label || '').toLowerCase()
+                    if (labelLower.includes('work')) {
+                      return (
+                        <li key={i} className="space-y-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setShowWorkWithUsModal(true)}
+                            className="transition-colors hover:text-white text-left font-medium cursor-pointer"
+                          >
+                            {link.label}
+                          </button>
+                          <div className="pl-2 text-xs flex flex-col gap-1 text-white/50">
+                            <a
+                              href={RESTAURANT_APP_PLAYSTORE_URL}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:text-[#FFC93C] transition-colors flex items-center gap-1"
+                            >
+                              <Store className="h-3 w-3 text-[#FFC93C]" /> Restaurant App ↗
+                            </a>
+                            <a
+                              href={DELIVERY_APP_PLAYSTORE_URL}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:text-[#FFC93C] transition-colors flex items-center gap-1"
+                            >
+                              <Bike className="h-3 w-3 text-[#FFC93C]" /> Delivery App ↗
+                            </a>
+                          </div>
+                        </li>
+                      )
+                    }
+
+                    let href = link.url
+                    if (labelLower.includes('who we are') || labelLower.includes('about')) {
+                      href = '/food/profile/about'
+                    } else if (labelLower.includes('report') || labelLower.includes('fraud')) {
+                      href = '/food/profile/support'
+                    }
+
+                    const isInternal = href && href.startsWith('/')
+                    return (
+                      <li key={i}>
+                        <a
+                          href={isInternal ? `${href}?from=landing` : href}
+                          onClick={isInternal ? (e) => {
+                            e.preventDefault()
+                            navigate(href, { state: { from: '/' } })
+                          } : undefined}
+                          target={!isInternal && href && href.startsWith('http') ? "_blank" : undefined}
+                          rel={!isInternal && href && href.startsWith('http') ? "noopener noreferrer" : undefined}
+                          className="transition-colors hover:text-white"
+                        >
+                          {link.label}
+                        </a>
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
 
@@ -498,11 +547,36 @@ export default function MasterLandingPage() {
                 <h4 className="mb-5 text-sm font-bold uppercase tracking-wider text-[#FFC93C]">For Restaurants</h4>
                 <ul className="space-y-3 font-medium text-white/60">
                   {(landingSettings?.footerLinks?.forRestaurants || [
-                    { label: 'Partner With Us', url: '/food/restaurant' },
-                    { label: 'Apps For You', url: '#' }
-                  ]).map((link, i) => (
-                    <li key={i}><a href={link.url} className="transition-colors hover:text-white">{link.label}</a></li>
-                  ))}
+                    { label: 'Partner With Us', url: RESTAURANT_APP_PLAYSTORE_URL },
+                    { label: 'Apps For You', url: ALL_APPS_PLAYSTORE_URL }
+                  ]).map((link, i) => {
+                    const labelLower = (link.label || '').toLowerCase()
+                    let href = link.url
+                    let isExternal = false
+
+                    if (labelLower.includes('partner')) {
+                      href = RESTAURANT_APP_PLAYSTORE_URL
+                      isExternal = true
+                    } else if (labelLower.includes('apps')) {
+                      href = ALL_APPS_PLAYSTORE_URL
+                      isExternal = true
+                    } else if (href && (href.startsWith('http://') || href.startsWith('https://'))) {
+                      isExternal = true
+                    }
+
+                    return (
+                      <li key={i}>
+                        <a
+                          href={href}
+                          target={isExternal ? "_blank" : undefined}
+                          rel={isExternal ? "noopener noreferrer" : undefined}
+                          className="transition-colors hover:text-white"
+                        >
+                          {link.label}
+                        </a>
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
 
@@ -510,13 +584,40 @@ export default function MasterLandingPage() {
                 <h4 className="mb-5 text-sm font-bold uppercase tracking-wider text-[#FFC93C]">Learn More</h4>
                 <ul className="space-y-3 font-medium text-white/60">
                   {(landingSettings?.footerLinks?.learnMore || [
-                    { label: 'Privacy', url: '#' },
-                    { label: 'Security', url: '#' },
-                    { label: 'Terms', url: '#' },
+                    { label: 'Privacy', url: '/food/profile/privacy' },
+                    { label: 'Security', url: '/food/profile/privacy' },
+                    { label: 'Terms', url: '/food/profile/terms' },
                     { label: 'Sitemap', url: '#' }
-                  ]).map((link, i) => (
-                    <li key={i}><a href={link.url} className="transition-colors hover:text-white">{link.label}</a></li>
-                  ))}
+                  ]).map((link, i) => {
+                    const labelLower = (link.label || '').toLowerCase()
+                    let href = link.url
+
+                    if (labelLower.includes('privacy')) {
+                      href = '/food/profile/privacy'
+                    } else if (labelLower.includes('security')) {
+                      href = '/food/profile/privacy'
+                    } else if (labelLower.includes('term')) {
+                      href = '/food/profile/terms'
+                    }
+
+                    const isInternal = href && href.startsWith('/')
+                    return (
+                      <li key={i}>
+                        <a
+                          href={isInternal ? `${href}?from=landing` : href}
+                          onClick={isInternal ? (e) => {
+                            e.preventDefault()
+                            navigate(href, { state: { from: '/' } })
+                          } : undefined}
+                          target={!isInternal && href && href.startsWith('http') ? "_blank" : undefined}
+                          rel={!isInternal && href && href.startsWith('http') ? "noopener noreferrer" : undefined}
+                          className="transition-colors hover:text-white"
+                        >
+                          {link.label}
+                        </a>
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             </div>
@@ -566,6 +667,99 @@ export default function MasterLandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* Work With Us Modal */}
+      <AnimatePresence>
+        {showWorkWithUsModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowWorkWithUsModal(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl z-10 text-[#3A1C10]"
+            >
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+                <div>
+                  <h3 className="text-xl font-bold text-[#3A1C10]">Work With Food Saathi</h3>
+                  <p className="text-xs text-gray-500 mt-0.5">Select how you would like to partner with us</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowWorkWithUsModal(false)}
+                  className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="mt-5 space-y-3.5">
+                {/* Restaurant Partner */}
+                <a
+                  href={RESTAURANT_APP_PLAYSTORE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-start gap-4 rounded-2xl border-2 border-gray-100 p-4 transition-all hover:border-[#F2541B] hover:bg-orange-50/40"
+                >
+                  <div className="rounded-xl bg-gradient-to-br from-[#F2541B] to-[#FF7A2F] p-3 text-white shadow-md">
+                    <Store className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-[#3A1C10] group-hover:text-[#F2541B]">
+                        Partner With Us
+                      </h4>
+                      <ArrowRight className="h-4 w-4 text-gray-400 transition-transform group-hover:translate-x-1 group-hover:text-[#F2541B]" />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Register your restaurant or kitchen. Open the Restaurant Partner App on Google Play.
+                    </p>
+                  </div>
+                </a>
+
+                {/* Delivery Partner */}
+                <a
+                  href={DELIVERY_APP_PLAYSTORE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-start gap-4 rounded-2xl border-2 border-gray-100 p-4 transition-all hover:border-[#FFC93C] hover:bg-amber-50/40"
+                >
+                  <div className="rounded-xl bg-gradient-to-br from-[#FFC93C] to-[#F2A900] p-3 text-[#3A1C10] shadow-md">
+                    <Bike className="h-6 w-6 text-[#3A1C10]" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-[#3A1C10] group-hover:text-[#D97706]">
+                        Ride With Us
+                      </h4>
+                      <ArrowRight className="h-4 w-4 text-gray-400 transition-transform group-hover:translate-x-1 group-hover:text-[#D97706]" />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Deliver food with flexible timings and instant earnings. Open Delivery Partner App on Google Play.
+                    </p>
+                  </div>
+                </a>
+              </div>
+
+              <div className="mt-5 text-center">
+                <button
+                  type="button"
+                  onClick={() => setShowWorkWithUsModal(false)}
+                  className="text-xs font-semibold text-gray-400 hover:text-gray-600"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

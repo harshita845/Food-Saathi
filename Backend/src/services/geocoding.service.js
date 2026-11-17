@@ -22,14 +22,62 @@ function parseGoogleComponents(components = []) {
     };
 }
 
+function fallbackCoords(lat, lng) {
+    return {
+        latitude: lat,
+        longitude: lng,
+        area: '',
+        city: '',
+        state: '',
+        country: 'India',
+        postalCode: '',
+        formattedAddress: `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+        address: `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+        source: 'coords_only',
+    };
+}
+
+async function reverseGeocodeWithBigDataCloud(lat, lng) {
+    const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    try {
+        const res = await fetch(url, { signal: controller.signal });
+        if (!res.ok) return null;
+        const bdc = await res.json();
+        const area = bdc.locality || bdc.principalSubdivision || '';
+        const city = bdc.city || bdc.locality || '';
+        const state = bdc.principalSubdivision || '';
+        const country = bdc.countryName || 'India';
+        const postalCode = bdc.postcode || '';
+        const formattedAddress = [area, city, state, country].filter(Boolean).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        return {
+            latitude: lat,
+            longitude: lng,
+            area,
+            city,
+            state,
+            country,
+            postalCode,
+            formattedAddress,
+            address: area || city || formattedAddress,
+            source: 'bigdatacloud',
+        };
+    } catch {
+        return null;
+    } finally {
+        clearTimeout(timeout);
+    }
+}
+
 export async function reverseGeocode(latitude, longitude) {
     const lat = Number(latitude);
     const lng = Number(longitude);
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-        throw new Error('Valid latitude and longitude are required');
+        return fallbackCoords(0, 0);
     }
     if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-        throw new Error('Coordinates out of range');
+        return fallbackCoords(lat, lng);
     }
 
     const key = coordCacheKey(lat, lng);
@@ -46,54 +94,59 @@ export async function reverseGeocode(latitude, longitude) {
     }
 
     const apiKey = config.googleMapsApiKey;
-    if (!apiKey) {
-        return {
-            latitude: lat,
-            longitude: lng,
-            area: '',
-            city: '',
-            state: '',
-            country: 'India',
-            postalCode: '',
-            formattedAddress: `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
-            address: `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
-            source: 'coords_only',
-        };
+    let result = null;
+
+    if (apiKey) {
+        try {
+            const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}&language=en`;
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 5000);
+
+            try {
+                const res = await fetch(url, { signal: controller.signal });
+                const data = await res.json();
+                if (data.status === 'OK' && Array.isArray(data.results) && data.results.length > 0) {
+                    const top = data.results[0];
+                    const parts = parseGoogleComponents(top.address_components || []);
+                    const formattedAddress = top.formatted_address || '';
+                    const displayAddress = parts.area || parts.city || formattedAddress.split(',')[0]?.trim() || '';
+
+                    result = {
+                        latitude: lat,
+                        longitude: lng,
+                        ...parts,
+                        formattedAddress,
+                        address: displayAddress,
+                        source: 'google',
+                    };
+                } else {
+                    logger.warn(`Google reverse geocode not OK (${data.status}): ${data.error_message || 'No error message'}`);
+                }
+            } finally {
+                clearTimeout(timeout);
+            }
+        } catch (err) {
+            logger.warn(`Google reverse geocode request failed: ${err.message}`);
+        }
     }
 
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}&language=en`;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6000);
-
-    let data;
-    try {
-        const res = await fetch(url, { signal: controller.signal });
-        data = await res.json();
-    } finally {
-        clearTimeout(timeout);
+    // Secondary fallback: BigDataCloud
+    if (!result) {
+        try {
+            result = await reverseGeocodeWithBigDataCloud(lat, lng);
+        } catch (err) {
+            logger.warn(`BigDataCloud reverse geocode fallback failed: ${err.message}`);
+        }
     }
 
-    if (data.status !== 'OK' || !data.results?.length) {
-        throw new Error(data.error_message || data.status || 'Reverse geocoding failed');
+    // Tertiary fallback: coords only
+    if (!result) {
+        result = fallbackCoords(lat, lng);
     }
-
-    const top = data.results[0];
-    const parts = parseGoogleComponents(top.address_components || []);
-    const formattedAddress = top.formatted_address || '';
-    const displayAddress = parts.area || parts.city || formattedAddress.split(',')[0]?.trim() || '';
-
-    const result = {
-        latitude: lat,
-        longitude: lng,
-        ...parts,
-        formattedAddress,
-        address: displayAddress,
-        source: 'google',
-    };
 
     try {
         const redis = getRedisClient();
-        if (redis && cacheKey) {
+        if (redis && cacheKey && result.source !== 'coords_only') {
             await redis.set(cacheKey, JSON.stringify(result), { EX: GEOCODE_CACHE_TTL_SEC });
         }
     } catch (err) {

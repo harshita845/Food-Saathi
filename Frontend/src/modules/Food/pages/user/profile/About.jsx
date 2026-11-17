@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { ArrowLeft, ArrowRight, Heart, Users, Shield, Clock, Star, Award, FileText, Lock, Loader2, Receipt, Truck, XCircle } from "lucide-react"
 import { motion } from "framer-motion"
@@ -26,6 +26,8 @@ const iconMap = {
 }
 
 export default function About() {
+  const navigate = useNavigate()
+  const location = useLocation()
   const companyName = useCompanyName()
   const [loading, setLoading] = useState(true)
   const [logoUrl, setLogoUrl] = useState(null)
@@ -37,6 +39,23 @@ export default function About() {
     features: [],
     stats: []
   })
+
+  const handleBack = () => {
+    const searchParams = new URLSearchParams(location.search)
+    if (
+      location.state?.from === '/' ||
+      searchParams.get('from') === 'landing' ||
+      sessionStorage.getItem('fromLanding') === 'true'
+    ) {
+      navigate('/')
+      return
+    }
+    if (window.history.length > 2) {
+      navigate(-1)
+    } else {
+      navigate('/')
+    }
+  }
 
   useEffect(() => {
     fetchAboutData()
@@ -97,11 +116,14 @@ export default function About() {
       <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8">
         {/* Header */}
         <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
-          <Link to="/user/profile">
-            <Button variant="ghost" size="icon" className="h-9 w-9 md:h-10 md:w-10 p-0 hover:bg-gray-100 dark:hover:bg-gray-800">
-              <ArrowLeft className="h-5 w-5 md:h-6 md:w-6 text-gray-900 dark:text-white" />
-            </Button>
-          </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBack}
+            className="h-9 w-9 md:h-10 md:w-10 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <ArrowLeft className="h-5 w-5 md:h-6 md:w-6 text-gray-900 dark:text-white" />
+          </Button>
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">About</h1>
         </div>
 
@@ -228,7 +250,8 @@ export default function About() {
               </h3>
               <div className="space-y-3">
                 <Link
-                  to="/user/profile/terms"
+                  to="/food/profile/terms?from=landing"
+                  state={{ from: '/' }}
                   className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
                 >
                   <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
@@ -246,7 +269,8 @@ export default function About() {
                 </Link>
 
                 <Link
-                  to="/user/profile/privacy"
+                  to="/food/profile/privacy?from=landing"
+                  state={{ from: '/' }}
                   className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
                 >
                   <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
@@ -264,7 +288,8 @@ export default function About() {
                 </Link>
 
                 <Link
-                  to="/user/profile/refund"
+                  to="/food/profile/refund?from=landing"
+                  state={{ from: '/' }}
                   className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
                 >
                   <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
@@ -282,7 +307,8 @@ export default function About() {
                 </Link>
 
                 <Link
-                  to="/user/profile/shipping"
+                  to="/food/profile/shipping?from=landing"
+                  state={{ from: '/' }}
                   className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
                 >
                   <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
@@ -300,7 +326,8 @@ export default function About() {
                 </Link>
 
                 <Link
-                  to="/user/profile/cancellation"
+                  to="/food/profile/cancellation?from=landing"
+                  state={{ from: '/' }}
                   className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
                 >
                   <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">

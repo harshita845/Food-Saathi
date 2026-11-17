@@ -289,6 +289,9 @@ export default function UserRouter() {
           <Route path="profile/refund" element={<Refund />} />
           <Route path="profile/shipping" element={<Shipping />} />
           <Route path="profile/cancellation" element={<Cancellation />} />
+          <Route path="terms" element={<Terms />} />
+          <Route path="privacy" element={<Privacy />} />
+          <Route path="security" element={<Privacy />} />
 
           {/* Auth - User login is centralized at /user/auth/login */}
           <Route path="login" element={<Navigate to="/user/auth/login" replace />} />

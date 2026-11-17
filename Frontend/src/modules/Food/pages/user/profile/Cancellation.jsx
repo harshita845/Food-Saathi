@@ -37,6 +37,15 @@ export default function Cancellation() {
   }
 
   const handleBack = () => {
+    const searchParams = new URLSearchParams(location.search)
+    if (
+      location.state?.from === '/' ||
+      searchParams.get('from') === 'landing' ||
+      sessionStorage.getItem('fromLanding') === 'true'
+    ) {
+      navigate('/')
+      return
+    }
     if (location.state?.returnTo) {
       navigate(location.state.returnTo, {
         state: location.state?.originalState,
@@ -45,7 +54,7 @@ export default function Cancellation() {
     } else if (window.history.length > 2) {
       goBack()
     } else {
-      navigate('/food/user')
+      navigate('/')
     }
   }
 

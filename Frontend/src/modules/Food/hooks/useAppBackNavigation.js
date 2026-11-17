@@ -5,6 +5,7 @@ const toFoodPath = (value) => {
   if (typeof value !== "string") return null
   const trimmed = value.trim()
   if (!trimmed) return null
+  if (trimmed === "/") return "/"
   if (trimmed.startsWith("/food/")) return trimmed
   if (trimmed === "/food") return trimmed
   if (trimmed.startsWith("/user/")) return `/food${trimmed}`
@@ -23,6 +24,14 @@ const resolveBackPath = ({ pathname, search, state }) => {
   const normalizedPath = getNormalizedUserPath(pathname)
   const explicitBackPath = toFoodPath(state?.backTo) || toFoodPath(state?.from) || toFoodPath(state?.returnTo)
   const searchParams = new URLSearchParams(search || "")
+
+  if (
+    searchParams.get("from") === "landing" ||
+    explicitBackPath === "/" ||
+    (typeof sessionStorage !== "undefined" && sessionStorage.getItem("fromLanding") === "true")
+  ) {
+    return "/"
+  }
 
   if (
     normalizedPath === "/user/profile/payments/new" ||

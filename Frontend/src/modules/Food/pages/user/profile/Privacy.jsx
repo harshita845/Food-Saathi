@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { ArrowLeft, Lock, Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
@@ -10,6 +10,7 @@ import { API_ENDPOINTS } from "@food/api/config"
 
 export default function Privacy() {
   const navigate = useNavigate()
+  const location = useLocation()
   const goBack = useAppBackNavigation()
   const [loading, setLoading] = useState(true)
   const [privacyData, setPrivacyData] = useState({
@@ -36,10 +37,19 @@ export default function Privacy() {
   }
 
   const handleBack = () => {
+    const searchParams = new URLSearchParams(location.search)
+    if (
+      location.state?.from === '/' ||
+      searchParams.get('from') === 'landing' ||
+      sessionStorage.getItem('fromLanding') === 'true'
+    ) {
+      navigate('/')
+      return
+    }
     if (window.history.length > 2) {
-      navigate(-1)
+      goBack()
     } else {
-      navigate('/food/user')
+      navigate('/')
     }
   }
 
