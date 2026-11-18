@@ -1,7 +1,20 @@
 import { sendResponse } from '../../../../utils/response.js';
-import { reverseGeocode } from '../../../../services/geocoding.service.js';
+import { reverseGeocode, searchLocations } from '../../../../services/geocoding.service.js';
 import { computeTrackingLegs } from '../../../../services/trackingDistance.service.js';
 import { logger } from '../../../../utils/logger.js';
+
+export const searchLocationPublicController = async (req, res, next) => {
+    try {
+        const query = String(req.query.q || '').trim();
+        const refLat = Number(req.query.lat) || 22.7196;
+        const refLng = Number(req.query.lng) || 75.8577;
+        const results = await searchLocations(query, refLat, refLng);
+        return sendResponse(res, 200, 'Locations found', { results });
+    } catch (error) {
+        logger.error(`searchLocationPublicController unexpected error: ${error?.message || error}`);
+        return sendResponse(res, 200, 'Locations found', { results: [] });
+    }
+};
 
 export const reverseGeocodePublicController = async (req, res, next) => {
     try {

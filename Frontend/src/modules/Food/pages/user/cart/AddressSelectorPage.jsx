@@ -89,6 +89,7 @@ export default function AddressSelectorPage() {
   const [baseMapHeight, setBaseMapHeight] = useState(320)
   const formBodyRef = useRef(null)
   const manualFieldRefs = useRef({})
+  const isProgrammaticMoveRef = useRef(false)
 
   const ENABLE_LOCATION_REVERSE_GEOCODE = import.meta.env.VITE_ENABLE_LOCATION_REVERSE_GEOCODE !== "false"
   const ENABLE_NOMINATIM_SEARCH = import.meta.env.VITE_ENABLE_NOMINATIM_SEARCH !== "false"
@@ -124,7 +125,11 @@ export default function AddressSelectorPage() {
   }
 
   const handleBack = () => {
-    goBack()
+    if (window.history.length > 2) {
+      navigate(-1)
+    } else {
+      goBack()
+    }
   }
 
   const addressAutocompleteSuggestions = useMemo(() => {
@@ -161,11 +166,11 @@ export default function AddressSelectorPage() {
     })
   }, [])
 
-  // Nominatim search
+  // Location search & autocomplete
   useEffect(() => {
     if (!showAddressForm) return
     const q = String(addressAutocompleteValue || "").trim()
-    if (!ENABLE_NOMINATIM_SEARCH || q.length < 3) {
+    if (q.length < 2) {
       setKeywordAddressSuggestions([])
       setIsKeywordSearching(false)
       return
@@ -176,30 +181,84 @@ export default function AddressSelectorPage() {
         setIsKeywordSearching(true)
         const refLat = location?.latitude ?? DEFAULT_MAP_LAT
         const refLng = location?.longitude ?? DEFAULT_MAP_LNG
-        const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=10&q=${encodeURIComponent(q)}`
-        const res = await fetch(url, { headers: { Accept: "application/json" } })
-        const json = await res.json()
-        const mapped = (Array.isArray(json) ? json : []).map(r => ({
-          id: r.place_id || r.osm_id,
-          display: r.display_name || "",
-          lat: Number(r.lat),
-          lng: Number(r.lon),
-          address: r.address || {},
-        }))
-        const withDistance = mapped
-          .filter(x => Number.isFinite(x.lat) && Number.isFinite(x.lng))
-          .map(x => ({ ...x, distanceMeters: calculateDistance(refLat, refLng, x.lat, x.lng) }))
-          .sort((a, b) => (a.distanceMeters ?? Infinity) - (b.distanceMeters ?? Infinity))
-          .slice(0, 4)
-        setKeywordAddressSuggestions(withDistance)
+
+        // 1. Call Backend search API (which handles curated landmarks, Google Geocoding, and Nominatim backend proxy)
+        const backendRes = await locationAPI.searchLocations(q, refLat, refLng)
+        const backendResults = backendRes?.data?.data?.results || []
+
+        if (Array.isArray(backendResults) && backendResults.length > 0) {
+          const mapped = backendResults.map((r, idx) => ({
+            id: r.id || `loc_${idx}`,
+            display: r.display,
+            lat: Number(r.lat),
+            lng: Number(r.lng),
+            address: r.address || {},
+            distanceMeters: calculateDistance(refLat, refLng, Number(r.lat), Number(r.lng)),
+          }))
+          setKeywordAddressSuggestions(mapped)
+          return
+        }
+
+        // 2. Fallback to Google Places Autocomplete in browser if Google Maps JS SDK is loaded
+        if (window.google?.maps?.places?.AutocompleteService) {
+          try {
+            const service = new window.google.maps.places.AutocompleteService()
+            service.getPlacePredictions(
+              {
+                input: q,
+                componentRestrictions: { country: "in" },
+                location: new window.google.maps.LatLng(refLat, refLng),
+                radius: 30000,
+              },
+              async (predictions, status) => {
+                if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+                  const geocoder = new window.google.maps.Geocoder()
+                  const items = await Promise.all(
+                    predictions.slice(0, 4).map(async (p) => {
+                      try {
+                        const geo = await new Promise((resolve) => {
+                          geocoder.geocode({ placeId: p.place_id }, (results, s) => {
+                            if (s === "OK" && results?.[0]?.geometry?.location) {
+                              resolve(results[0].geometry.location)
+                            } else {
+                              resolve(null)
+                            }
+                          })
+                        })
+                        if (geo) {
+                          const lat = geo.lat()
+                          const lng = geo.lng()
+                          return {
+                            id: p.place_id,
+                            display: p.description,
+                            lat,
+                            lng,
+                            address: {},
+                            distanceMeters: calculateDistance(refLat, refLng, lat, lng),
+                          }
+                        }
+                      } catch {}
+                      return null
+                    })
+                  )
+                  const valid = items.filter(Boolean)
+                  if (valid.length > 0) {
+                    setKeywordAddressSuggestions(valid)
+                    return
+                  }
+                }
+              }
+            )
+          } catch {}
+        }
       } catch (e) {
         setKeywordAddressSuggestions([])
       } finally {
         setIsKeywordSearching(false)
       }
-    }, 350)
+    }, 300)
     return () => clearTimeout(t)
-  }, [addressAutocompleteValue, showAddressForm, location, ENABLE_NOMINATIM_SEARCH])
+  }, [addressAutocompleteValue, showAddressForm, location])
 
   // Map Initialization logic
   useEffect(() => {
@@ -229,12 +288,50 @@ export default function AddressSelectorPage() {
         })
         googleMapRef.current = map
 
-        // Update coordinates on map idle (center of the map is the chosen location)
+        if (window.google?.maps?.Marker) {
+          greenMarkerRef.current = new window.google.maps.Marker({
+            position: initialPos,
+            map: map,
+            title: currentAddress || "Delivery Location",
+            animation: window.google.maps.Animation.DROP,
+          })
+        }
+
+        let isUserDragging = false
+        map.addListener("dragstart", () => {
+          isUserDragging = true
+          isProgrammaticMoveRef.current = false
+        })
+
+        // Update coordinates on map idle ONLY if triggered by user drag
         map.addListener("idle", () => {
           const center = map.getCenter()
           const lat = center.lat()
           const lng = center.lng()
           setMapPosition([lat, lng])
+          if (greenMarkerRef.current) {
+            greenMarkerRef.current.setPosition({ lat, lng })
+          }
+          if (isProgrammaticMoveRef.current) {
+            isProgrammaticMoveRef.current = false
+            return
+          }
+          if (isUserDragging) {
+            isUserDragging = false
+            handleMapMoveEnd(lat, lng)
+          }
+        })
+
+        map.addListener("dragend", () => {
+          isProgrammaticMoveRef.current = false
+          isUserDragging = false
+          const center = map.getCenter()
+          const lat = center.lat()
+          const lng = center.lng()
+          setMapPosition([lat, lng])
+          if (greenMarkerRef.current) {
+            greenMarkerRef.current.setPosition({ lat, lng })
+          }
           handleMapMoveEnd(lat, lng)
         })
 
@@ -250,9 +347,13 @@ export default function AddressSelectorPage() {
 
   const handleUseCurrentLocation = async () => {
     try {
-      toast.loading("Getting location...", { id: "geo" })
+      toast.loading("Detecting current GPS location...", { id: "geo" })
       clearStoredUserLocation()
-      const loc = await requestLocation(true) // Force fresh GPS
+      try {
+        sessionStorage.removeItem("fs_food_location_current")
+      } catch (e) { }
+
+      const loc = await requestLocation(true, true) // Force fresh GPS (bypasses cache)
       if (loc?.latitude) {
         const newPos = [loc.latitude, loc.longitude]
         setMapPosition(newPos)
@@ -278,7 +379,7 @@ export default function AddressSelectorPage() {
         }, 200)
       }
     } catch (e) {
-      toast.error("Failed to get location", { id: "geo" })
+      toast.error(e?.message || "Failed to get location. Please enable location permission in browser.", { id: "geo", duration: 5000 })
     }
   }
 
@@ -342,19 +443,70 @@ export default function AddressSelectorPage() {
     }
   }
 
+  const applySelectedLocation = useCallback((lat, lng, display, addr = {}) => {
+    const numLat = Number(lat)
+    const numLng = Number(lng)
+    if (!Number.isFinite(numLat) || !Number.isFinite(numLng)) return
+
+    isProgrammaticMoveRef.current = true
+    setMapPosition([numLat, numLng])
+
+    if (googleMapRef.current) {
+      if (window.google?.maps?.event) {
+        window.google.maps.event.trigger(googleMapRef.current, "resize")
+      }
+      googleMapRef.current.setCenter({ lat: numLat, lng: numLng })
+      googleMapRef.current.panTo({ lat: numLat, lng: numLng })
+      googleMapRef.current.setZoom(17)
+
+      if (window.google?.maps?.Marker) {
+        if (!greenMarkerRef.current) {
+          greenMarkerRef.current = new window.google.maps.Marker({
+            position: { lat: numLat, lng: numLng },
+            map: googleMapRef.current,
+            title: display || "Selected Location",
+            animation: window.google.maps.Animation.DROP,
+          })
+        } else {
+          greenMarkerRef.current.setPosition({ lat: numLat, lng: numLng })
+          greenMarkerRef.current.setTitle(display || "Selected Location")
+          greenMarkerRef.current.setMap(googleMapRef.current)
+        }
+      }
+    }
+
+    setAddressAutocompleteValue(display)
+    setCurrentAddress(display)
+    const city = addr.city || addr.town || addr.village || "Indore"
+    const state = addr.state || "Madhya Pradesh"
+    const zipCode = addr.postcode || addr.postalCode || ""
+    const parts = String(display || "").split(",").map((p) => p.trim()).filter(Boolean)
+    const primaryStreet = parts[0] || display
+    const secondaryInfo = parts.length > 2 ? parts.slice(1, 3).join(", ") : (parts[1] || "")
+
+    setAddressFormData((prev) => ({
+      ...prev,
+      street: primaryStreet,
+      additionalDetails: secondaryInfo || prev.additionalDetails || "",
+      city: city,
+      state: state,
+      zipCode: zipCode || prev.zipCode,
+    }))
+    setKeywordAddressSuggestions([])
+  }, [])
+
   const handleLocateCurrentPositionInForm = async () => {
     try {
       toast.loading("Getting current location...", { id: "geo-form" })
-      const loc = await requestLocation(true)
+      const loc = await requestLocation(true, true) // Force fresh GPS coordinates
       if (loc?.latitude && loc?.longitude) {
-        const newPos = [loc.latitude, loc.longitude]
-        setMapPosition(newPos)
-        if (googleMapRef.current) {
-          googleMapRef.current.panTo({ lat: loc.latitude, lng: loc.longitude })
-          googleMapRef.current.setZoom(17)
-        }
-        await handleMapMoveEnd(loc.latitude, loc.longitude)
-        toast.success("Location updated: " + (loc.area || loc.city || "Current Location"), { id: "geo-form" })
+        const fullAddr = loc.formattedAddress || loc.address || ""
+        applySelectedLocation(loc.latitude, loc.longitude, fullAddr, {
+          city: loc.city,
+          state: loc.state,
+          postcode: loc.postalCode || loc.pincode,
+        })
+        toast.success("Location updated: " + (loc.area || loc.mainTitle || loc.city || "Current Location"), { id: "geo-form" })
       } else {
         toast.error("Could not obtain GPS location", { id: "geo-form" })
       }
@@ -386,6 +538,7 @@ export default function AddressSelectorPage() {
 
     if (targetLoc?.latitude && targetLoc?.longitude) {
       const pos = [Number(targetLoc.latitude), Number(targetLoc.longitude)]
+      isProgrammaticMoveRef.current = true
       setMapPosition(pos)
       if (googleMapRef.current) {
         googleMapRef.current.panTo({ lat: pos[0], lng: pos[1] })
@@ -394,10 +547,11 @@ export default function AddressSelectorPage() {
       handleMapMoveEnd(pos[0], pos[1])
     }
 
-    // Trigger high-accuracy GPS update in background
+    // Trigger high-accuracy GPS update in background if user hasn't typed an address yet
     requestLocation(false).then((fresh) => {
-      if (fresh?.latitude && fresh?.longitude) {
+      if (fresh?.latitude && fresh?.longitude && !addressAutocompleteValue && !addressFormData.street) {
         const freshPos = [fresh.latitude, fresh.longitude]
+        isProgrammaticMoveRef.current = true
         setMapPosition(freshPos)
         if (googleMapRef.current) {
           googleMapRef.current.panTo({ lat: freshPos[0], lng: freshPos[1] })
@@ -459,6 +613,19 @@ export default function AddressSelectorPage() {
     if (!cleanQuery) return null
 
     try {
+      // 1. Call backend searchLocations first (resolves known landmarks & server-side geocoding)
+      const backendRes = await locationAPI.searchLocations(cleanQuery, mapPosition[0], mapPosition[1])
+      const backendResults = backendRes?.data?.data?.results || []
+      if (Array.isArray(backendResults) && backendResults.length > 0) {
+        const top = backendResults[0]
+        return {
+          lat: Number(top.lat),
+          lng: Number(top.lng),
+          formattedAddress: top.display,
+          address: top.address || {},
+        }
+      }
+
       if (GOOGLE_MAPS_API_KEY) {
         const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cleanQuery)}&key=${GOOGLE_MAPS_API_KEY}`
         const res = await fetch(url)
@@ -472,23 +639,6 @@ export default function AddressSelectorPage() {
               formattedAddress: data.results[0].formatted_address,
               components: data.results[0].address_components || []
             }
-          }
-        }
-      }
-
-      const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=1&q=${encodeURIComponent(cleanQuery)}`
-      const res = await fetch(url, { headers: { "Accept-Language": "en", "User-Agent": "FoodSaathi-App" } })
-      const json = await res.json()
-      if (Array.isArray(json) && json.length > 0) {
-        const item = json[0]
-        const lat = Number(item.lat)
-        const lng = Number(item.lon)
-        if (Number.isFinite(lat) && Number.isFinite(lng)) {
-          return {
-            lat,
-            lng,
-            formattedAddress: item.display_name,
-            address: item.address || {}
           }
         }
       }
@@ -526,7 +676,28 @@ export default function AddressSelectorPage() {
   const handleMapMoveEnd = async (lat, lng) => {
     if (!ENABLE_LOCATION_REVERSE_GEOCODE) return
     try {
-      // Prioritize Google Maps API if available
+      // 1. Call backend reverse geocode (which handles clean landmarks, drops Tehsil, and uses server-side geocoding)
+      const res = await locationAPI.reverseGeocode(lat, lng)
+      const loc = res?.data?.data?.location
+      if (loc && loc.formattedAddress && loc.source !== 'coords_only') {
+        const cleanFormatted = loc.formattedAddress.replace(/\b([A-Za-z]+),\s*\1\b/gi, '$1')
+        setCurrentAddress(cleanFormatted)
+        if (greenMarkerRef.current) {
+          greenMarkerRef.current.setPosition({ lat, lng })
+          greenMarkerRef.current.setTitle(cleanFormatted)
+        }
+        setAddressFormData(prev => ({
+          ...prev,
+          street: loc.area || cleanFormatted.split(',')[0] || prev.street,
+          additionalDetails: loc.area && loc.area !== loc.city ? loc.area : (prev.additionalDetails || ''),
+          city: loc.city || prev.city,
+          state: loc.state || prev.state,
+          zipCode: loc.postalCode || prev.zipCode,
+        }))
+        return
+      }
+
+      // 2. Google Maps API fallback if available
       if (GOOGLE_MAPS_API_KEY) {
         const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_MAPS_API_KEY}`
         const response = await fetch(url)
@@ -555,42 +726,6 @@ export default function AddressSelectorPage() {
           }))
           return
         }
-      }
-
-      // Fallback to Nominatim if Google fails
-      const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
-      const response = await fetch(url, {
-        headers: {
-          "Accept-Language": "en",
-          "User-Agent": "FoodSaathi-App"
-        }
-      })
-      const json = await response.json()
-
-      if (json && json.address) {
-        const addr = json.address
-        const formatted = json.display_name
-
-        // Extract meaningful street/area info
-        const street = [
-          addr.road,
-          addr.suburb,
-          addr.neighbourhood,
-          addr.house_number
-        ].filter(Boolean).slice(0, 2).join(", ") || addr.amenity || addr.industrial || ""
-
-        const city = addr.city || addr.town || addr.village || addr.municipality || addr.county || ""
-        const state = addr.state || ""
-        const postcode = addr.postcode || ""
-
-        setCurrentAddress(formatted)
-        setAddressFormData(prev => ({
-          ...prev,
-          street: street || formatted.split(",")[0] || prev.street,
-          city: city || prev.city,
-          state: state || prev.state,
-          zipCode: postcode || prev.zipCode,
-        }))
       }
     } catch (error) {
       debugError("? Reverse geocoding failed:", error)
@@ -766,14 +901,49 @@ export default function AddressSelectorPage() {
                 <Input
                   value={addressAutocompleteValue}
                   onChange={(e) => setAddressAutocompleteValue(e.target.value)}
+                  onKeyDown={async (e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      if (keywordAddressSuggestions.length > 0) {
+                        const top = keywordAddressSuggestions[0]
+                        applySelectedLocation(top.lat, top.lng, top.display, top.address)
+                      } else if (addressAutocompleteValue.trim().length >= 2) {
+                        setIsKeywordSearching(true)
+                        try {
+                          const res = await locationAPI.searchLocations(
+                            addressAutocompleteValue.trim(),
+                            mapPosition[0],
+                            mapPosition[1]
+                          )
+                          const results = res?.data?.data?.results || []
+                          if (results.length > 0) {
+                            const top = results[0]
+                            applySelectedLocation(top.lat, top.lng, top.display, top.address)
+                          }
+                        } catch {}
+                        setIsKeywordSearching(false)
+                      }
+                    }
+                  }}
                   placeholder="Search area, street, landmark..."
-                  className="pl-10 h-12 bg-white/95 dark:bg-[#2A1A11]/95 backdrop-blur-md border-none rounded-xl shadow-lg focus:ring-2 focus:ring-primary transition-all"
+                  className="pl-10 pr-10 h-12 bg-white/95 dark:bg-[#2A1A11]/95 backdrop-blur-md border-none rounded-xl shadow-lg focus:ring-2 focus:ring-primary transition-all"
                 />
-                {isKeywordSearching && (
+                {isKeywordSearching ? (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
                   </div>
-                )}
+                ) : addressAutocompleteValue ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAddressAutocompleteValue("")
+                      setKeywordAddressSuggestions([])
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                ) : null}
 
                 {keywordAddressSuggestions.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#2A1A11] rounded-xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden z-30 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -782,24 +952,7 @@ export default function AddressSelectorPage() {
                       <button
                         key={s.id}
                         onClick={() => {
-                          const { lat, lng, display, address: a } = s
-                          setMapPosition([lat, lng])
-                          if (googleMapRef.current) {
-                            googleMapRef.current.panTo({ lat, lng })
-                            googleMapRef.current.setZoom(17)
-                          }
-                          setAddressAutocompleteValue(display)
-                          const city = a.city || a.town || a.village || a.county || ""
-                          const state = a.state || ""
-                          const zipCode = a.postcode || ""
-                          setAddressFormData((prev) => ({
-                            ...prev,
-                            street: display || prev.street,
-                            city: city || prev.city,
-                            state: state || prev.state,
-                            zipCode: zipCode || prev.zipCode,
-                          }))
-                          setKeywordAddressSuggestions([])
+                          applySelectedLocation(s.lat, s.lng, s.display, s.address)
                         }}
                         className="w-full px-4 py-3 flex items-start gap-3 hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors text-left border-b border-gray-50 dark:border-gray-800 last:border-none"
                       >
@@ -850,7 +1003,7 @@ export default function AddressSelectorPage() {
             <div className="bg-primary/5 dark:bg-primary/10 border border-primary/10 dark:border-primary/20 rounded-xl p-4 flex gap-3">
               <MapPin className="h-5 w-5 text-primary mt-0.5" />
               <div className="min-w-0">
-                <p className="text-xs font-bold text-primary dark:text-primary/80 uppercase mb-1">Pinnned Location</p>
+                <p className="text-xs font-bold text-primary dark:text-primary/80 uppercase mb-1">Pinned Location</p>
                 <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{currentAddress || "Select a location on map"}</p>
               </div>
             </div>

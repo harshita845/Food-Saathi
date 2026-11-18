@@ -25,12 +25,19 @@ const resolveBackPath = ({ pathname, search, state }) => {
   const explicitBackPath = toFoodPath(state?.backTo) || toFoodPath(state?.from) || toFoodPath(state?.returnTo)
   const searchParams = new URLSearchParams(search || "")
 
-  if (
-    searchParams.get("from") === "landing" ||
-    explicitBackPath === "/" ||
-    (typeof sessionStorage !== "undefined" && sessionStorage.getItem("fromLanding") === "true")
-  ) {
-    return "/"
+  const isLegalOrAboutPage =
+    /^\/user\/profile\/(terms|privacy|refund|shipping|cancellation|about)$/.test(normalizedPath) ||
+    /^\/(terms|privacy|refund|shipping|cancellation|about)$/.test(normalizedPath)
+
+  if (isLegalOrAboutPage) {
+    if (
+      searchParams.get("from") === "landing" ||
+      explicitBackPath === "/" ||
+      (typeof sessionStorage !== "undefined" && sessionStorage.getItem("fromLanding") === "true")
+    ) {
+      return "/"
+    }
+    return explicitBackPath || "/food/user/profile"
   }
 
   if (
@@ -95,7 +102,7 @@ const resolveBackPath = ({ pathname, search, state }) => {
   }
 
   if (normalizedPath === "/user/address-selector") {
-    return "/food/user"
+    return explicitBackPath || "/food/user"
   }
 
   if (/^\/user\/collections\/[^/]+$/.test(normalizedPath)) {

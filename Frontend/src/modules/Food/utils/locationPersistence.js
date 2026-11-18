@@ -105,7 +105,7 @@ export function persistDeliveryAddressMode(mode) {
 }
 
 export function readDeliveryAddressMode() {
-  return readScopedValue(LOCATION_SCOPE, 'mode', { fallback: 'saved' }) || 'saved'
+  return readScopedValue(LOCATION_SCOPE, 'mode', { fallback: 'current' }) || 'current'
 }
 
 export function notifyLocationUpdated(location) {

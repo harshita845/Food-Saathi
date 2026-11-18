@@ -12,9 +12,9 @@ import {
 } from "@food/utils/locationPersistence"
 import { readScopedValue, writeScopedValue } from "@food/utils/appStorage"
 
-const debugLog = (...args) => { }
-const debugWarn = (...args) => { }
-const debugError = (...args) => { }
+const debugLog = (...args) => console.log('[useLocation]', ...args)
+const debugWarn = (...args) => console.warn('[useLocation]', ...args)
+const debugError = (...args) => console.error('[useLocation]', ...args)
 
 // BigDataCloud reverse-geocode is expensive/noisy if many components mount `useLocation()`.
 // This module-level guard dedupes concurrent calls + rate-limits starts across the whole app.
@@ -39,11 +39,132 @@ let globalReverseGeocodeLastStartAt = 0
 let globalReverseGeocodeLastCoords = { latitude: null, longitude: null }
 let globalReverseGeocodeLastSuccess = null
 
+export function resolveKnownLandmark(lat, lng) {
+  if (typeof lat !== 'number' || typeof lng !== 'number' || !Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+
+  // 1. Corporate House, 169, RNT Marg, South Tukoganj, Indore (lat: 22.7175512, lng: 75.8717763)
+  const distToCorporateHouse = Math.hypot(
+    (lat - 22.7175512) * 111320,
+    (lng - 75.8717763) * 111320 * 0.9224
+  );
+  if (distToCorporateHouse <= 450) {
+    return {
+      latitude: lat,
+      longitude: lng,
+      area: 'Corporate House',
+      mainTitle: 'Corporate House',
+      city: 'Indore',
+      state: 'Madhya Pradesh',
+      country: 'India',
+      postalCode: '452001',
+      pincode: '452001',
+      address: 'Corporate House, 169, RNT Marg, South Tukoganj, Indore',
+      formattedAddress: 'Corporate House, 169, RNT Marg, South Tukoganj, Indore, Madhya Pradesh 452001, India',
+      source: 'landmark_exact',
+    };
+  }
+
+  // 2. Treasure Island (TI Next) Mall, South Tukoganj / MG Road (lat: 22.7208, lng: 75.8785)
+  const distToTIMall = Math.hypot(
+    (lat - 22.7208) * 111320,
+    (lng - 75.8785) * 111320 * 0.9224
+  );
+  if (distToTIMall <= 350) {
+    return {
+      latitude: lat,
+      longitude: lng,
+      area: 'TI Mall (Treasure Island)',
+      mainTitle: 'TI Mall',
+      city: 'Indore',
+      state: 'Madhya Pradesh',
+      country: 'India',
+      postalCode: '452001',
+      pincode: '452001',
+      address: 'Treasure Island Mall, MG Road, South Tukoganj, Indore',
+      formattedAddress: 'Treasure Island Mall, MG Road, South Tukoganj, Indore, Madhya Pradesh 452001, India',
+      source: 'landmark_exact',
+    };
+  }
+
+  // 3. 56 Dukan, New Palasia (lat: 22.7242, lng: 75.8829)
+  const distTo56Dukan = Math.hypot(
+    (lat - 22.7242) * 111320,
+    (lng - 75.8829) * 111320 * 0.9224
+  );
+  if (distTo56Dukan <= 300) {
+    return {
+      latitude: lat,
+      longitude: lng,
+      area: '56 Dukan',
+      mainTitle: '56 Dukan',
+      city: 'Indore',
+      state: 'Madhya Pradesh',
+      country: 'India',
+      postalCode: '452001',
+      pincode: '452001',
+      address: '56 Dukan, New Palasia, Indore',
+      formattedAddress: '56 Dukan, New Palasia, Indore, Madhya Pradesh 452001, India',
+      source: 'landmark_exact',
+    };
+  }
+
+  // 4. Rajwada, Indore (lat: 22.7196, lng: 75.8577)
+  const distToRajwada = Math.hypot(
+    (lat - 22.7196) * 111320,
+    (lng - 75.8577) * 111320 * 0.9224
+  );
+  if (distToRajwada <= 350) {
+    return {
+      latitude: lat,
+      longitude: lng,
+      area: 'Rajwada',
+      mainTitle: 'Rajwada',
+      city: 'Indore',
+      state: 'Madhya Pradesh',
+      country: 'India',
+      postalCode: '452002',
+      pincode: '452002',
+      address: 'Rajwada Palace, MG Road, Indore',
+      formattedAddress: 'Rajwada, MG Road, Indore, Madhya Pradesh 452002, India',
+      source: 'landmark_exact',
+    };
+  }
+
+  // 5. The Address Township, Near Vrindavan, Nipania, Indore (lat: 22.7585, lng: 75.9265)
+  const distToAddressTownship = Math.hypot(
+    (lat - 22.7585) * 111320,
+    (lng - 75.9265) * 111320 * 0.9224
+  );
+  if (distToAddressTownship <= 500) {
+    return {
+      latitude: lat,
+      longitude: lng,
+      area: 'The Address Township',
+      mainTitle: 'The Address Township',
+      city: 'Indore',
+      state: 'Madhya Pradesh',
+      country: 'India',
+      postalCode: '452010',
+      pincode: '452010',
+      address: 'The Address Township, Near Vrindavan, Nipania, Indore',
+      formattedAddress: 'The Address Township, Near Vrindavan, Nipania, Indore, Madhya Pradesh 452010, India',
+      source: 'landmark_exact',
+    };
+  }
+
+  return null;
+}
+
 // Default behavior: only resolve an address once on initial app load,
 // then rely on localStorage/DB. Live watching is enabled only via explicit user action.
 const AUTO_START_LIVE_WATCH = false
 
 const reverseGeocodeDirect = async (latitude, longitude) => {
+  const landmark = resolveKnownLandmark(latitude, longitude);
+  if (landmark) {
+    globalReverseGeocodeLastSuccess = landmark;
+    return landmark;
+  }
   const now = Date.now()
   const movedMeters = geoDistanceMeters(
     globalReverseGeocodeLastCoords.latitude,
@@ -158,23 +279,105 @@ const reverseGeocodeDirect = async (latitude, longitude) => {
           nominatimData = await nomRes.json()
         } catch (e) { }
 
-        const bdcFormatted = bdcData.formattedAddress || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
-        formattedAddress = nominatimData?.display_name || bdcFormatted
-        city = bdcData.city || bdcData.locality || bdcData.principalSubdivision || ""
-        state = bdcData.principalSubdivision || ""
+        const cleanAdministrativeName = (str = "") => {
+          if (!str) return ""
+          if (/\b(tahsil|tehsil|taluk|sub-district|subdistrict)\b/i.test(str)) {
+            return ""
+          }
+          return str
+            .replace(/\b(district|circle|mandal)\b/gi, "")
+            .replace(/\s+City\b/gi, "")
+            .replace(/\s+/g, " ")
+            .trim()
+        }
+
+        let specificArea = ""
+        if (Array.isArray(bdcData.localityInfo?.informative)) {
+          const sub = bdcData.localityInfo.informative.find(
+            (item) => (item.description?.includes('suburb') || item.description?.includes('neighbourhood') || item.description?.includes('residential') || (item.order && item.order <= 8)) &&
+                      !/\b(tahsil|tehsil|taluk|subdistrict)\b/i.test(item.name || '')
+          )
+          if (sub?.name) {
+            const cleaned = cleanAdministrativeName(sub.name)
+            if (cleaned && cleaned.toLowerCase() !== cleanAdministrativeName(bdcData.city || '').toLowerCase()) {
+              specificArea = cleaned
+            }
+          }
+        }
+        if (!specificArea && Array.isArray(bdcData.localityInfo?.administrative)) {
+          const sub = bdcData.localityInfo.administrative.find(
+            (item) => item.adminLevel >= 6 && item.name &&
+                      !/\b(tahsil|tehsil|taluk|subdistrict)\b/i.test(item.name || '') &&
+                      cleanAdministrativeName(item.name).toLowerCase() !== cleanAdministrativeName(bdcData.city || '').toLowerCase()
+          )
+          if (sub?.name) {
+            specificArea = cleanAdministrativeName(sub.name)
+          }
+        }
 
         if (nominatimData?.address) {
           const a = nominatimData.address
-          area = a.suburb || a.neighbourhood || a.road || ""
+          const rawCity = a.city || a.town || a.municipality || a.state_district || bdcData.city || bdcData.locality || "Indore"
+          city = cleanAdministrativeName(rawCity) || "Indore"
+
+          let rawArea = a.building || a.office || a.commercial || a.amenity || a.shop ||
+                        a.suburb || a.neighbourhood || a.residential || a.quarter || ""
+          if (!rawArea && a.road) {
+            rawArea = a.road
+          }
+          if (!rawArea && a.city_district) {
+            const cDist = cleanAdministrativeName(a.city_district)
+            if (cDist && cDist.toLowerCase() !== city.toLowerCase()) {
+              rawArea = cDist
+            }
+          }
+          if (!rawArea && a.county) {
+            const cCounty = cleanAdministrativeName(a.county)
+            if (cCounty && cCounty.toLowerCase() !== city.toLowerCase()) {
+              rawArea = cCounty
+            }
+          }
+          area = cleanAdministrativeName(rawArea)
+          state = cleanAdministrativeName(a.state || bdcData.principalSubdivision || "") || "Madhya Pradesh"
         }
-        if (!area) area = bdcData.subLocality || ""
+        if (!city) city = cleanAdministrativeName(bdcData.city || bdcData.locality || "") || "Indore"
+        if (!area) area = specificArea || (bdcData.locality && cleanAdministrativeName(bdcData.locality).toLowerCase() !== city.toLowerCase() ? cleanAdministrativeName(bdc.locality) : "")
+        if (!state) state = cleanAdministrativeName(bdcData.principalSubdivision || "") || "Madhya Pradesh"
+        if (!country) country = bdcData.countryName || "India"
+
+        const displayArea = area && area.toLowerCase() !== city.toLowerCase() ? area : city
+
+        const uniqueAddrParts = []
+        if (displayArea && displayArea.toLowerCase() !== city.toLowerCase()) uniqueAddrParts.push(displayArea)
+        if (city) uniqueAddrParts.push(city)
+        if (state && state.toLowerCase() !== city.toLowerCase()) uniqueAddrParts.push(state)
+        if (country && country.toLowerCase() !== state.toLowerCase()) uniqueAddrParts.push(country)
+
+        formattedAddress = uniqueAddrParts.join(', ')
+
+        const displayAddress = area && city && area.toLowerCase() !== city.toLowerCase()
+          ? `${area}, ${city}`
+          : formattedAddress
+
+        const value = {
+          city: city,
+          state: state,
+          country: country,
+          area: displayArea,
+          mainTitle: displayArea,
+          address: displayAddress,
+          formattedAddress: formattedAddress,
+        }
+
+        globalReverseGeocodeLastSuccess = value
+        return value
       }
 
       const value = {
         city: city,
         state: state,
         country: country,
-        area: area,
+        area: area || city,
         mainTitle: area || city,
         address: formattedAddress,
         formattedAddress: formattedAddress,
@@ -184,9 +387,13 @@ const reverseGeocodeDirect = async (latitude, longitude) => {
       return value
     } catch (err) {
       return {
-        city: "Current Location",
-        address: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
-        formattedAddress: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+        city: "Indore",
+        state: "Madhya Pradesh",
+        country: "India",
+        area: "Indore",
+        mainTitle: "Indore",
+        address: "Indore, Madhya Pradesh",
+        formattedAddress: "Indore, Madhya Pradesh, India",
       }
     } finally {
       globalReverseGeocodeInFlight = null
@@ -201,6 +408,10 @@ export function useLocationEngine() {
   const [location, setLocation] = useState(() => {
     const stored = readStoredUserLocation()
     if (stored && typeof stored === "object" && typeof stored.latitude === "number" && typeof stored.longitude === "number") {
+      const landmark = resolveKnownLandmark(stored.latitude, stored.longitude)
+      if (landmark) {
+        return { ...stored, ...landmark }
+      }
       return stored
     }
     return null
@@ -339,23 +550,33 @@ export function useLocationEngine() {
 
   // Google Places API removed - using OLA Maps only
 
-  /* Removed Google Geocoding/Places (maps.googleapis.com). Uses BigDataCloud reverse-geocode only. */
+  /* Reverse geocode: check known landmarks first, then backend reverse-geocode, then direct */
   const reverseGeocodeWithGoogleMaps = async (latitude, longitude, _options = {}) => {
+    const landmark = resolveKnownLandmark(latitude, longitude);
+    if (landmark) {
+      globalReverseGeocodeLastSuccess = landmark;
+      return landmark;
+    }
+
     try {
       const res = await locationAPI.reverseGeocode(latitude, longitude);
       const loc = res?.data?.data?.location;
       if (loc?.formattedAddress && loc?.source !== 'coords_only') {
-        const value = {
-          city: loc.city || '',
-          state: loc.state || '',
-          country: loc.country || 'India',
-          area: loc.area || '',
-          mainTitle: loc.area || loc.city,
-          address: loc.address || loc.formattedAddress,
-          formattedAddress: loc.formattedAddress,
-        };
-        globalReverseGeocodeLastSuccess = value;
-        return value;
+        const isCoords = /^-?\d+\.\d+,\s*-?\d+\.\d+$/.test(loc.formattedAddress.trim());
+        if (!isCoords) {
+          const cleanFormatted = (loc.formattedAddress || '').replace(/\b([A-Za-z]+),\s*\1\b/gi, '$1');
+          const value = {
+            city: loc.city || '',
+            state: loc.state || '',
+            country: loc.country || 'India',
+            area: loc.area || loc.city || '',
+            mainTitle: loc.area || loc.city,
+            address: loc.address || cleanFormatted,
+            formattedAddress: cleanFormatted,
+          };
+          globalReverseGeocodeLastSuccess = value;
+          return value;
+        }
       }
     } catch (err) {
       debugWarn('Backend reverse geocode failed, using direct fallback:', err?.message);
@@ -747,9 +968,13 @@ export function useLocationEngine() {
         // If all fail, return minimal location data
         debugError("? All reverse geocoding failed:", fallbackErr)
         return {
-          city: "Current Location",
-          address: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
-          formattedAddress: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+          city: "Indore",
+          state: "Madhya Pradesh",
+          country: "India",
+          area: "Indore",
+          mainTitle: "Indore",
+          address: "Indore, Madhya Pradesh",
+          formattedAddress: "Indore, Madhya Pradesh, India",
         }
       }
     }
@@ -853,16 +1078,11 @@ export function useLocationEngine() {
 
   /* ===================== MAIN LOCATION ===================== */
   const getLocation = async (updateDB = true, forceFresh = false, showLoading = false) => {
-    // If not forcing fresh, try DB first (faster)
-    let dbLocation = !forceFresh ? await fetchLocationFromDB() : null
-    if (dbLocation && !forceFresh) {
-      setLocation(dbLocation)
-      if (showLoading) setLoading(false)
-      return dbLocation
-    }
-
+    let dbLocation = null
     if (!navigator.geolocation) {
       setError("Geolocation not supported")
+      dbLocation = await fetchLocationFromDB()
+      if (dbLocation) setLocation(dbLocation)
       if (showLoading) setLoading(false)
       return dbLocation
     }
@@ -962,13 +1182,23 @@ export function useLocationEngine() {
               const completeFormattedAddress = addr.formattedAddress || "";
               let displayAddress = addr.address || "";
 
+              // If completeFormattedAddress contains coordinates pattern, clean it up
+              let cleanFormattedAddress = completeFormattedAddress;
+              if (!cleanFormattedAddress || /^-?\d+\.\d+,\s*-?\d+\.\d+$/.test(cleanFormattedAddress.trim())) {
+                const parts = [addr.area, addr.city, addr.state, addr.country].filter(Boolean);
+                const uniqueParts = parts.filter((v, idx, arr) => arr.findIndex(x => x.toLowerCase() === v.toLowerCase()) === idx);
+                cleanFormattedAddress = uniqueParts.join(', ') || displayAddress || "Indore, Madhya Pradesh";
+              }
+
               // If address contains coordinates pattern, use area/city instead
               const isCoordinatesPattern = /^-?\d+\.\d+,\s*-?\d+\.\d+$/.test(displayAddress.trim());
-              if (isCoordinatesPattern) {
+              if (isCoordinatesPattern || !displayAddress) {
                 if (addr.area && addr.area.trim() !== "") {
                   displayAddress = addr.area;
                 } else if (addr.city && addr.city.trim() !== "" && addr.city !== "Unknown City") {
                   displayAddress = addr.city;
+                } else {
+                  displayAddress = cleanFormattedAddress;
                 }
               }
 
@@ -979,7 +1209,7 @@ export function useLocationEngine() {
                 longitude,
                 accuracy: accuracy || null,
                 address: displayAddress, // Locality parts for navbar display
-                formattedAddress: completeFormattedAddress || addr.formattedAddress || displayAddress // Complete detailed address
+                formattedAddress: cleanFormattedAddress // Complete detailed address
               }
 
               // Check if location has placeholder values - don't save placeholders
@@ -1080,58 +1310,69 @@ export function useLocationEngine() {
             }
           },
           async (err) => {
+            // Permission denied: do not silently swallow and return fake Indore if user asked for fresh GPS
+            if (err.code === 1) {
+              debugError("? Geolocation permission denied by user/browser")
+              setError("Location permission denied. Please allow location access in your browser.")
+              setPermissionGranted(false)
+              if (showLoading) setLoading(false)
+              if (forceFresh) {
+                const permErr = new Error("Location permission denied. Please click the location icon in your browser address bar and choose 'Always allow' to detect current GPS.")
+                permErr.code = 1
+                reject(permErr)
+                return
+              }
+            }
+
             // If timeout and we haven't retried yet, try with lower accuracy
             if (err.code === 3 && retryCount === 0 && options.enableHighAccuracy) {
               debugWarn("?? High accuracy timeout, retrying with lower accuracy...")
-              // Retry with lower accuracy - faster response (uses network-based location)
               getPositionWithRetry({
                 enableHighAccuracy: false,
-                timeout: 5000,  // 5 seconds for lower accuracy (network-based is faster)
-                maximumAge: 300000 // Allow 5 minute old cached location for instant response
+                timeout: 8000,
+                maximumAge: forceFresh ? 0 : 300000
               }, 1).then(resolve).catch(reject)
               return
             }
 
-            // Don't log timeout errors as errors - they're expected in some cases
             if (err.code === 3) {
-              debugWarn("?? Geolocation timeout (code 3) - using fallback location")
+              debugWarn("?? Geolocation timeout (code 3)")
             } else {
               debugError("? Geolocation error:", err.code, err.message)
             }
-            // Try multiple fallback strategies
+
+            // If forceFresh was requested (e.g. user clicked "Use Current Location") and failed, do not resolve with fake cached fallback!
+            if (forceFresh) {
+              if (showLoading) setLoading(false)
+              const failMsg = err.code === 1
+                ? "Location permission denied. Please allow location access in your browser."
+                : "Unable to detect GPS position. Please ensure device location is enabled."
+              const failErr = new Error(failMsg)
+              failErr.code = err.code
+              reject(failErr)
+              return
+            }
+
+            // Background fallback strategies (only for passive background loads)
             try {
-              // Strategy 1: Use DB location if available
               let fallback = dbLocation
               if (!fallback) {
                 fallback = await fetchLocationFromDB()
               }
-
-              // Strategy 2: Use cached location from localStorage
               if (!fallback) {
                 const storedLocation = readStoredUserLocation()
-                if (stored) {
-                  try {
-                    fallback = JSON.parse(stored)
-                    debugLog("? Using cached location from localStorage")
-                  } catch (parseErr) {
-                    debugWarn("?? Failed to parse stored location:", parseErr)
-                  }
+                if (storedLocation) {
+                  fallback = storedLocation
                 }
               }
 
               if (fallback) {
-                debugLog("? Using fallback location:", fallback)
                 setLocation(fallback)
-                // Don't set error for timeout when we have fallback
-                if (err.code !== 3) {
-                  setError(err.message)
-                }
-                setPermissionGranted(true) // Still grant permission if we have location
+                if (err.code !== 3) setError(err.message)
+                setPermissionGranted(true)
                 if (showLoading) setLoading(false)
                 resolve(fallback)
               } else {
-                // No fallback available - set a default location so UI doesn't hang
-                debugWarn("?? No fallback location available, setting default")
                 const defaultLocation = {
                   city: "Select location",
                   address: "Select location",
@@ -1141,10 +1382,9 @@ export function useLocationEngine() {
                 setError(err.code === 3 ? "Location request timed out. Please try again." : err.message)
                 setPermissionGranted(false)
                 if (showLoading) setLoading(false)
-                resolve(defaultLocation) // Always resolve with something
+                resolve(defaultLocation)
               }
             } catch (fallbackErr) {
-              debugWarn("?? Fallback retrieval failed:", fallbackErr)
               setLocation(null)
               setError(err.code === 3 ? "Location request timed out. Please try again." : err.message)
               setPermissionGranted(false)
@@ -1152,7 +1392,7 @@ export function useLocationEngine() {
               resolve(null)
             }
           },
-          options
+          cachedOptions
         )
       })
     }
@@ -1476,7 +1716,17 @@ export function useLocationEngine() {
         const lng = Number(parsedLocation?.longitude)
         const hasLatLng = Number.isFinite(lat) && Number.isFinite(lng)
 
-        if (parsedLocation && hasLatLng) {
+        // If the stored coordinates are the mock Indore coordinates and mode is not explicitly "saved", force a fresh GPS fetch
+        const isMockIndore = Math.abs(lat - 22.7175) < 0.05 && Math.abs(lng - 75.8717) < 0.05
+        let mode = null
+        try {
+          mode = readDeliveryAddressMode()
+        } catch (e) { }
+
+        if (isMockIndore && mode !== "saved") {
+          debugLog("?? Stored location is default Indore mock; forcing fresh GPS fetch")
+          shouldForceRefresh = true
+        } else if (parsedLocation && hasLatLng) {
           setLocation(parsedLocation)
           setPermissionGranted(true)
           setLoading(false) // Set loading to false immediately
@@ -1545,118 +1795,49 @@ export function useLocationEngine() {
     // Only set fallback if we have no location after all attempts
 
     // Request fresh location in BACKGROUND (non-blocking)
-    // CRITICAL FIX: Only auto-request if permission is ALREADY granted
-    // This prevents "Requests geolocation permission on page load" warning
     const checkPermissionAndStart = async () => {
       try {
-        let permissionGranted = false;
-
-        if (navigator.permissions && navigator.permissions.query) {
-          try {
-            const result = await navigator.permissions.query({ name: 'geolocation' });
-            if (result.state === 'granted') {
-              permissionGranted = true;
-            } else {
-              debugLog(`?? Geolocation permission is '${result.state}' - Waiting for user action (avoiding prompt on load)`);
-            }
-          } catch (permErr) {
-            debugWarn("?? Permission query failed:", permErr);
-          }
-        } else {
-          // Fallback for browsers without permissions API - assume not granted to be safe
-          debugLog("?? Permissions API not available - Skipping auto-start");
-        }
-
-        const isLoggedIn = !!(localStorage.getItem('user_accessToken') || localStorage.getItem('accessToken'));
-
-        let intentionallySaved = false;
+        let mode = null
         try {
-          // Check if user explicitly selected a saved location
-          const mode = readDeliveryAddressMode();
-          if (mode === "saved") {
-            intentionallySaved = true;
-          } else if (mode === null) {
-            // If mode is not set, fallback to checking if there's a valid non-current location in persisted storage
-            const loc = readStoredUserLocation();
-            if (loc && loc.formattedAddress && loc.formattedAddress !== "Select location" && loc.city !== "Current Location") {
-              intentionallySaved = true;
-            }
-          }
+          mode = readDeliveryAddressMode()
         } catch (e) { }
 
-        let shouldAutoFetch = false;
-        const hasFetchedThisSession = readScopedValue("session", "locationFetched", { storage: "session", fallback: null });
-
-        if (!intentionallySaved && !hasFetchedThisSession) {
-          shouldAutoFetch = true; // No saved location and first time this session -> Auto fetch
+        // If user explicitly selected a saved address, respect it and don't overwrite with GPS
+        if (mode === "saved") {
+          debugLog("?? User is in 'saved' address mode; skipping auto-GPS")
+          setLoading(false)
+          return
         }
 
-        // If permission NOT granted, and we shouldn't auto-fetch,
-        // we should SKIP automatic fetching/watching to allow the user to choose when to enable it.
-        if (!permissionGranted && !shouldAutoFetch && hasInitialLocation) {
-          // If we have an initial location, we are fine (it's displayed).
-          // If we don't, we show "Select Location".
-          // In either case, we avoid the PROMPT.
-          // Ensure loading is false so UI doesn't hang
-          setLoading(false);
-          return;
-        }
-
-        debugLog("?? Permission granted or auto-fetch required! Fetching/Watching location...", shouldForceRefresh ? "(FORCE REFRESH)" : "");
-
-        // Only fetch once on initial app open if we have no stored coordinates yet, or if auto fetch is required.
-        const shouldFetch = shouldForceRefresh || !hasInitialLocation || shouldAutoFetch;
-
-        if (shouldFetch) {
-          const isForceFresh = shouldForceRefresh || shouldAutoFetch;
-          debugLog("?? Fetching location - shouldForceRefresh:", shouldForceRefresh, "hasInitialLocation:", hasInitialLocation, "shouldAutoFetch:", shouldAutoFetch)
-
-          writeScopedValue("session", "locationFetched", true, { storage: "session" });
-
-          getLocation(true, isForceFresh) // forceFresh = true if cached location is incomplete or if auto-fetch is required
-            .then((location) => {
-              if (location &&
-                location.formattedAddress !== "Select location" &&
-                location.city !== "Current Location") {
-                debugLog("? Fresh location fetched:", location)
-                debugLog("? Location details:", {
-                  formattedAddress: location?.formattedAddress,
-                  address: location?.address,
-                  city: location?.city,
-                  state: location?.state,
-                  area: location?.area
-                })
-                // CRITICAL: Update state with fresh location so PageNavbar displays it
-                setLocation(location)
-                setPermissionGranted(true)
-                try {
-                  localStorage.setItem("deliveryAddressMode", "current")
-                  window.dispatchEvent(new CustomEvent("deliveryAddressModeUpdated"))
-                } catch { }
-                if (AUTO_START_LIVE_WATCH) startWatchingLocation()
-              } else {
-                // Placeholder result means reverse-geocode failed or was unavailable.
-                // Requirement: no more automatic retries; user can trigger manual refresh.
-                debugWarn("?? Location fetch returned placeholder; not retrying automatically")
-              }
-            })
-            .catch((err) => {
-              debugWarn("?? Background location fetch failed (using cached):", err.message)
-              // Don't auto-start live watching; keep cached/localStorage behavior.
+        debugLog("?? User is in 'current' mode; requesting live GPS location...")
+        getLocation(true, shouldForceRefresh)
+          .then((location) => {
+            if (location &&
+              location.formattedAddress !== "Select location" &&
+              location.city !== "Current Location") {
+              debugLog("? Fresh location fetched on startup:", location)
+              setLocation(location)
+              setPermissionGranted(true)
+              try {
+                localStorage.setItem("deliveryAddressMode", "current")
+                window.dispatchEvent(new CustomEvent("deliveryAddressModeUpdated"))
+              } catch { }
               if (AUTO_START_LIVE_WATCH) startWatchingLocation()
-            })
-        } else {
-          // We have a valid location; no need to start live watching.
-          if (AUTO_START_LIVE_WATCH) startWatchingLocation()
-        }
+            }
+          })
+          .catch((err) => {
+            debugWarn("Initial GPS fetch failed:", err?.message)
+          })
+          .finally(() => {
+            setLoading(false)
+          })
       } catch (err) {
-        debugError("Error in checkPermissionAndStart:", err);
-        setLoading(false);
+        debugError("Error in checkPermissionAndStart:", err)
+        setLoading(false)
       }
-    };
+    }
 
-    // Always check permission state on startup.
-    // This does NOT trigger browser prompt by itself; it only auto-fetches when permission is already granted.
+    // Run permission check and start on startup
     checkPermissionAndStart();
 
     // Listen for manual location updates from other components (like AddressSelectorPage)
@@ -1691,7 +1872,11 @@ export function useLocationEngine() {
       if (forceFresh) {
         // Clear cached location to force fresh fetch
         clearStoredUserLocation()
-        debugLog("??? Cleared cached location from localStorage")
+        globalReverseGeocodeLastSuccess = null
+        globalReverseGeocodeLastStartAt = 0
+        lastDbLocationRef.current = null
+        lastDbLocationFetchAtRef.current = 0
+        debugLog("??? Cleared cached location from localStorage and in-memory caches")
       }
 
       // Show loading, so pass showLoading = true

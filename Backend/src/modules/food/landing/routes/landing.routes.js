@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import { upload } from '../../../../middleware/upload.js';
 import {
     listHeroBannersController,
@@ -55,7 +55,7 @@ import {
 import { getPublicPageController } from '../../admin/controllers/pageContent.controller.js';
 import { getPublicReferralSettingsController } from '../controllers/publicReferralSettings.controller.js';
 import { getPublicActiveAds } from '../../admin/controllers/appIntroAd.controller.js';
-import { reverseGeocodePublicController, computeDistancePublicController } from '../controllers/locationPublic.controller.js';
+import { reverseGeocodePublicController, computeDistancePublicController, searchLocationPublicController } from '../controllers/locationPublic.controller.js';
 
 const router = express.Router();
 
@@ -130,6 +130,7 @@ router.get('/explore-icons/public', getPublicExploreIconsController);
 router.get('/hero-banners/gourmet/public', getPublicGourmetController);
 router.get('/landing/settings/public', getPublicLandingSettingsController);
 router.get('/location/reverse-geocode', reverseGeocodePublicController);
+router.get('/location/search', searchLocationPublicController);
 router.post('/location/distance', computeDistancePublicController);
 router.get('/zones/detect', detectZonePublicController);
 router.get('/zones/nearby', listZonesNearbyPublicController);

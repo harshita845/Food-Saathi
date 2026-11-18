@@ -1947,6 +1947,11 @@ export const locationAPI = {
     userClient.get("/food/location/reverse-geocode", {
       params: { lat: latitude, lng: longitude },
     }),
+  /** GET /food/location/search?q=&lat=&lng= (public) */
+  searchLocations: (query, latitude, longitude) =>
+    userClient.get("/food/location/search", {
+      params: { q: query, lat: latitude, lng: longitude },
+    }),
   /** POST /food/location/distance — road + straight-line legs */
   computeDistance: (body) =>
     userClient.post("/food/location/distance", body ?? {}),

@@ -138,9 +138,20 @@ export default function HomeHeader({
               <div className="flex items-center gap-1">
                 <span className="text-[15px] sm:text-[16px] font-bold text-white truncate tracking-tight">
                   {(() => {
-                    const area = location?.area || location?.subLocality || location?.mainTitle || location?.neighborhood;
-                    const city = (location?.city || "").toLowerCase();
-                    const state = (location?.state || "").toLowerCase();
+                    const clean = (s) => {
+                      if (!s) return '';
+                      if (/\b(tahsil|tehsil|taluk|sub-district|subdistrict)\b/i.test(s)) return '';
+                      return s
+                        .replace(/\b(district|circle|mandal)\b/gi, '')
+                        .replace(/\s+City\b/gi, '')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                    };
+
+                    const rawArea = location?.area || location?.mainTitle || location?.subLocality || location?.neighborhood || '';
+                    const city = clean(location?.city || '').toLowerCase();
+                    const state = clean(location?.state || '').toLowerCase();
+                    const area = clean(rawArea);
 
                     if (area && !/^-?\d+(\.\d+)?$/.test(area.trim())) {
                       const areaLower = area.toLowerCase();
@@ -151,7 +162,7 @@ export default function HomeHeader({
                     
                     // Fallback to a part of the address if area is missing or redundant
                     if (location?.address && location.address !== "Select location") {
-                      const parts = location.address.split(',').map(p => p.trim());
+                      const parts = location.address.split(',').map(p => clean(p.trim())).filter(Boolean);
                       // Take the first part that isn't city or state
                       for (const part of parts) {
                         const partLower = part.toLowerCase();
@@ -165,7 +176,7 @@ export default function HomeHeader({
                       }
                     }
                     
-                    return location?.area || location?.city || "Select Location";
+                    return area || clean(location?.city) || "Select Location";
                   })()}
                 </span>
                 <ChevronDown className="h-[16px] w-[16px] text-white flex-shrink-0" strokeWidth={2.5} />
@@ -173,19 +184,65 @@ export default function HomeHeader({
               
               <span className="text-[11px] font-medium text-white/80 uppercase truncate leading-tight mt-0.5">
                 {(() => {
-                  const addr = location?.formattedAddress || location?.address || "";
-                  if (addr && addr.length > 5 && addr !== "Select location") {
-                     return addr;
+                  const clean = (s) => {
+                    if (!s) return '';
+                    if (/\b(tahsil|tehsil|taluk|sub-district|subdistrict)\b/i.test(s)) return '';
+                    return s
+                      .replace(/\b(district|circle|mandal)\b/gi, '')
+                      .replace(/\s+City\b/gi, '')
+                      .replace(/\s+/g, ' ')
+                      .trim();
+                  };
+
+                  const city = clean(location?.city || '') || 'Indore';
+                  const state = clean(location?.state || '') || 'Madhya Pradesh';
+                  const rawArea = clean(location?.area || location?.mainTitle || location?.subLocality || location?.neighborhood || '');
+                  const pincode = (location?.pincode || location?.postalCode || '').trim();
+
+                  // 1. If we have a raw address string, clean each token and deduplicate
+                  const raw = (location?.formattedAddress || location?.address || '').trim();
+                  const isCoord = /^-?\d+\.\d+,\s*-?\d+\.\d+$/.test(raw);
+
+                  if (raw && !isCoord && raw !== 'Select location' && raw.length > 5) {
+                    const tokens = raw.split(',').map(clean).filter(Boolean);
+                    const uniqueTokens = [];
+                    for (const t of tokens) {
+                      const lower = t.toLowerCase();
+                      if (!uniqueTokens.some(u => u.toLowerCase() === lower)) {
+                        uniqueTokens.push(t);
+                      }
+                    }
+                    if (uniqueTokens.length > 0) {
+                      // Ensure main area / landmark is at the front if available
+                      if (rawArea && rawArea.toLowerCase() !== city.toLowerCase()) {
+                        const areaIdx = uniqueTokens.findIndex(u => u.toLowerCase() === rawArea.toLowerCase());
+                        if (areaIdx > 0) {
+                          const [item] = uniqueTokens.splice(areaIdx, 1);
+                          uniqueTokens.unshift(item);
+                        } else if (areaIdx === -1) {
+                          uniqueTokens.unshift(rawArea);
+                        }
+                      }
+                      return uniqueTokens.join(', ');
+                    }
                   }
-                  
-                  const state = location?.state || "";
-                  const pincode = location?.pincode || "";
-                  
-                  if (state && pincode) return `${state}, ${pincode}`;
-                  if (state) return state;
-                  if (pincode) return pincode;
-                  
-                  return "Pinpoint location";
+
+                  // 2. Structured fallback: [area (if != city), city, state, pincode]
+                  const parts = [];
+                  if (rawArea && rawArea.toLowerCase() !== city.toLowerCase()) {
+                    parts.push(rawArea);
+                  }
+                  if (city) {
+                    parts.push(city);
+                  }
+                  if (state && state.toLowerCase() !== city.toLowerCase()) {
+                    parts.push(state);
+                  }
+                  if (pincode) {
+                    parts.push(pincode);
+                  }
+
+                  return parts.join(', ') || 'Indore, Madhya Pradesh';
                 })()}
               </span>
             </div>
