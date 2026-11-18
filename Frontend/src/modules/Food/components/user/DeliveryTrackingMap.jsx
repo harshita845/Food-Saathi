@@ -3,7 +3,6 @@ import {
   GoogleMap, 
   useJsApiLoader, 
   OverlayView, 
-  DirectionsService, 
   Polyline
 } from '@react-google-maps/api';
 import useOrderLocationSubscription from '@food/hooks/useOrderLocationSubscription';
@@ -11,6 +10,7 @@ import { useGoogleMapsApiKey } from '@food/utils/googleMapsApiKey';
 import { subscribeLocationUpdates } from '@food/utils/userSocketManager';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Navigation } from 'lucide-react';
+import { getRoute } from '@/utils/getRoute';
 
 const MAP_LIBRARIES = Object.freeze(['geometry', 'places']);
 
@@ -480,14 +480,30 @@ const DeliveryTrackingMapInner = ({
     if (now - lastLiveRouteAtRef.current < LIVE_ROUTE_RECALC_MS) return undefined;
 
     lastLiveRouteAtRef.current = now;
-    liveRouteOriginRef.current = {
+    const origin = {
       lat: displayRiderLocation.lat,
       lng: displayRiderLocation.lng,
     };
-    setLiveRouteRequestKey((key) => key + 1);
-    debugLog('🔁 Rider off-route — requesting fresh directions');
-    return undefined;
-  }, [isRiderOffRoute, displayRiderLocation, routeDestination]);
+    debugLog('🔁 Rider off-route — requesting fresh route');
+
+    let cancelled = false;
+    getRoute(origin, routeDestination)
+      .then((res) => {
+        if (!cancelled && res?.path?.length > 1) {
+          setFullRoutePath(res.path);
+          debugLog(`✅ Live off-route path: ${res.path.length} points`);
+          if (res.durationText) {
+            setCurrentEta(res.durationText);
+            onEtaUpdate?.(res.durationText);
+          }
+        }
+      })
+      .catch((err) => {
+        debugLog('[DeliveryTrackingMap] Live getRoute error:', err);
+      });
+
+    return () => { cancelled = true; };
+  }, [isRiderOffRoute, displayRiderLocation, routeDestination, onEtaUpdate]);
 
   useEffect(() => {
     baselineRequestedRef.current = false;
@@ -518,120 +534,28 @@ const DeliveryTrackingMapInner = ({
     debugLog(`[Camera] Focusing on ${isOrderPickedUp ? 'Delivery' : 'Pickup'} leg`);
   }, [map, riderLocation, restaurantCoords, customerCoords, isOrderPickedUp, isLoaded]);
 
-  // 6. Baseline Directions callback — stores the overview_path as fullRoutePath
-  const baselineDirectionsCallback = useCallback((result, status) => {
-    if (status === 'OK' && result) {
-      const rawPath = result.routes?.[0]?.overview_path || [];
-      const plain = rawPath.map(normPt).filter(Boolean);
-      if (plain.length > 1) {
-        setFullRoutePath(plain);
-        debugLog(`✅ Baseline route stored: ${plain.length} points`);
-      }
-      // Also extract ETA from baseline if no real-time ETA yet
-      const durationText = result?.routes?.[0]?.legs?.[0]?.duration?.text;
-      if (durationText && !currentEta) {
-        setCurrentEta(durationText);
-        if (onEtaUpdate) onEtaUpdate(durationText);
-      }
-    } else {
-      debugLog('[DeliveryTrackingMap] Baseline DirectionsService status:', status, '— using fallback road routing');
-      if (status === 'REQUEST_DENIED' || status === 'OVER_QUERY_LIMIT' || status === 'UNKNOWN_ERROR') {
-        directionsApiDeniedRef.current = true;
-      }
-      fetchFallbackDrivingRoute(restaurantCoords, customerCoords).then((fallback) => {
-        if (fallback?.path?.length > 1) {
-          setFullRoutePath(fallback.path);
-          if (fallback.durationText && !currentEta) {
-            setCurrentEta(fallback.durationText);
-            onEtaUpdate?.(fallback.durationText);
-          }
-        }
-      });
-    }
-  }, [currentEta, onEtaUpdate, restaurantCoords, customerCoords]);
-
-  const baselineDirectionsOptions = useMemo(() => {
-    if (directionsApiDeniedRef.current) return null;
-    if (!restaurantCoords || !customerCoords) return null;
-    if (fullRoutePath?.length) return null;
-    return {
-      origin: restaurantCoords,
-      destination: customerCoords,
-      travelMode: 'DRIVING',
-    };
-  }, [
-    restaurantCoords?.lat,
-    restaurantCoords?.lng,
-    customerCoords?.lat,
-    customerCoords?.lng,
-    fullRoutePath?.length,
-  ]);
-
-  const liveRiderDirectionsOptions = useMemo(() => {
-    if (directionsApiDeniedRef.current) return null;
-    const origin = liveRouteOriginRef.current;
-    if (!origin || !routeDestination || !isRiderOffRoute) return null;
-    return {
-      origin,
-      destination: routeDestination,
-      travelMode: 'DRIVING',
-    };
-  }, [
-    routeDestination?.lat,
-    routeDestination?.lng,
-    isRiderOffRoute,
-    liveRouteRequestKey,
-  ]);
-
-  const liveDirectionsCallback = useCallback((result, status) => {
-    if (status === 'OK' && result) {
-      const rawPath = result.routes?.[0]?.overview_path || [];
-      const plain = rawPath.map(normPt).filter(Boolean);
-      if (plain.length > 1) {
-        setFullRoutePath(plain);
-        debugLog(`✅ Live off-route path: ${plain.length} points`);
-      }
-      const durationText = result?.routes?.[0]?.legs?.[0]?.duration?.text;
-      if (durationText) {
-        setCurrentEta(durationText);
-        onEtaUpdate?.(durationText);
-      }
-    } else {
-      debugLog('[DeliveryTrackingMap] Live DirectionsService status:', status, '— using fallback road routing');
-      if (status === 'REQUEST_DENIED' || status === 'OVER_QUERY_LIMIT') {
-        directionsApiDeniedRef.current = true;
-      }
-      const origin = liveRouteOriginRef.current;
-      if (origin && routeDestination) {
-        fetchFallbackDrivingRoute(origin, routeDestination).then((fallback) => {
-          if (fallback?.path?.length > 1) {
-            setFullRoutePath(fallback.path);
-            if (fallback.durationText) {
-              setCurrentEta(fallback.durationText);
-              onEtaUpdate?.(fallback.durationText);
-            }
-          }
-        });
-      }
-    }
-  }, [onEtaUpdate, routeDestination]);
-
-  // If directions API was denied or not activated on this project key, fetch fallback road route
+  // 6. Baseline Route — compute restaurant → customer route when no cloud polyline
   useEffect(() => {
     if (!restaurantCoords || !customerCoords) return;
     if (fullRoutePath?.length) return;
+    if (baselineRequestedRef.current) return;
+    baselineRequestedRef.current = true;
 
-    if (directionsApiDeniedRef.current) {
-      fetchFallbackDrivingRoute(restaurantCoords, customerCoords).then((fallback) => {
-        if (fallback?.path?.length > 1) {
-          setFullRoutePath(fallback.path);
-          if (fallback.durationText && !currentEta) {
-            setCurrentEta(fallback.durationText);
-            onEtaUpdate?.(fallback.durationText);
-          }
+    let cancelled = false;
+    getRoute(restaurantCoords, customerCoords).then((res) => {
+      if (!cancelled && res?.path?.length > 1) {
+        setFullRoutePath(res.path);
+        debugLog(`✅ Baseline route stored: ${res.path.length} points`);
+        if (res.durationText && !currentEta) {
+          setCurrentEta(res.durationText);
+          onEtaUpdate?.(res.durationText);
         }
-      });
-    }
+      }
+    }).catch((err) => {
+      debugLog('[DeliveryTrackingMap] Baseline getRoute error:', err);
+    });
+
+    return () => { cancelled = true; };
   }, [restaurantCoords, customerCoords, fullRoutePath, currentEta, onEtaUpdate]);
 
   /**
@@ -698,26 +622,6 @@ const DeliveryTrackingMapInner = ({
           ]
         }}
       >
-        {/* Initial restaurant → customer route when no rider polyline yet */}
-        {!fullRoutePath && baselineDirectionsOptions && !baselineRequestedRef.current && (
-          <DirectionsService
-            options={baselineDirectionsOptions}
-            callback={(r, s) => {
-              baselineRequestedRef.current = true;
-              baselineDirectionsCallback(r, s);
-            }}
-          />
-        )}
-
-        {/* Rider deviated — recalculate from current rider position */}
-        {liveRiderDirectionsOptions && (
-          <DirectionsService
-            key={`live-route-${liveRouteRequestKey}`}
-            options={liveRiderDirectionsOptions}
-            callback={liveDirectionsCallback}
-          />
-        )}
-
         {/* ── TRAVELED PATH: dashed grey (already covered by driver) ── */}
         {traveledPath.length > 1 && (
           <Polyline

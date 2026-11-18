@@ -2,7 +2,6 @@ import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { 
   GoogleMap, 
   Marker, 
-  DirectionsService, 
   Polygon,
   Polyline,
   useJsApiLoader,
@@ -11,6 +10,7 @@ import {
 import { useDeliveryStore } from '@/modules/DeliveryV2/store/useDeliveryStore';
 import { calculateHeading } from '@/modules/DeliveryV2/utils/geo';
 import { zoneAPI } from '@food/api';
+import { getRoute, hasMovedSignificantly } from '@/utils/getRoute';
 
 const mapContainerStyle = {
   width: '100%',
@@ -55,12 +55,12 @@ const LiveMapWithApiKey = ({ googleMapsApiKey, onMapClick, onMapLoad, onPathRece
     }
   );
 
-  const [directions, setDirections] = useState(null);
-  const [baselineDirections, setBaselineDirections] = useState(null);
-  const [baselineFailed, setBaselineFailed] = useState(false);
+  const [routeData, setRouteData] = useState(null);
+  const [baselineRouteData, setBaselineRouteData] = useState(null);
   const [map, setMapInternal] = useState(null);
   const [zones, setZones] = useState([]);
-  const [lastDirectionsAt, setLastDirectionsAt] = useState(0);
+  const lastOriginRef = useRef(null);
+  const lastRouteFetchTimeRef = useRef(0);
 
   const handleMapLoad = (mapInstance) => {
     mapInstance.setOptions({
@@ -78,10 +78,10 @@ const LiveMapWithApiKey = ({ googleMapsApiKey, onMapClick, onMapLoad, onPathRece
   };
 
   useEffect(() => {
-    setLastDirectionsAt(0);
-    setDirections(null);
-    setBaselineDirections(null);
-    setBaselineFailed(false);
+    setRouteData(null);
+    setBaselineRouteData(null);
+    lastOriginRef.current = null;
+    lastRouteFetchTimeRef.current = 0;
   }, [tripStatus, activeOrder?._id]);
 
   const parsePoint = useCallback((raw) => {
@@ -144,6 +144,10 @@ const LiveMapWithApiKey = ({ googleMapsApiKey, onMapClick, onMapLoad, onPathRece
     return null;
   }, [activeOrder, tripStatus, restaurantPoint, customerPoint]);
 
+  const activePath = useMemo(() => {
+    return routeData?.path || baselineRouteData?.path || [];
+  }, [routeData?.path, baselineRouteData?.path]);
+
   const parsedRiderLocation = useMemo(() => {
     if (!riderLocation) return null;
     const lat = parseFloat(riderLocation.lat || riderLocation.latitude);
@@ -151,105 +155,104 @@ const LiveMapWithApiKey = ({ googleMapsApiKey, onMapClick, onMapLoad, onPathRece
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
 
     let head = parseFloat(riderLocation.heading || 0);
-    if ((!head || head === 0) && directions?.routes?.[0]?.overview_path?.length > 1) {
-      const path = directions.routes[0].overview_path;
+    if ((!head || head === 0) && activePath.length > 1) {
       let minDist = Infinity;
       let closestIdx = 0;
-      for (let i = 0; i < path.length; i++) {
-        const ptLat = typeof path[i].lat === 'function' ? path[i].lat() : path[i].lat;
-        const ptLng = typeof path[i].lng === 'function' ? path[i].lng() : path[i].lng;
-        const dLat = (ptLat - lat) * 111000;
-        const dLng = (ptLng - lng) * 111000 * Math.cos((lat * Math.PI) / 180);
+      for (let i = 0; i < activePath.length; i++) {
+        const pt = activePath[i];
+        const dLat = (pt.lat - lat) * 111000;
+        const dLng = (pt.lng - lng) * 111000 * Math.cos((lat * Math.PI) / 180);
         const dist = Math.sqrt(dLat * dLat + dLng * dLng);
         if (dist < minDist) {
           minDist = dist;
           closestIdx = i;
         }
       }
-      const nextPt = path[closestIdx < path.length - 1 ? closestIdx + 1 : closestIdx];
-      const prevPt = path[closestIdx < path.length - 1 ? closestIdx : Math.max(0, closestIdx - 1)];
-      const p1 = { lat: typeof prevPt.lat === 'function' ? prevPt.lat() : prevPt.lat, lng: typeof prevPt.lng === 'function' ? prevPt.lng() : prevPt.lng };
-      const p2 = { lat: typeof nextPt.lat === 'function' ? nextPt.lat() : nextPt.lat, lng: typeof nextPt.lng === 'function' ? nextPt.lng() : nextPt.lng };
-      if (p1 && p2 && (p1.lat !== p2.lat || p1.lng !== p2.lng)) {
-        head = calculateHeading(p1.lat, p1.lng, p2.lat, p2.lng);
+      const nextPt = activePath[closestIdx < activePath.length - 1 ? closestIdx + 1 : closestIdx];
+      const prevPt = activePath[closestIdx < activePath.length - 1 ? closestIdx : Math.max(0, closestIdx - 1)];
+      if (prevPt && nextPt && (prevPt.lat !== nextPt.lat || prevPt.lng !== nextPt.lng)) {
+        head = calculateHeading(prevPt.lat, prevPt.lng, nextPt.lat, nextPt.lng);
       }
     }
     return { lat, lng, heading: head };
-  }, [riderLocation, directions]);
+  }, [riderLocation, activePath]);
 
   useEffect(() => { if (map) map.setZoom(zoom); }, [zoom, map]);
 
   const isOffCurrentRoute = useMemo(() => {
-    if (!directions || !parsedRiderLocation || !window.google?.maps?.geometry) return false;
-    const fullPath = directions.routes?.[0]?.overview_path;
-    if (!fullPath?.length) return false;
+    if (!activePath.length || !parsedRiderLocation || !window.google?.maps?.geometry) return false;
 
     const riderLatLng = new window.google.maps.LatLng(
       parsedRiderLocation.lat,
       parsedRiderLocation.lng,
     );
     let minDistance = Infinity;
-    for (let i = 0; i < fullPath.length; i += 1) {
+    for (let i = 0; i < activePath.length; i += 1) {
+      const ptLatLng = new window.google.maps.LatLng(activePath[i].lat, activePath[i].lng);
       const distance = window.google.maps.geometry.spherical.computeDistanceBetween(
         riderLatLng,
-        fullPath[i],
+        ptLatLng,
       );
       if (distance < minDistance) minDistance = distance;
     }
     return minDistance > 100;
-  }, [directions, parsedRiderLocation]);
+  }, [activePath, parsedRiderLocation]);
 
-  const shouldUpdateRoute = useMemo(() => {
-    const now = Date.now();
-    if (!directions) return true;
-    if (isOffCurrentRoute) return true;
-
-    let throttleMs = 20000;
-    if (parsedRiderLocation && targetLocation && window.google) {
-      try {
-        const p1 = new window.google.maps.LatLng(parsedRiderLocation.lat, parsedRiderLocation.lng);
-        const p2 = new window.google.maps.LatLng(targetLocation.lat, targetLocation.lng);
-        const dist = window.google.maps.geometry.spherical.computeDistanceBetween(p1, p2);
-        if (dist > 2000) throttleMs = 60000;
-        else if (dist > 500) throttleMs = 20000;
-        else throttleMs = 5000;
-      } catch (e) {}
-    }
-    return (now - lastDirectionsAt) >= throttleMs;
-  }, [lastDirectionsAt, directions, parsedRiderLocation, targetLocation, isOffCurrentRoute]);
-
+  // Baseline route between restaurant and customer
   useEffect(() => {
-    if (directions && onPathReceived) {
-      const path = directions.routes[0]?.overview_path;
-      if (path) {
-        const simplePath = path.map(p => ({
-          lat: typeof p.lat === 'function' ? p.lat() : (p.lat || p.latitude),
-          lng: typeof p.lng === 'function' ? p.lng() : (p.lng || p.longitude)
-        }));
-        onPathReceived(simplePath);
-      }
-    }
-  }, [directions, onPathReceived]);
+    if (!restaurantPoint || !customerPoint) return;
+    if (baselineRouteData) return;
 
-  const directionsCallback = useCallback((result, status) => {
-    // Always update lastDirectionsAt to prevent infinite loop on failure
-    setLastDirectionsAt(Date.now());
-    if (status === 'OK' && result) {
-      setDirections(result);
-      const rawPolyline = result.routes?.[0]?.overview_polyline;
-      const encodedPolyline =
-        typeof rawPolyline === 'string' ? rawPolyline : rawPolyline?.points || '';
-      if (encodedPolyline && onPolylineReceived) onPolylineReceived(encodedPolyline);
-    }
-  }, [onPolylineReceived]);
+    let cancelled = false;
+    getRoute(restaurantPoint, customerPoint)
+      .then((res) => {
+        if (!cancelled && res?.path?.length > 1) {
+          setBaselineRouteData(res);
+        }
+      })
+      .catch(() => {});
 
-  const baselineDirectionsCallback = useCallback((result, status) => {
-    if (status === 'OK' && result) {
-      setBaselineDirections(result);
-    } else {
-      setBaselineFailed(true);
+    return () => { cancelled = true; };
+  }, [restaurantPoint, customerPoint, baselineRouteData]);
+
+  // Live rider route to target with throttling (min 60m movement or 20s interval)
+  useEffect(() => {
+    if (!parsedRiderLocation || !targetLocation) return;
+
+    const now = Date.now();
+    const timeSinceLast = now - lastRouteFetchTimeRef.current;
+    const moved = hasMovedSignificantly(lastOriginRef.current, parsedRiderLocation, 60);
+
+    if (routeData && !moved && !isOffCurrentRoute && timeSinceLast < 20000) {
+      return;
     }
-  }, []);
+
+    lastRouteFetchTimeRef.current = now;
+    lastOriginRef.current = { lat: parsedRiderLocation.lat, lng: parsedRiderLocation.lng };
+
+    let cancelled = false;
+    getRoute(parsedRiderLocation, targetLocation)
+      .then((res) => {
+        if (cancelled || !res?.path?.length) return;
+        setRouteData(res);
+        if (onPathReceived) onPathReceived(res.path);
+        if (onPolylineReceived && res.encodedPolyline) onPolylineReceived(res.encodedPolyline);
+      })
+      .catch((err) => {
+        console.warn('[LiveMap] Route calculation error:', err);
+      });
+
+    return () => { cancelled = true; };
+  }, [
+    parsedRiderLocation?.lat,
+    parsedRiderLocation?.lng,
+    targetLocation?.lat,
+    targetLocation?.lng,
+    isOffCurrentRoute,
+    onPathReceived,
+    onPolylineReceived,
+    routeData,
+  ]);
 
   useEffect(() => {
     (async () => {
@@ -310,19 +313,18 @@ const LiveMapWithApiKey = ({ googleMapsApiKey, onMapClick, onMapLoad, onPathRece
   const { remainingPath, traveledPath } = useMemo(() => {
     const maps = window.google?.maps;
     const spherical = maps?.geometry?.spherical;
-    const fullPath = directions?.routes?.[0]?.overview_path;
-    if (!parsedRiderLocation || !maps || !spherical || !Array.isArray(fullPath)) {
-      return { remainingPath: [], traveledPath: [] };
+    const fullPath = activePath;
+    if (!parsedRiderLocation || !maps || !spherical || !Array.isArray(fullPath) || fullPath.length === 0) {
+      return { remainingPath: fullPath || [], traveledPath: [] };
     }
-
-    if (!fullPath || fullPath.length === 0) return { remainingPath: [], traveledPath: [] };
 
     let closestIndex = 0;
     let minDistance = Infinity;
     const riderLatLng = new maps.LatLng(parsedRiderLocation.lat, parsedRiderLocation.lng);
 
     for (let i = 0; i < fullPath.length; i++) {
-      const distance = spherical.computeDistanceBetween(riderLatLng, fullPath[i]);
+      const ptLatLng = new maps.LatLng(fullPath[i].lat, fullPath[i].lng);
+      const distance = spherical.computeDistanceBetween(riderLatLng, ptLatLng);
       if (distance < minDistance) {
         minDistance = distance;
         closestIndex = i;
@@ -331,9 +333,11 @@ const LiveMapWithApiKey = ({ googleMapsApiKey, onMapClick, onMapLoad, onPathRece
 
     let startIndex = closestIndex;
     if (closestIndex < fullPath.length - 1) {
-      const distToCurrent = spherical.computeDistanceBetween(riderLatLng, fullPath[closestIndex]);
-      const distToNext = spherical.computeDistanceBetween(riderLatLng, fullPath[closestIndex + 1]);
-      const segmentLen = spherical.computeDistanceBetween(fullPath[closestIndex], fullPath[closestIndex + 1]);
+      const curPt = new maps.LatLng(fullPath[closestIndex].lat, fullPath[closestIndex].lng);
+      const nextPt = new maps.LatLng(fullPath[closestIndex + 1].lat, fullPath[closestIndex + 1].lng);
+      const distToCurrent = spherical.computeDistanceBetween(riderLatLng, curPt);
+      const distToNext = spherical.computeDistanceBetween(riderLatLng, nextPt);
+      const segmentLen = spherical.computeDistanceBetween(curPt, nextPt);
       
       if (distToNext < segmentLen && distToNext < distToCurrent) {
         startIndex = closestIndex + 1;
@@ -341,33 +345,14 @@ const LiveMapWithApiKey = ({ googleMapsApiKey, onMapClick, onMapLoad, onPathRece
     }
 
     const riderPoint = { lat: parsedRiderLocation.lat, lng: parsedRiderLocation.lng };
-    const toObj = (p) => ({
-      lat: typeof p.lat === 'function' ? p.lat() : p.lat,
-      lng: typeof p.lng === 'function' ? p.lng() : p.lng
-    });
-
-    const traveled = fullPath.slice(0, startIndex).map(toObj);
-    traveled.push(riderPoint);
-
-    const remaining = [riderPoint, ...fullPath.slice(startIndex).map(toObj)];
+    const traveled = [...fullPath.slice(0, startIndex), riderPoint];
+    const remaining = [riderPoint, ...fullPath.slice(startIndex)];
 
     return { remainingPath: remaining, traveledPath: traveled };
-  }, [directions, parsedRiderLocation]);
+  }, [activePath, parsedRiderLocation]);
 
   if (loadError) return <div className="absolute inset-0 flex items-center justify-center bg-gray-50 text-red-500 font-bold">Map Load Error</div>;
   if (!isLoaded) return <div className="absolute inset-0 flex items-center justify-center bg-gray-50"><div className="w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full animate-spin" /></div>;
-
-  const directionsServiceOptions = (parsedRiderLocation && targetLocation) ? {
-    origin: parsedRiderLocation,
-    destination: targetLocation,
-    travelMode: 'DRIVING',
-  } : null;
-
-  const baselineServiceOptions = (restaurantPoint && customerPoint) ? {
-    origin: restaurantPoint,
-    destination: customerPoint,
-    travelMode: 'DRIVING',
-  } : null;
 
   const mapCenter = parsedRiderLocation || targetLocation;
 
@@ -394,13 +379,6 @@ const LiveMapWithApiKey = ({ googleMapsApiKey, onMapClick, onMapLoad, onPathRece
         onClick={(e) => onMapClick?.(e.latLng.lat(), e.latLng.lng())}
         options={mapOptions}
       >
-        {directionsServiceOptions && shouldUpdateRoute && (
-          <DirectionsService options={directionsServiceOptions} callback={directionsCallback} />
-        )}
-
-        {baselineServiceOptions && !baselineDirections && !baselineFailed && (
-          <DirectionsService options={baselineServiceOptions} callback={baselineDirectionsCallback} />
-        )}
 
         {traveledPath.length > 0 && (
           <Polyline 

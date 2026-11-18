@@ -460,6 +460,8 @@ const transformOrderForTracking = (apiOrder, previousOrder = null, explicitResta
  */
 function mapBackendOrderStatusToUi(raw) {
   const s = String(raw || "").toLowerCase()
+  if (s === "payment_pending") return "payment_pending"
+  if (s === "payment_failed") return "payment_failed"
   if (!s || s === "pending" || s === "created") return "placed"
   if (s === "confirmed" || s === "accepted") return "confirmed"
   if (s === "preparing" || s === "processed") return "preparing"
@@ -480,6 +482,17 @@ function mapOrderToTrackingUiStatus(orderLike) {
   // Terminal states handled first
   if (isFoodOrderCancelledStatus(statusRaw)) return "cancelled"
   if (statusRaw === "delivered" || statusRaw === "completed") return "delivered"
+
+  // Check online payment completion (prevent unpaid online orders from showing as placed)
+  const paymentMethod = String(orderLike.payment?.method || orderLike.paymentMethod || "").toLowerCase()
+  const paymentStatus = String(orderLike.payment?.status || "").toLowerCase()
+  const isOnlinePayment = ["cashfree", "razorpay", "online"].includes(paymentMethod)
+  const isPaid = ["paid", "authorized", "captured", "settled"].includes(paymentStatus)
+
+  if (isOnlinePayment && !isPaid) {
+    if (paymentStatus === "failed") return "cancelled"
+    return "payment_pending"
+  }
 
   // Live Ride / Phase-based mapping (Highest priority for precision)
   const isRiderAccepted = orderLike.dispatch?.status === "accepted" || orderLike.assignmentInfo?.status === "accepted" || orderLike.deliveryPartner?.status === "accepted";
@@ -521,6 +534,7 @@ export default function OrderTracking() {
   const { isConnected: isSocketConnected } = useUserNotifications()
 
   const checkoutOrderSeedRef = useRef(location.state?.order ?? null)
+  const hasVerifiedReturnPaymentRef = useRef(false)
   
   // State for order data — hydrate from checkout navigation for instant map render
   const [order, setOrder] = useState(() => {
@@ -842,31 +856,49 @@ export default function OrderTracking() {
   useEffect(() => {
     const isReturn = searchParams.get("cashfree_return") === "true" || searchParams.get("confirmed") === "true"
     const targetOrderId = orderId || lookupIdFromQuery
-    if (!targetOrderId || !isReturn) return
+    if (!targetOrderId || !isReturn || hasVerifiedReturnPaymentRef.current) return
+    hasVerifiedReturnPaymentRef.current = true
 
     let isMounted = true
 
     const verifyOnReturn = async () => {
-      try {
-        const verifyRes = await orderAPI.verifyPayment({ orderId: targetOrderId })
-        if (!isMounted) return
+      const maxRetries = 3
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          const verifyRes = await orderAPI.verifyPayment({ orderId: targetOrderId })
+          if (!isMounted) return
 
-        if (verifyRes.data?.success) {
-          toast.success("Payment verified! Your order is placed.")
-          try {
-            localStorage.removeItem('cart_items')
-            window.dispatchEvent(new CustomEvent('cart-updated'))
-          } catch {}
+          if (verifyRes.data?.success) {
+            toast.success("Payment verified! Your order is placed.")
+            try {
+              localStorage.removeItem('cart_items')
+              window.dispatchEvent(new CustomEvent('cart-updated'))
+            } catch {}
 
-          const refreshed = await fetchOrderDetailsWithFallback({ force: true })
-          if (refreshed?.data?.data?.order || refreshed?.data?.order) {
-            const freshDoc = refreshed.data.data?.order || refreshed.data.order
-            setOrder(prev => transformOrderForTracking(freshDoc, prev))
+            const refreshed = await fetchOrderDetailsWithFallback({ force: true })
+            if (refreshed?.data?.data?.order || refreshed?.data?.order) {
+              const freshDoc = refreshed.data.data?.order || refreshed.data.order
+              setOrder(prev => transformOrderForTracking(freshDoc, prev))
+            }
+            return
           }
+        } catch {
+          // Allow next attempt
         }
-      } catch (err) {
-        // Non-blocking: background polling or webhook will sync status
+
+        if (attempt < maxRetries && isMounted) {
+          await new Promise(r => setTimeout(r, 1500))
+        }
       }
+
+      if (!isMounted) return
+      try {
+        const refreshed = await fetchOrderDetailsWithFallback({ force: true })
+        if (refreshed?.data?.data?.order || refreshed?.data?.order) {
+          const freshDoc = refreshed.data.data?.order || refreshed.data.order
+          setOrder(prev => transformOrderForTracking(freshDoc, prev))
+        }
+      } catch {}
     }
 
     verifyOnReturn()
@@ -1284,9 +1316,13 @@ export default function OrderTracking() {
             : undefined
         });
 
-        // Optional: Vibrate device if supported
-        if (navigator.vibrate) {
-          navigator.vibrate([200, 100, 200]);
+        // Optional: Vibrate device if supported and allowed
+        try {
+          if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+            navigator.vibrate([200, 100, 200]);
+          }
+        } catch {
+          // Ignore intervention if user has not interacted with frame yet
         }
       }
     };
@@ -1427,6 +1463,25 @@ export default function OrderTracking() {
   const handleRefresh = async () => {
     setIsRefreshing(true)
     try {
+      const targetOrderId = orderId || lookupIdFromQuery || order?._id
+      const isOnline = ["cashfree", "razorpay", "online"].includes(String(order?.payment?.method || "").toLowerCase())
+      const isUnpaid = !["paid", "authorized", "captured", "settled"].includes(String(order?.payment?.status || "").toLowerCase())
+
+      if (targetOrderId && isOnline && isUnpaid) {
+        try {
+          const verifyRes = await orderAPI.verifyPayment({ orderId: targetOrderId })
+          if (verifyRes.data?.success) {
+            toast.success("Payment verified! Your order is placed.")
+            try {
+              localStorage.removeItem('cart_items')
+              window.dispatchEvent(new CustomEvent('cart-updated'))
+            } catch {}
+          }
+        } catch (vErr) {
+          debugError("verifyPayment error on refresh:", vErr)
+        }
+      }
+
       const response = await fetchOrderDetailsWithFallback({ force: true })
       let apiOrder = null;
       if (response.data?.success && response.data.data?.order) {
@@ -1520,6 +1575,18 @@ export default function OrderTracking() {
   }
 
   const statusConfig = {
+    payment_pending: {
+      title: "Payment Pending",
+      subtitle: "Payment was not completed. Order is not placed.",
+      color: "bg-amber-600",
+      iconType: 'cancelled'
+    },
+    payment_failed: {
+      title: "Payment Not Completed",
+      subtitle: "Payment failed or was cancelled. Order is not placed.",
+      color: "bg-red-600",
+      iconType: 'cancelled'
+    },
     placed: {
       title: "Order Placed",
       subtitle: "Waiting for restaurant to accept",
@@ -1755,7 +1822,7 @@ export default function OrderTracking() {
       </motion.div>
 
       {/* Map Section */}
-      {!isDeliveredOrder && orderStatus !== 'cancelled' && orderStatus !== 'dead' && !(isScheduledOrder && ['placed', 'confirmed'].includes(orderStatus)) && (
+      {!isDeliveredOrder && orderStatus !== 'cancelled' && orderStatus !== 'dead' && orderStatus !== 'payment_failed' && orderStatus !== 'payment_pending' && !(isScheduledOrder && ['placed', 'confirmed'].includes(orderStatus)) && (
         <MapErrorBoundary>
           <DeliveryMap
             orderId={orderId}
@@ -1850,6 +1917,42 @@ export default function OrderTracking() {
                       <Phone className="w-3 h-3" />
                       Contact Admin Support
                     </a>
+                  </div>
+                )}
+                {(orderStatus === 'cancelled' || orderStatus === 'payment_failed') && (
+                  <div className="mt-3 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-100 dark:border-red-900/30">
+                    <p className="text-sm text-red-700 dark:text-red-300 font-medium mb-3">
+                      {order?.cancellationReason || "This order was cancelled. No payment was deducted and no order was sent to the restaurant."}
+                    </p>
+                    <Link 
+                      to="/food/user" 
+                      className="inline-flex items-center gap-2 bg-primary hover:bg-secondary text-white text-xs font-bold py-2 px-4 rounded-full transition-colors shadow-sm"
+                    >
+                      Browse Restaurants
+                    </Link>
+                  </div>
+                )}
+                {orderStatus === 'payment_pending' && (
+                  <div className="mt-3 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-900/30">
+                    <p className="text-sm text-amber-800 dark:text-amber-200 font-medium mb-3">
+                      Payment confirmation is pending. If you just completed the payment, click below to verify status.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button 
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                        className="bg-primary hover:bg-secondary text-white text-xs font-bold py-2 px-4 rounded-full transition-colors shadow-sm"
+                      >
+                        {isRefreshing ? "Verifying..." : "Check Payment Status"}
+                      </Button>
+                      <Button
+                        onClick={handleCancelOrder}
+                        variant="outline"
+                        className="text-xs font-semibold py-2 px-4 rounded-full border-gray-300 dark:border-gray-700"
+                      >
+                        Cancel Order
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>

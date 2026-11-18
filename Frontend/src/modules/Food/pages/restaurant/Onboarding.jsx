@@ -1898,32 +1898,34 @@ export default function RestaurantOnboarding() {
                       setLocationSuggestions([])
 
                       if (s.isGoogle) {
-                        // Fetch details from Google Places API
+                        // Fetch details from Google Places API (New)
                         try {
-                          const dummyNode = document.createElement("div")
-                          const service = new window.google.maps.places.PlacesService(dummyNode)
-                          service.getDetails(
-                            { placeId: s.id, fields: ["formatted_address", "address_components", "geometry"] },
-                            (place, status) => {
-                              if (status === window.google.maps.places.PlacesServiceStatus.OK && place) {
-                                const comps = Array.isArray(place.address_components) ? place.address_components : []
-                                const get = (types) => comps.find(c => types.some(t => c.types?.includes(t)))?.long_name || ""
+                          const { Place } = await window.google.maps.importLibrary("places")
+                          const place = s.placePrediction ? s.placePrediction.toPlace() : new Place({ id: s.id })
+                          await place.fetchFields({
+                            fields: ["displayName", "formattedAddress", "location", "addressComponents"]
+                          })
 
-                                handleLocationSelect({
-                                  formattedAddress: place.formatted_address || s.display,
-                                  area: get(["sublocality_level_1", "sublocality", "neighborhood"]) || get(["locality"]),
-                                  city: get(["locality"]) || get(["administrative_area_level_2"]),
-                                  state: get(["administrative_area_level_1"]) || get(["administrative_area_level_2"]),
-                                  pincode: get(["postal_code"]),
-                                  latitude: place.geometry?.location?.lat?.() || "",
-                                  longitude: place.geometry?.location?.lng?.() || ""
-                                })
-                              } else {
-                                handleLocationSelect({ formattedAddress: s.display })
-                              }
-                            }
-                          )
+                          const comps = Array.isArray(place.addressComponents) ? place.addressComponents : []
+                          const get = (types) => {
+                            const c = comps.find(item => types.some(t => item.types?.includes(t)))
+                            return c?.longText || c?.long_name || ""
+                          }
+
+                          const lat = typeof place.location?.lat === "function" ? place.location.lat() : place.location?.lat || ""
+                          const lng = typeof place.location?.lng === "function" ? place.location.lng() : place.location?.lng || ""
+
+                          handleLocationSelect({
+                            formattedAddress: place.formattedAddress || s.display,
+                            area: get(["sublocality_level_1", "sublocality", "neighborhood"]) || get(["locality"]),
+                            city: get(["locality"]) || get(["administrative_area_level_2"]),
+                            state: get(["administrative_area_level_1"]) || get(["administrative_area_level_2"]),
+                            pincode: get(["postal_code"]),
+                            latitude: lat,
+                            longitude: lng
+                          })
                         } catch (err) {
+                          debugError("Failed to fetch place details (New Places API):", err)
                           handleLocationSelect({ formattedAddress: s.display })
                         }
                       } else {
@@ -2086,7 +2088,7 @@ export default function RestaurantOnboarding() {
     let cancelled = false
 
     const loadMaps = async () => {
-      if (window.google?.maps?.places?.AutocompleteService) {
+      if (window.google?.maps?.importLibrary) {
         googleMapsReadyRef.current = true
         return
       }
@@ -2106,7 +2108,7 @@ export default function RestaurantOnboarding() {
         mapsScript.remove()
       } else if (mapsScript && mapsScript.src.includes("libraries=places")) {
          for (let i = 0; i < 60; i++) {
-           if (window.google?.maps?.places?.AutocompleteService) {
+           if (window.google?.maps?.importLibrary) {
              googleMapsReadyRef.current = true
              return
            }
@@ -2122,7 +2124,7 @@ export default function RestaurantOnboarding() {
       script.defer = true
       script.onload = () => {
         setTimeout(() => {
-          if (window.google?.maps?.places?.AutocompleteService) {
+          if (window.google?.maps?.importLibrary) {
             googleMapsReadyRef.current = true
           }
         }, 200)
@@ -2152,31 +2154,35 @@ export default function RestaurantOnboarding() {
 
       setIsSearchingLocation(true)
 
-      // Try Google Places AutocompleteService first
-      if (googleMapsReadyRef.current && window.google?.maps?.places?.AutocompleteService) {
+      // Try Google Places API (New) AutocompleteSuggestion first
+      if (googleMapsReadyRef.current && window.google?.maps?.importLibrary) {
         try {
-          const service = new window.google.maps.places.AutocompleteService()
-          service.getPlacePredictions(
-            { input: q, componentRestrictions: { country: "in" } },
-            (predictions, status) => {
-              if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-                const mapped = predictions.map(p => ({
-                  id: p.place_id,
-                  display: p.description,
-                  isGoogle: true
-                }))
-                setLocationSuggestions(mapped)
-                setIsSearchingLocation(false)
-              } else {
-                // If ZERO_RESULTS or error, we could fallback, but let's just show empty
-                setLocationSuggestions([])
-                setIsSearchingLocation(false)
-              }
+          const { AutocompleteSuggestion } = await window.google.maps.importLibrary("places")
+          const { suggestions } = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
+            input: q,
+            includedRegionCodes: ["in"],
+          })
+
+          if (suggestions && suggestions.length > 0) {
+            const mapped = suggestions.map((s) => ({
+              id: s.placePrediction?.placeId,
+              display: s.placePrediction?.text?.text || "",
+              isGoogle: true,
+              placePrediction: s.placePrediction,
+            })).filter(item => item.id)
+
+            if (mapped.length > 0) {
+              setLocationSuggestions(mapped)
+              setIsSearchingLocation(false)
+              return
             }
-          )
-          return // Exit here, callback handles state
+          } else {
+            setLocationSuggestions([])
+            setIsSearchingLocation(false)
+            return
+          }
         } catch (e) {
-          debugError("Google AutocompleteService failed:", e)
+          debugError("Google AutocompleteSuggestion failed:", e)
         }
       }
 

@@ -20,6 +20,7 @@ import { config } from '../../../../config/env.js';
 import {
     createCashfreeOrder,
     fetchCashfreeOrder,
+    fetchCashfreePayments,
     isCashfreeConfigured,
     initiateCashfreeRefund
 } from '../helpers/cashfree.helper.js';
@@ -448,7 +449,7 @@ export async function createOrder(userId, dto) {
   try {
     // Notify customer. For online payments, order is created but awaits payment confirmation.
     const isAwaitingOnlinePayment =
-      String(paymentMethod || "").toLowerCase() === "razorpay" &&
+      isOnlinePayment &&
       String(payment?.status || "").toLowerCase() !== "paid";
     await notifyOwnersSafely([{ ownerType: "USER", ownerId: userId }], {
       title: isAwaitingOnlinePayment
@@ -544,7 +545,7 @@ export async function verifyPayment(userId, dto) {
   });
   if (!order) throw new NotFoundError("Order not found");
   if (order.payment?.status === "paid")
-    return { order: normalizeOrderForClient(order), payment: order.payment };
+    return { success: true, order: normalizeOrderForClient(order), payment: order.payment };
 
   const gatewayOrderId = String(
     dto.gatewayOrderId ||
@@ -558,10 +559,40 @@ export async function verifyPayment(userId, dto) {
   // Server-side verification: fetch order directly from Cashfree (Never trust client)
   let cfPaymentId = dto.gatewayPaymentId || dto.razorpayPaymentId || gatewayOrderId;
   if (isCashfreeConfigured()) {
-    const cfOrder = await fetchCashfreeOrder(gatewayOrderId);
-    const orderStatus = String(cfOrder?.order_status || '').toUpperCase();
-    if (orderStatus !== 'PAID') {
-      throw new ValidationError(`Payment not completed. Status: ${orderStatus || 'PENDING'}`);
+    const cfOrder = await fetchCashfreeOrder(gatewayOrderId).catch(() => null);
+    let orderStatus = String(cfOrder?.order_status || '').toUpperCase();
+    let isPaid = orderStatus === 'PAID';
+
+    // If order_status isn't marked PAID yet, inspect payment attempts
+    if (!isPaid) {
+      const payments = await fetchCashfreePayments(gatewayOrderId);
+      const successfulPayment = payments.find(p => String(p?.payment_status || '').toUpperCase() === 'SUCCESS');
+      if (successfulPayment) {
+        isPaid = true;
+        orderStatus = 'PAID';
+        cfPaymentId = String(successfulPayment.cf_payment_id || cfPaymentId);
+      }
+    }
+
+    if (!isPaid) {
+      if (['FAILED', 'CANCELLED', 'USER_DROPPED', 'EXPIRED'].includes(orderStatus)) {
+        await FoodOrder.updateOne(
+          { _id: order._id, 'payment.status': { $ne: 'paid' } },
+          { $set: { 'payment.status': 'failed' } }
+        ).catch(() => {});
+        await financeService.recordPaymentAttemptFailure(order._id, {
+          gatewayPaymentId: String(cfOrder?.cf_order_id || ''),
+          reason: `Payment not completed. Status: ${orderStatus}`,
+          source: 'verify_api'
+        }).catch(() => {});
+      }
+      return {
+        success: false,
+        paid: false,
+        orderStatus: orderStatus || 'PENDING',
+        order: normalizeOrderForClient(order),
+        message: `Payment not completed. Status: ${orderStatus || 'PENDING'}`
+      };
     }
     cfPaymentId = String(cfOrder?.cf_order_id || cfPaymentId);
   }
@@ -598,7 +629,7 @@ export async function verifyPayment(userId, dto) {
     });
   }
 
-  return { order: normalizeOrderForClient(fresh), payment: fresh.payment };
+  return { success: true, order: normalizeOrderForClient(fresh), payment: fresh.payment };
 }
 
 /**
@@ -834,11 +865,11 @@ export async function recoverStuckOrders() {
       { $unset: { 'dispatch.dispatchingAt': '' } }
     );
 
-    // 3. Auto-cancel stale unpaid Razorpay orders (payment never completed)
+    // 3. Auto-cancel stale unpaid online orders (payment never completed)
     const FIFTEEN_MIN = 15 * 60 * 1000;
     const staleUnpaid = await FoodOrder.find({
-      'payment.method': 'razorpay',
-      'payment.status': 'created',
+      'payment.method': { $in: ['razorpay', 'cashfree', 'online'] },
+      'payment.status': { $in: ['created', 'failed'] },
       orderStatus: 'created',
       createdAt: { $lt: new Date(now - FIFTEEN_MIN) },
     }).select('_id').limit(200).lean();
@@ -916,9 +947,9 @@ export async function resyncState(userId, role) {
           "dead"
         ],
       },
-      // Exclude unpaid Razorpay orders (payment failed / user closed gateway)
+      // Exclude unpaid online orders (payment failed / user closed gateway / abandoned)
       $nor: [
-        { "payment.method": "razorpay", "payment.status": "created" }
+        { "payment.method": { $in: ["razorpay", "cashfree", "online"] }, "payment.status": { $in: ["created", "failed"] } }
       ]
     })
       .select("+deliveryOtp")
@@ -1372,7 +1403,7 @@ export async function updateOrderStatusRestaurant(
     title = "Food is ready! 🛍️";
     body = "Your order is ready and waiting to be picked up.";
   } else if (String(orderStatus).includes("cancel")) {
-    const isOnlinePaid = order.payment.method === "razorpay" && (order.payment.status === "paid" || order.payment.status === "refunded");
+    const isOnlinePaid = ["razorpay", "cashfree", "online"].includes(order.payment.method) && (order.payment.status === "paid" || order.payment.status === "refunded");
     const refundDetail = isOnlinePaid ? ` Your refund of ₹${order.pricing.total} is being processed and will be credited to your original payment method within 5-7 working days.` : "";
     
     title = "Order Cancelled ❌";

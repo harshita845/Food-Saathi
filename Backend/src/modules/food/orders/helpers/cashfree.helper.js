@@ -193,6 +193,36 @@ export async function fetchCashfreeOrder(orderId) {
 }
 
 /**
+ * Fetch payments for an order from Cashfree (GET /orders/:order_id/payments).
+ * Returns array of payment attempts.
+ */
+export async function fetchCashfreePayments(orderId) {
+    const { appId, secretKey, baseUrl } = getCashfreeCredentials();
+
+    if (!appId || !secretKey || !orderId) return [];
+
+    const url = `${baseUrl}/orders/${encodeURIComponent(String(orderId))}/payments`;
+
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'x-api-version': '2023-08-01',
+                'x-client-id': appId,
+                'x-client-secret': secretKey
+            }
+        });
+
+        if (!response.ok) return [];
+        const data = await response.json().catch(() => []);
+        return Array.isArray(data) ? data : [];
+    } catch (err) {
+        logger.warn(`[Cashfree] fetchCashfreePayments error for ${orderId}: ${err?.message || err}`);
+        return [];
+    }
+}
+
+/**
  * Verifies Cashfree webhook signature using raw request body.
  * Cashfree computes HMAC-SHA256 over `${timestamp}${rawBody}` using client secret.
  */

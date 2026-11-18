@@ -216,13 +216,19 @@ export default function Orders() {
           window.location.replace(`/food/user/orders/${orderIdFromUrl}?confirmed=true`)
           return
         } else {
-          toast.error(verifyRes.data?.message || "Payment verification incomplete.")
+          toast.error(verifyRes.data?.message || "Payment was cancelled or not completed. Order is not placed.")
+          try {
+            await orderAPI.cancelOrder(orderIdFromUrl, { reason: "Payment cancelled by user" })
+          } catch {}
           setVerifyingPayment(false)
         }
       } catch (err) {
         if (!isMounted) return
-        const errMsg = err?.response?.data?.message || err?.message || "Payment verification pending."
-        toast.info(errMsg)
+        const errMsg = err?.response?.data?.message || err?.message || "Payment was cancelled or not completed. Order is not placed."
+        toast.error(errMsg)
+        try {
+          await orderAPI.cancelOrder(orderIdFromUrl, { reason: "Payment cancelled by user" })
+        } catch {}
         setVerifyingPayment(false)
       }
     }

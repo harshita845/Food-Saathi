@@ -52,6 +52,13 @@ export async function verifyPaymentController(req, res, next) {
         const userId = req.user?.userId;
         const dto = validateVerifyPaymentDto(req.body);
         const result = await orderService.verifyPayment(userId, dto);
+        if (result?.success === false) {
+            return res.status(200).json({
+                success: false,
+                message: result.message || 'Payment not completed',
+                data: result
+            });
+        }
         return sendResponse(res, 200, 'Payment verified', result);
     } catch (err) {
         next(err);
