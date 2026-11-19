@@ -115,9 +115,12 @@ export async function capturePayment(orderId, opts = {}) {
             }
 
             // Gateway sanity checks: right gateway order, and enough money
-            const knownGatewayOrderId = String(tx.payment?.gateway?.orderId || tx.payment?.razorpay?.orderId || '');
-            if (gatewayOrderId && knownGatewayOrderId && gatewayOrderId !== knownGatewayOrderId) {
-                logger.warn(`Capture rejected: gateway order mismatch for order ${orderId}`);
+            const knownGatewayOrderId = String(tx.payment?.gateway?.orderId || tx.payment?.razorpay?.orderId || tx.gateway?.gatewayOrderId || '');
+            const isOrderMatch = gatewayOrderId === knownGatewayOrderId ||
+                                 gatewayOrderId === String(orderId) ||
+                                 gatewayOrderId === String(tx.orderId);
+            if (gatewayOrderId && knownGatewayOrderId && !isOrderMatch) {
+                logger.warn(`Capture rejected: gateway order mismatch for order ${orderId} (received: ${gatewayOrderId}, known: ${knownGatewayOrderId})`);
                 return { applied: false, reason: 'gateway_order_mismatch', transaction: tx.toObject() };
             }
             if (amountPaise !== null) {

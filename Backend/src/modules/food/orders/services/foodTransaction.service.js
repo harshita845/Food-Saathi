@@ -164,8 +164,15 @@ export async function createInitialTransaction(order, { session = null } = {}) {
             method: String(order.payment?.method || 'cash'),
             status: String(order.payment?.status || 'cod_pending'),
             amountDue: Number(order.payment?.amountDue ?? order.pricing?.total ?? 0) || 0,
+            paymentSessionId: String(order.payment?.paymentSessionId || order.payment?.gateway?.paymentSessionId || ''),
+            gateway: {
+                orderId: String(order.payment?.gateway?.orderId || order.payment?.razorpay?.orderId || ''),
+                paymentId: String(order.payment?.gateway?.paymentId || order.payment?.razorpay?.paymentId || ''),
+                signature: String(order.payment?.gateway?.signature || order.payment?.razorpay?.signature || ''),
+                paymentSessionId: String(order.payment?.gateway?.paymentSessionId || order.payment?.paymentSessionId || '')
+            },
             razorpay: {
-                orderId: String(order.payment?.razorpay?.orderId || ''),
+                orderId: String(order.payment?.razorpay?.orderId || order.payment?.gateway?.orderId || ''),
                 paymentId: String(order.payment?.razorpay?.paymentId || ''),
                 signature: String(order.payment?.razorpay?.signature || ''),
             },
@@ -178,6 +185,13 @@ export async function createInitialTransaction(order, { session = null } = {}) {
                 status: String(order.payment?.qr?.status || ''),
                 expiresAt: order.payment?.qr?.expiresAt || null,
             }
+        },
+        gateway: {
+            provider: String(order.payment?.gateway?.provider || (order.payment?.method === 'cashfree' ? 'cashfree' : 'razorpay')),
+            gatewayOrderId: String(order.payment?.gateway?.orderId || order.payment?.razorpay?.orderId || ''),
+            gatewayPaymentId: String(order.payment?.gateway?.paymentId || order.payment?.razorpay?.paymentId || ''),
+            paymentSessionId: String(order.payment?.gateway?.paymentSessionId || order.payment?.paymentSessionId || ''),
+            razorpayOrderId: String(order.payment?.razorpay?.orderId || '')
         },
         pricing: {
             subtotal: Number(order.pricing?.subtotal || 0) || 0,

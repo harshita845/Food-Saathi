@@ -128,7 +128,19 @@ export default function Cart() {
   // Fees/prices changed in admin or restaurant app: recalculate the bill
   const dataVersion = useDataVersion()
   const [manualCouponCode, setManualCouponCode] = useState("")
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("cash")
+  // Remember the customer's last payment choice (like Swiggy/Zomato), e.g. after a cancelled
+  // online payment they come back to the cart with "Online Payment" still selected.
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(() => {
+    try {
+      const saved = localStorage.getItem("cart_payment_method")
+      return ["cash", "razorpay", "wallet"].includes(saved) ? saved : "cash"
+    } catch {
+      return "cash"
+    }
+  })
+  useEffect(() => {
+    try { localStorage.setItem("cart_payment_method", selectedPaymentMethod) } catch {}
+  }, [selectedPaymentMethod])
   const [showPaymentSheet, setShowPaymentSheet] = useState(false)
   const [walletBalance, setWalletBalance] = useState(0)
   const [isLoadingWallet, setIsLoadingWallet] = useState(false)
@@ -1952,7 +1964,9 @@ export default function Cart() {
       // Flag to prevent double-cancellation
       let paymentHandled = false
 
-      // Initialize Cashfree payment with _self redirect
+      // Full-page Cashfree checkout (same tab). The modal variant opens bank pages in a popup,
+      // which breaks net banking (incl. the sandbox simulator). After payment Cashfree returns to
+      // /food/user/orders/:id?cashfree_return=true, where the "Placing your order..." loader confirms it.
       await initCashfreePayment({
         paymentSessionId,
         orderId: gatewayOrderId,
@@ -1995,18 +2009,20 @@ export default function Cart() {
               clearCart()
               setIsPlacingOrder(false)
             } else {
-              throw new Error(verifyResponse.data.message || "Payment verification failed")
+              // Gateway hasn't confirmed yet (common for a second or two). Hand over to the
+              // order page, which shows "Placing your order..." and keeps confirming.
+              setIsPlacingOrder(false)
+              navigate(`/food/user/orders/${verifyOrderId}?cashfree_return=true`, { replace: true })
             }
           } catch (error) {
             debugError("Payment verification error:", error)
-            const errorMessage =
-              error?.response?.data?.message ||
-              error?.response?.data?.error?.message ||
-              error?.response?.data?.errors?.[0]?.message ||
-              error?.message ||
-              "Payment verification failed. Please contact support."
-            toast.error(errorMessage)
+            const fallbackId = order?._id || order?.id || order?.orderMongoId
             setIsPlacingOrder(false)
+            if (fallbackId) {
+              navigate(`/food/user/orders/${fallbackId}?cashfree_return=true`, { replace: true })
+            } else {
+              toast.error("We couldn't confirm your payment right now. Please check My Orders.")
+            }
           }
         },
         onError: async (error) => {
@@ -2023,11 +2039,12 @@ export default function Cart() {
               debugError("Failed to cancel unpaid order:", cancelErr)
             }
           }
-          if (error?.code !== 'PAYMENT_CANCELLED' && error?.message !== 'PAYMENT_CANCELLED') {
-            const errorMessage = error?.description || error?.message || "Payment failed. Please try again."
-            toast.error(errorMessage)
+          const errText = `${error?.code || ''} ${error?.message || ''}`.toLowerCase()
+          if (/cancel|abort|close|dropped|dismiss/.test(errText)) {
+            toast.info("Payment cancelled. No money was deducted and no order was placed.")
           } else {
-            toast.info("Payment was cancelled. No order has been placed.")
+            // Don't show raw gateway text to customers.
+            toast.error("Payment didn't go through. No money was deducted — please try again.")
           }
           setIsPlacingOrder(false)
         },
@@ -2041,7 +2058,7 @@ export default function Cart() {
               await orderAPI.cancelOrder(cancelOrderId, {
                 reason: "User closed payment gateway without paying"
               })
-              toast.info("Payment was not completed. No order has been placed.")
+              toast.info("Payment cancelled. No money was deducted and no order was placed.")
             } catch (cancelErr) {
               debugError("Failed to cancel unpaid order:", cancelErr)
             }

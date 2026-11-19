@@ -69,7 +69,9 @@ export const initCashfreePayment = async (options = {}) => {
 
     if (result?.error) {
       console.warn('[Cashfree] Checkout error/cancelled:', result.error);
-      if (result.error.code === 'USER_DROPPED' || result.error.message?.includes('closed')) {
+      const errText = `${result.error.code || ''} ${result.error.message || ''}`.toLowerCase();
+      // Customer closed/cancelled/aborted the payment sheet — not a real failure.
+      if (/user_dropped|close|cancel|dismiss|abort/.test(errText)) {
         if (onClose) onClose();
       } else {
         if (onError) onError(result.error);

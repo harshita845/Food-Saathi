@@ -1182,7 +1182,10 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
           availableResponse?.data?.data ||
           availableResponse?.data ||
           {};
-        const availableOrders = Array.isArray(availablePayload?.docs)
+        // Backend paginated shape is { data: [...], meta, cashLimit, orderCapacity }
+        const availableOrders = Array.isArray(availablePayload?.data)
+          ? availablePayload.data
+          : Array.isArray(availablePayload?.docs)
           ? availablePayload.docs
           : Array.isArray(availablePayload?.items)
             ? availablePayload.items
@@ -1231,7 +1234,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
       if (!document.hidden) {
         void hydrateAvailableOrder();
       }
-    }, isSocketConnected ? 45000 : 15000);
+    }, isSocketConnected ? 30000 : 10000);
 
     return () => {
       cancelled = true;
@@ -1301,7 +1304,8 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
   const handleAcceptOffer = useCallback(async (order) => {
     await acceptOrder(order);
     removeClaimedOrderFromQueue(order, { notify: false });
-    await refreshAcceptedOrders();
+    // Accept already succeeded; a failed list refresh must not undo the slider.
+    await refreshAcceptedOrders().catch(() => {});
   }, [acceptOrder, refreshAcceptedOrders, removeClaimedOrderFromQueue]);
 
   const handlePassOffer = useCallback(async (order) => {
@@ -1813,7 +1817,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
                           `[GhostAssignFix] BLOCKED: locked ${lockedId} but accept target is ${getOrderMongoId(acceptTarget) || getOrderAcceptId(acceptTarget)}`,
                         );
                         toast.error('Order changed while accepting. Please try again.', { duration: 4000 });
-                        return;
+                        throw new Error('accept_blocked'); // resets the slider
                       }
 
                       if (
@@ -1823,7 +1827,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
                       ) {
                         console.error('[GhostAssignFix] BLOCKED: modal order does not match visible popup.');
                         toast.error('Order mismatch detected. Please try again.', { duration: 4000 });
-                        return;
+                        throw new Error('accept_blocked'); // resets the slider
                       }
 
                       try {
@@ -1836,6 +1840,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
                         if (isTaken) {
                           removeClaimedOrderFromQueue(acceptTarget, { notify: false });
                         }
+                        throw err; // let the slider snap back so the rider can retry
                       }
                     }}
                     onReject={() => handlePassOffer(incomingOrder)}

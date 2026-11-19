@@ -198,18 +198,24 @@ export async function getRoute(rawOrigin, rawDestination, options = {}) {
       if (window.google?.maps?.importLibrary) {
         const { Route } = await window.google.maps.importLibrary('routes');
         if (Route?.computeRoutes) {
+          const originPoint = window.google?.maps?.LatLng
+            ? new window.google.maps.LatLng(origin.lat, origin.lng)
+            : { lat: origin.lat, lng: origin.lng };
+          const destinationPoint = window.google?.maps?.LatLng
+            ? new window.google.maps.LatLng(destination.lat, destination.lng)
+            : { lat: destination.lat, lng: destination.lng };
+
+          // The Maps JS Route class takes google.maps.TravelMode values ('DRIVING', 'TWO_WHEELER'),
+          // not the REST API names ('DRIVE'). Sending 'DRIVE' is rejected and forces the fallback route.
+          const TM = window.google?.maps?.TravelMode || {};
+          const jsTravelMode = travelMode === 'TWO_WHEELER'
+            ? (TM.TWO_WHEELER || 'TWO_WHEELER')
+            : (TM.DRIVING || 'DRIVING');
+
           const request = {
-            origin: {
-              location: {
-                latLng: { latitude: origin.lat, longitude: origin.lng }
-              }
-            },
-            destination: {
-              location: {
-                latLng: { latitude: destination.lat, longitude: destination.lng }
-              }
-            },
-            travelMode,
+            origin: originPoint,
+            destination: destinationPoint,
+            travelMode: jsTravelMode,
             fields: ['path', 'distanceMeters', 'durationMillis'],
           };
 

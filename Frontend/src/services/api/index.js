@@ -2046,8 +2046,14 @@ export const orderAPI = {
     userClient.post("/food/orders/calculate", payload ?? {}),
   createOrder: (payload) =>
     userClient.post("/food/orders", payload ?? {}),
-  verifyPayment: (body) =>
-    userClient.post("/food/orders/verify-payment", body ?? {}),
+  verifyPayment: (body) => {
+    if (body?.orderId) {
+      try {
+        orderAPI.clearOrderDetailsCache?.(body.orderId);
+      } catch {}
+    }
+    return userClient.post("/food/orders/verify-payment", body ?? {});
+  },
   getOrders: (params = {}) =>
     userClient
       .get("/food/orders", {
@@ -2088,13 +2094,18 @@ export const orderAPI = {
 
         return res;
       }),
+  clearOrderDetailsCache: (orderId) => {
+    if (typeof orderAPI._clearDetailsCache === "function") {
+      orderAPI._clearDetailsCache(orderId);
+    }
+  },
   getOrderDetails: (() => {
     const inFlight = new Map();
     const cache = new Map();
     /** Dedupes overlapping calls (StrictMode, poll + socket) without hiding fresh data for long. */
     const CACHE_MS = 800;
 
-    return (orderId, options = {}) => {
+    const fn = (orderId, options = {}) => {
       const key = String(orderId ?? "").trim();
       if (!key) {
         return Promise.reject(new Error("orderId required"));
@@ -2102,7 +2113,9 @@ export const orderAPI = {
 
       const force = options.force === true;
       const now = Date.now();
-      if (!force) {
+      if (force) {
+        cache.delete(key);
+      } else {
         const hit = cache.get(key);
         if (hit && now - hit.at < CACHE_MS) {
           return Promise.resolve(hit.res);
@@ -2110,7 +2123,7 @@ export const orderAPI = {
       }
 
       const pending = inFlight.get(key);
-      if (pending) return pending;
+      if (pending && !force) return pending;
 
       const p = userClient
         .get(`/food/orders/${key}`)
@@ -2125,6 +2138,21 @@ export const orderAPI = {
       inFlight.set(key, p);
       return p;
     };
+
+    setTimeout(() => {
+      orderAPI._clearDetailsCache = (id) => {
+        const k = String(id ?? "").trim();
+        if (k) {
+          cache.delete(k);
+          inFlight.delete(k);
+        } else {
+          cache.clear();
+          inFlight.clear();
+        }
+      };
+    }, 0);
+
+    return fn;
   })(),
   cancelOrder: (orderId, body = {}) =>
     userClient.patch(`/food/orders/${String(orderId)}/cancel`, body ?? {}),

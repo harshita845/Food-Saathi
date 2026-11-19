@@ -282,33 +282,81 @@ const LiveMapWithApiKey = ({ googleMapsApiKey, onMapClick, onMapLoad, onPathRece
     return activeOrder.customerImage || activeOrder.user?.logo || activeOrder.user?.profileImage || 'https://cdn-icons-png.flaticon.com/512/1275/1275302.png';
   }, [activeOrder]);
 
-  const lastCenteredPosRef = useRef(null);
-  const lastBoundsUpdateRef = useRef(0);
+  // Camera like Google Maps navigation:
+  //  - show the whole leg once when a trip/leg starts,
+  //  - then smoothly follow the rider,
+  //  - and stop following for a while when the rider pans/zooms the map by hand.
+  const userInteractedAtRef = useRef(0);
+  const overviewKeyRef = useRef('');
+  useEffect(() => {
+    if (!map || !window.google?.maps) return undefined;
+    const markInteraction = () => { userInteractedAtRef.current = Date.now(); };
+    const listeners = ['dragstart', 'pinchstart'].map((ev) => map.addListener(ev, markInteraction));
+    const div = map.getDiv?.();
+    const onWheel = () => markInteraction();
+    div?.addEventListener('wheel', onWheel, { passive: true });
+    const onTouch = (e) => { if (e.touches?.length > 1) markInteraction(); };
+    div?.addEventListener('touchstart', onTouch, { passive: true });
+    return () => {
+      listeners.forEach((l) => l?.remove?.());
+      div?.removeEventListener('wheel', onWheel);
+      div?.removeEventListener('touchstart', onTouch);
+    };
+  }, [map]);
+
   useEffect(() => {
     if (!map || !window.google?.maps) return;
-
-    const hasAnchors = restaurantPoint || customerPoint;
-    if (!hasAnchors && !parsedRiderLocation) return;
-
-    const now = Date.now();
-    if (now - lastBoundsUpdateRef.current < 12000) return;
-    lastBoundsUpdateRef.current = now;
-
-    if (!hasAnchors && parsedRiderLocation) {
-      map.panTo(parsedRiderLocation);
-    } else {
+    const legKey = `${activeOrder?._id || ''}:${tripStatus || ''}:${targetLocation?.lat || ''}`;
+    if (targetLocation && overviewKeyRef.current !== legKey) {
+      overviewKeyRef.current = legKey;
       const bounds = new window.google.maps.LatLngBounds();
-      if (restaurantPoint) bounds.extend(restaurantPoint);
-      if (customerPoint) bounds.extend(customerPoint);
+      bounds.extend(targetLocation);
       if (parsedRiderLocation) bounds.extend(parsedRiderLocation);
-
-      map.fitBounds(bounds, { top: 70, right: 70, bottom: 120, left: 70 });
+      if (tripStatus === 'PICKING_UP' && customerPoint) bounds.extend(customerPoint);
+      map.fitBounds(bounds, { top: 90, right: 60, bottom: 260, left: 60 });
+      userInteractedAtRef.current = Date.now(); // keep the overview visible for a moment
+      return;
     }
+    if (!parsedRiderLocation) return;
+    if (Date.now() - userInteractedAtRef.current < 15000) return;
+    map.panTo({ lat: parsedRiderLocation.lat, lng: parsedRiderLocation.lng });
+  }, [map, parsedRiderLocation?.lat, parsedRiderLocation?.lng, targetLocation, tripStatus, activeOrder?._id, customerPoint]);
 
-    if (parsedRiderLocation) {
-      lastCenteredPosRef.current = parsedRiderLocation;
+  // Glide the rider icon between GPS fixes instead of jumping.
+  const [displayRider, setDisplayRider] = useState(null);
+  const glideRef = useRef({ from: null, raf: 0 });
+  useEffect(() => {
+    if (!parsedRiderLocation) { setDisplayRider(null); return undefined; }
+    const to = parsedRiderLocation;
+    const from = glideRef.current.from;
+    cancelAnimationFrame(glideRef.current.raf);
+    const far = from && (Math.abs(from.lat - to.lat) > 0.01 || Math.abs(from.lng - to.lng) > 0.01);
+    if (!from || far) {
+      glideRef.current.from = to;
+      setDisplayRider(to);
+      return undefined;
     }
-  }, [map, parsedRiderLocation, restaurantPoint, customerPoint]);
+    const start = performance.now();
+    const DURATION = 1000;
+    const step = (now) => {
+      const t = Math.min(1, (now - start) / DURATION);
+      const e = t * (2 - t); // ease-out
+      const cur = { lat: from.lat + (to.lat - from.lat) * e, lng: from.lng + (to.lng - from.lng) * e, heading: to.heading };
+      glideRef.current.from = cur;
+      setDisplayRider(cur);
+      if (t < 1) glideRef.current.raf = requestAnimationFrame(step);
+    };
+    glideRef.current.raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(glideRef.current.raf);
+  }, [parsedRiderLocation?.lat, parsedRiderLocation?.lng, parsedRiderLocation?.heading]);
+
+  // Initial center only — passing a changing `center` prop re-centers the map on every GPS tick.
+  const [initialCenter, setInitialCenter] = useState(null);
+  useEffect(() => {
+    if (!initialCenter && (parsedRiderLocation || targetLocation)) {
+      setInitialCenter(parsedRiderLocation || targetLocation);
+    }
+  }, [initialCenter, parsedRiderLocation, targetLocation]);
 
   const { remainingPath, traveledPath } = useMemo(() => {
     const maps = window.google?.maps;
@@ -354,7 +402,7 @@ const LiveMapWithApiKey = ({ googleMapsApiKey, onMapClick, onMapLoad, onPathRece
   if (loadError) return <div className="absolute inset-0 flex items-center justify-center bg-gray-50 text-red-500 font-bold">Map Load Error</div>;
   if (!isLoaded) return <div className="absolute inset-0 flex items-center justify-center bg-gray-50"><div className="w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full animate-spin" /></div>;
 
-  const mapCenter = parsedRiderLocation || targetLocation;
+  const mapCenter = initialCenter || parsedRiderLocation || targetLocation;
 
   if (!mapCenter) {
     return (
@@ -374,8 +422,6 @@ const LiveMapWithApiKey = ({ googleMapsApiKey, onMapClick, onMapLoad, onPathRece
         mapContainerStyle={mapContainerStyle}
         center={mapCenter}
         zoom={zoom}
-        heading={parsedRiderLocation?.heading || 0}
-        tilt={45}
         onClick={(e) => onMapClick?.(e.latLng.lat(), e.latLng.lng())}
         options={mapOptions}
       >
@@ -409,9 +455,9 @@ const LiveMapWithApiKey = ({ googleMapsApiKey, onMapClick, onMapLoad, onPathRece
           />
         )}
 
-        {parsedRiderLocation && (
-          <OverlayView position={parsedRiderLocation} mapPaneName={OverlayView.MARKER_LAYER}>
-            <div style={{ transform: `translate(-50%, -50%) rotate(${parsedRiderLocation.heading || 0}deg)`, transition: 'transform 0.5s linear' }} className="relative w-[72px] h-[72px]">
+        {displayRider && (
+          <OverlayView position={{ lat: displayRider.lat, lng: displayRider.lng }} mapPaneName={OverlayView.MARKER_LAYER}>
+            <div style={{ transform: `translate(-50%, -50%) rotate(${displayRider.heading || 0}deg)`, transition: 'transform 0.6s ease-out' }} className="relative w-[72px] h-[72px] will-change-transform">
               <img src="/MapRider.png" alt="Rider" className="w-full h-full object-contain" />
             </div>
           </OverlayView>

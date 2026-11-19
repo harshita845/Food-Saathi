@@ -73,8 +73,12 @@ const isRiderOnline = () => {
     const raw = localStorage.getItem('delivery-v2-online-pref');
     if (raw) {
       const parsed = JSON.parse(raw);
-      return !!parsed?.state?.isOnline;
+      if (parsed?.state?.isOnline !== undefined) return !!parsed.state.isOnline;
+      if (parsed?.isOnline !== undefined) return !!parsed.isOnline;
+      if (typeof parsed === 'boolean') return parsed;
     }
+    const legacyOnline = localStorage.getItem('isOnline');
+    if (legacyOnline === 'true') return true;
   } catch (e) {}
   return false;
 };
@@ -397,14 +401,20 @@ export const useDeliveryNotifications = () => {
         deliveryAPI.getCurrentDelivery(),
       ]);
 
-      const currentTrip =
+      // API returns { activeOrder: <order|null> } — unwrap it, otherwise `{ activeOrder: null }`
+      // is truthy and we never fall through to the available-orders check.
+      const currentTripRaw =
         currentTripResult.status === 'fulfilled'
           ? currentTripResult.value?.data?.data ??
             currentTripResult.value?.data ??
             null
           : null;
+      const currentTrip =
+        currentTripRaw && typeof currentTripRaw === 'object' && 'activeOrder' in currentTripRaw
+          ? currentTripRaw.activeOrder
+          : currentTripRaw;
 
-      if (currentTrip) {
+      if (currentTrip && (currentTrip._id || currentTrip.orderId || currentTrip.orderMongoId)) {
         debugLog('Recovered current delivery trip after reconnect/focus:', currentTrip);
         setOrderStatusUpdate({
           ...currentTrip,
@@ -419,18 +429,22 @@ export const useDeliveryNotifications = () => {
             availableResult.value?.data ??
             {}
           : {};
-      const availableOrders = Array.isArray(availablePayload?.docs)
-        ? availablePayload.docs
-        : Array.isArray(availablePayload?.items)
-          ? availablePayload.items
-          : Array.isArray(availablePayload)
-            ? availablePayload
-            : [];
+      const availableOrders = Array.isArray(availablePayload?.data)
+        ? availablePayload.data
+        : Array.isArray(availablePayload?.docs)
+          ? availablePayload.docs
+          : Array.isArray(availablePayload?.orders)
+            ? availablePayload.orders
+            : Array.isArray(availablePayload?.items)
+              ? availablePayload.items
+              : Array.isArray(availablePayload)
+                ? availablePayload
+                : [];
 
       const recoverableOrder = availableOrders.find((order) => {
         const dispatchStatus = order?.dispatch?.status;
         return (
-          ['unassigned', 'assigned'].includes(dispatchStatus) &&
+          ['', 'unassigned', 'assigned'].includes(dispatchStatus || '') &&
           ['confirmed', 'preparing', 'ready_for_pickup'].includes(order?.orderStatus)
         );
       });

@@ -312,16 +312,16 @@ export default function HomeHeader({
         <div className="flex items-center gap-2.5 w-[96%] mx-auto pointer-events-auto">
           {/* Search Bar - Glossy Glassmorphism */}
           <div
-            className="group/search relative overflow-hidden bg-gradient-to-b from-white/95 via-white/90 to-white/80 dark:from-white/15 dark:to-white/5 backdrop-blur-xl backdrop-saturate-150 rounded-[1.25rem] flex items-center px-3.5 shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.95),0_12px_28px_-8px_rgba(58,28,16,0.3),0_4px_10px_-2px_rgba(0,0,0,0.08)] border border-white/90 dark:border-white/20 cursor-pointer active:scale-[0.985] transition-all duration-300 flex-1 h-12"
+            className="group/search relative overflow-hidden bg-gradient-to-b from-white/95 via-white/90 to-white/80 dark:from-[#26170E] dark:via-[#20120A] dark:to-[#180C06] backdrop-blur-xl backdrop-saturate-150 rounded-[1.25rem] flex items-center px-3.5 shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.95),0_12px_28px_-8px_rgba(58,28,16,0.3),0_4px_10px_-2px_rgba(0,0,0,0.08)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.15),0_12px_28px_-8px_rgba(0,0,0,0.6),0_4px_10px_-2px_rgba(0,0,0,0.4)] border border-white/90 dark:border-white/20 cursor-pointer active:scale-[0.985] transition-all duration-300 flex-1 h-12"
             onClick={handleSearchFocus}
           >
             {/* Top Gloss Reflection Highlight */}
-            <div className="absolute inset-x-3 top-0 h-[48%] bg-gradient-to-b from-white/70 via-white/25 to-transparent rounded-t-[1.15rem] pointer-events-none" />
+            <div className="absolute inset-x-3 top-0 h-[48%] bg-gradient-to-b from-white/70 via-white/25 to-transparent dark:from-white/10 dark:via-white/5 dark:to-transparent rounded-t-[1.15rem] pointer-events-none" />
 
             {/* Subtle Diagonal Glass Refraction Glow */}
-            <div className="absolute -left-10 -top-4 w-28 h-20 bg-gradient-to-br from-white/35 via-white/10 to-transparent rounded-full blur-sm pointer-events-none" />
+            <div className="absolute -left-10 -top-4 w-28 h-20 bg-gradient-to-br from-white/35 via-white/10 to-transparent dark:from-white/5 dark:via-transparent dark:to-transparent rounded-full blur-sm pointer-events-none" />
 
-            <Search className="h-[18px] w-[18px] text-primary mr-2.5 shrink-0 z-10 drop-shadow-[0_1px_2px_rgba(242,84,27,0.2)]" strokeWidth={2.5} />
+            <Search className="h-[18px] w-[18px] text-primary dark:text-[#FF7A2F] mr-2.5 shrink-0 z-10 drop-shadow-[0_1px_2px_rgba(242,84,27,0.2)]" strokeWidth={2.5} />
             
             <div className="flex-1 overflow-hidden relative h-5 z-10">
               <AnimatePresence mode="wait">
@@ -331,7 +331,7 @@ export default function HomeHeader({
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: -8, opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute inset-0 text-[13.5px] font-bold text-gray-500/90 dark:text-gray-300 truncate flex items-center"
+                  className="absolute inset-0 text-[13.5px] font-bold text-gray-500/90 dark:text-gray-100 truncate flex items-center"
                 >
                   {placeholders?.[placeholderIndex] || 'Search'}
                 </motion.span>
@@ -341,7 +341,7 @@ export default function HomeHeader({
             <div className="flex items-center gap-2 pl-2 z-10">
               <div className="h-5 w-[1px] bg-gradient-to-b from-transparent via-gray-300/80 dark:via-white/20 to-transparent" />
               <Mic 
-                className="h-5 w-5 text-primary shrink-0 transition-transform hover:scale-110 active:scale-95 drop-shadow-[0_1px_2px_rgba(242,84,27,0.2)]" 
+                className="h-5 w-5 text-primary dark:text-[#FF7A2F] shrink-0 transition-transform hover:scale-110 active:scale-95 drop-shadow-[0_1px_2px_rgba(242,84,27,0.2)]" 
                 onClick={(e) => {
                   e.stopPropagation();
                   handleVoiceSearchClick?.();
@@ -352,16 +352,16 @@ export default function HomeHeader({
 
           {/* Veg Toggle (Glossy Stacked Pill Switch) */}
           <div 
-            className="relative overflow-hidden flex flex-col items-center justify-center cursor-pointer active:scale-95 transition-all duration-300 shrink-0 px-2.5 py-1.5 bg-gradient-to-b from-white/95 via-white/90 to-white/80 dark:from-white/15 dark:to-white/5 backdrop-blur-xl backdrop-saturate-150 rounded-[1.25rem] shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.95),0_12px_28px_-8px_rgba(58,28,16,0.3),0_4px_10px_-2px_rgba(0,0,0,0.08)] border border-white/90 dark:border-white/20 h-12"
+            className="relative overflow-hidden flex flex-col items-center justify-center cursor-pointer active:scale-95 transition-all duration-300 shrink-0 px-2.5 py-1.5 bg-gradient-to-b from-white/95 via-white/90 to-white/80 dark:from-[#26170E] dark:via-[#20120A] dark:to-[#180C06] backdrop-blur-xl backdrop-saturate-150 rounded-[1.25rem] shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.95),0_12px_28px_-8px_rgba(58,28,16,0.3),0_4px_10px_-2px_rgba(0,0,0,0.08)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.15),0_12px_28px_-8px_rgba(0,0,0,0.6),0_4px_10px_-2px_rgba(0,0,0,0.4)] border border-white/90 dark:border-white/20 h-12"
             onClick={() => handleVegModeChange?.(!vegMode)}
           >
             {/* Top Gloss Reflection Highlight */}
-            <div className="absolute inset-x-2 top-0 h-[45%] bg-gradient-to-b from-white/70 via-white/20 to-transparent rounded-t-[1.15rem] pointer-events-none" />
+            <div className="absolute inset-x-2 top-0 h-[45%] bg-gradient-to-b from-white/70 via-white/20 to-transparent dark:from-white/10 dark:via-white/5 dark:to-transparent rounded-t-[1.15rem] pointer-events-none" />
 
-            <div className="text-[9px] font-black leading-tight text-gray-800 dark:text-gray-100 tracking-wider text-center drop-shadow-sm z-10">
+            <div className="text-[9px] font-black leading-tight text-gray-800 dark:text-white tracking-wider text-center drop-shadow-sm z-10">
               VEG<br/>MODE
             </div>
-            <div className={`mt-0.5 w-[30px] h-[16px] rounded-full relative transition-all duration-300 shadow-inner z-10 border border-white/40 ${vegMode ? 'bg-gradient-to-r from-emerald-500 to-green-600 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-gray-300/80 dark:bg-gray-700/80'}`}>
+            <div className={`mt-0.5 w-[30px] h-[16px] rounded-full relative transition-all duration-300 shadow-inner z-10 border border-white/40 dark:border-white/20 ${vegMode ? 'bg-gradient-to-r from-emerald-500 to-green-600 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-gray-300/80 dark:bg-neutral-700'}`}>
               <div className={`absolute top-[1px] w-[12px] h-[12px] rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.25)] transition-transform duration-300 ${vegMode ? 'translate-x-[15px]' : 'translate-x-[1px]'}`} />
             </div>
           </div>

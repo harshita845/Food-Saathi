@@ -1,124 +1,134 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, useAnimation, AnimatePresence } from 'framer-motion';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { motion, useMotionValue, useTransform, animate, AnimatePresence } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 
+const HANDLE = 56; // w-14
+const PAD = 6; // p-1.5
+const CONFIRM_AT = 0.75; // fraction of the track needed to confirm
+
 /**
- * ActionSlider - Professional "Swipe to Confirm" UI Component.
- * Race-condition safe: isAcceptingRef prevents double-fire from rapid slides.
+ * ActionSlider - "Swipe to Confirm".
+ * Drag position lives in a motion value (no React re-render per frame), so the handle and
+ * the fill move together at 60fps. Race-condition safe: isAcceptingRef prevents double-fire.
  */
-export const ActionSlider = ({ 
-  label = "Slide to Confirm", 
-  onConfirm, 
+export const ActionSlider = ({
+  label = "Slide to Confirm",
+  onConfirm,
   disabled = false,
   color = "bg-green-600",
   successLabel = "Confirmed ✓"
 }) => {
-  const [progress, setProgress] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [maxX, setMaxX] = useState(240);
   const containerRef = useRef(null);
-  const controls = useAnimation();
-  // Atomic lock: prevents double-fire when user slides rapidly or two people slide at the same time
   const isAcceptingRef = useRef(false);
 
-  // Reset when disabled state changes (e.g. order was claimed by another - parent sets disabled=true)
+  const x = useMotionValue(0);
+  const fillWidth = useTransform(x, (v) => v + HANDLE + PAD);
+  const labelOpacity = useTransform(x, [0, Math.max(1, maxX * 0.6)], [1, 0]);
+
+  // Measure the real track width (and keep it right on resize / rotation).
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return undefined;
+    const measure = () => setMaxX(Math.max(0, el.offsetWidth - HANDLE - PAD * 2));
+    measure();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+    ro?.observe(el);
+    return () => ro?.disconnect();
+  }, []);
+
+  const snapBack = useCallback(() => {
+    animate(x, 0, { type: 'spring', stiffness: 500, damping: 35 });
+  }, [x]);
+
+  // Reset when disabled (e.g. order was claimed by another rider).
   useEffect(() => {
     if (disabled) {
-      setProgress(0);
       setIsSuccess(false);
       isAcceptingRef.current = false;
+      x.set(0);
     }
-  }, [disabled]);
+  }, [disabled, x]);
 
-  const handleDrag = (event, info) => {
-    if (disabled || isSuccess || isAcceptingRef.current) return;
-    
-    const containerWidth = containerRef.current?.offsetWidth || 300;
-    const handleWidth = 56; // w-14
-    const totalPath = containerWidth - handleWidth - 12; // p-1.5 = 6px each side
-    
-    const currentProgress = Math.min(1, Math.max(0, (info.point.x - containerRef.current.getBoundingClientRect().left) / totalPath));
-    setProgress(currentProgress);
-  };
-
-  const handleDragEnd = async (event, info) => {
-    // Guard: if already processing or already succeeded, do nothing
+  const handleDragEnd = async (_event, info) => {
     if (disabled || isSuccess || isAcceptingRef.current) return;
 
-    if (progress > 0.8 || info.offset.x > 150) {
-      // Atomically lock BEFORE any async work to prevent race conditions
-      isAcceptingRef.current = true;
-      setIsSuccess(true);
-      setProgress(1);
-      if (onConfirm) {
-        try {
-          await onConfirm();
-        } catch (error) {
-          // On failure, reset so the delivery boy can retry
-          isAcceptingRef.current = false;
-          setIsSuccess(false);
-          setProgress(0);
-          controls.start({ x: 0 });
-        }
+    const progress = maxX > 0 ? x.get() / maxX : 0;
+    const flungRight = info.velocity.x > 800 && progress > 0.4;
+    if (progress < CONFIRM_AT && !flungRight) {
+      snapBack();
+      return;
+    }
+
+    // Lock BEFORE any async work to prevent double accept.
+    isAcceptingRef.current = true;
+    setIsSuccess(true);
+    animate(x, maxX, { type: 'spring', stiffness: 600, damping: 40 });
+    try { navigator.vibrate?.(30); } catch {}
+
+    if (onConfirm) {
+      try {
+        await onConfirm();
+      } catch {
+        // On failure, reset so the rider can retry.
+        isAcceptingRef.current = false;
+        setIsSuccess(false);
+        snapBack();
       }
-    } else {
-      setProgress(0);
-      controls.start({ x: 0 });
     }
   };
+
+  const canDrag = !disabled && !isSuccess;
 
   return (
-    <div 
+    <div
       ref={containerRef}
-      className={`relative w-full h-[68px] rounded-full p-1.5 overflow-hidden transition-all duration-300 ${
-        'bg-gray-950 shadow-lg shadow-black/10'
-      }`}
+      className="relative w-full h-[68px] rounded-full p-1.5 overflow-hidden bg-gray-950 shadow-lg shadow-black/10 select-none"
     >
-      {/* Background Track */}
-      <div className={`absolute inset-y-0 left-[76px] right-5 flex items-center justify-center text-center font-bold text-[11px] uppercase tracking-[0.14em] leading-none whitespace-nowrap transition-opacity duration-300 ${
-        isSuccess ? 'opacity-0' : disabled ? 'text-white/70' : 'text-white/88'
-      }`}>
-        {disabled ? 'Action Locked' : label}
-      </div>
-
-      {/* Dynamic Progress Fill */}
-      <motion.div 
-        className={`absolute inset-0 ${color} rounded-full`}
-        initial={{ width: 0 }}
-        animate={{ 
-          width: isSuccess ? '100%' : `${progress * 100}%`,
-          opacity: disabled ? 0 : 1
-        }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      {/* Progress fill follows the handle exactly */}
+      <motion.div
+        className={`absolute inset-y-0 left-0 ${color} rounded-full`}
+        style={{ width: isSuccess ? '100%' : fillWidth, opacity: disabled ? 0 : 1 }}
       />
 
-      {/* Success View */}
+      {/* Label fades as the handle moves */}
+      <motion.div
+        style={{ opacity: isSuccess ? 0 : labelOpacity }}
+        className={`pointer-events-none absolute inset-y-0 left-[76px] right-5 flex items-center justify-center text-center font-bold text-[11px] uppercase tracking-[0.14em] leading-none whitespace-nowrap ${
+          disabled ? 'text-white/70' : 'text-white/90'
+        }`}
+      >
+        {disabled ? 'Action Locked' : label}
+      </motion.div>
+
       <AnimatePresence>
         {isSuccess && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.8 }}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-y-0 left-[76px] right-5 flex items-center justify-center text-center text-white font-bold text-sm uppercase tracking-[0.14em] leading-none z-30"
+            className="pointer-events-none absolute inset-y-0 left-5 right-[76px] flex items-center justify-center text-center text-white font-bold text-sm uppercase tracking-[0.14em] leading-none z-30"
           >
             {successLabel}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* The Handle */}
+      {/* Handle */}
       <motion.div
-        drag={disabled || isSuccess || isAcceptingRef.current ? false : "x"}
-        dragConstraints={{ left: 0, right: containerRef.current?.offsetWidth ? containerRef.current.offsetWidth - 68 : 250 }}
-        dragElastic={0.1}
-        onDrag={handleDrag}
+        drag={canDrag ? 'x' : false}
+        dragConstraints={{ left: 0, right: maxX }}
+        dragElastic={0}
+        dragMomentum={false}
         onDragEnd={handleDragEnd}
-        animate={controls}
-        className={`relative w-14 h-14 rounded-full flex items-center justify-center z-20 cursor-grab active:cursor-grabbing shadow-xl transition-colors ${
-          disabled ? 'bg-gray-200 text-gray-400' : 
-          isSuccess ? 'bg-white text-green-600' : 'bg-white text-gray-950'
-        }`}
+        style={{ x, touchAction: 'none' }}
+        whileTap={canDrag ? { scale: 0.96 } : undefined}
+        className={`relative w-14 h-14 rounded-full flex items-center justify-center z-20 shadow-xl will-change-transform ${
+          canDrag ? 'cursor-grab active:cursor-grabbing' : ''
+        } ${disabled ? 'bg-gray-200 text-gray-400' : isSuccess ? 'bg-white text-green-600' : 'bg-white text-gray-950'}`}
       >
-        <ChevronRight className={`w-8 h-8 transition-transform duration-300 ${isSuccess ? 'scale-110' : ''}`} />
+        <ChevronRight className="w-8 h-8" />
       </motion.div>
     </div>
   );

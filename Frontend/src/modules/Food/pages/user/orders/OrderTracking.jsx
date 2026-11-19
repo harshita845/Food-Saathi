@@ -1,5 +1,6 @@
 import { useParams, Link, useSearchParams, useNavigate, useLocation } from "react-router-dom"
 import React, { useState, useEffect, useMemo, useRef, useCallback, memo } from "react"
+import { createPortal } from "react-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import {
@@ -370,7 +371,20 @@ const transformOrderForTracking = (apiOrder, previousOrder = null, explicitResta
     })) || previousOrder?.items || [],
     total: apiOrder?.pricing?.total || previousOrder?.total || 0,
     // Backend canonical field is orderStatus; keep legacy `status` for UI compatibility.
-    status: apiOrder?.orderStatus || apiOrder?.status || previousOrder?.status || 'pending',
+    status: (() => {
+      const incoming = apiOrder?.orderStatus || apiOrder?.status;
+      if (previousOrder?.status && previousOrder.status !== 'payment_pending' && incoming === 'payment_pending') {
+        return previousOrder.status;
+      }
+      return incoming || previousOrder?.status || 'pending';
+    })(),
+    orderStatus: (() => {
+      const incoming = apiOrder?.orderStatus || apiOrder?.status;
+      if (previousOrder?.orderStatus && previousOrder.orderStatus !== 'payment_pending' && incoming === 'payment_pending') {
+        return previousOrder.orderStatus;
+      }
+      return incoming || previousOrder?.orderStatus || previousOrder?.status || 'pending';
+    })(),
     ...(() => {
       const partnerCandidate =
         apiOrder?.deliveryPartner ||
@@ -412,7 +426,18 @@ const transformOrderForTracking = (apiOrder, previousOrder = null, explicitResta
     discount: apiOrder?.pricing?.discount || apiOrder?.discount || 0,
     subtotal: apiOrder?.pricing?.subtotal || apiOrder?.subtotal || 0,
     paymentMethod: apiOrder?.paymentMethod || apiOrder?.payment?.method || previousOrder?.paymentMethod || null,
-    payment: apiOrder?.payment || previousOrder?.payment || null,
+    payment: (() => {
+      const prevPayment = previousOrder?.payment || {};
+      const apiPayment = apiOrder?.payment || {};
+      const isPrevPaid = ['paid', 'authorized', 'captured', 'settled'].includes(String(prevPayment.status || '').toLowerCase()) ||
+                         previousOrder?.paymentStatus === 'paid' || previousOrder?.isPaid === true;
+      const isApiPaid = ['paid', 'authorized', 'captured', 'settled'].includes(String(apiPayment.status || '').toLowerCase()) ||
+                        apiOrder?.paymentStatus === 'paid' || apiOrder?.isPaid === true;
+      if (isPrevPaid || isApiPaid) {
+        return { ...prevPayment, ...apiPayment, status: 'paid' };
+      }
+      return apiOrder?.payment || previousOrder?.payment || null;
+    })(),
     // Preserve delivery OTP code received via socket event.
     // API responses intentionally strip the secret code for security,
     // so without preserving it the UI would lose the OTP on each poll refresh.
@@ -487,10 +512,29 @@ function mapOrderToTrackingUiStatus(orderLike) {
   const paymentMethod = String(orderLike.payment?.method || orderLike.paymentMethod || "").toLowerCase()
   const paymentStatus = String(orderLike.payment?.status || "").toLowerCase()
   const isOnlinePayment = ["cashfree", "razorpay", "online"].includes(paymentMethod)
-  const isPaid = ["paid", "authorized", "captured", "settled"].includes(paymentStatus)
+  const isPaid = ["paid", "authorized", "captured", "settled"].includes(paymentStatus) ||
+                 orderLike.paymentStatus === "paid" || orderLike.isPaid === true
 
-  if (isOnlinePayment && !isPaid) {
+  const isProgressing = [
+    "confirmed",
+    "accepted",
+    "preparing",
+    "processed",
+    "ready",
+    "ready_for_pickup",
+    "reached_pickup",
+    "picked_up",
+    "out_for_delivery",
+    "en_route_to_delivery",
+    "reached_drop",
+    "at_drop",
+    "delivered"
+  ].includes(String(statusRaw || "").toLowerCase())
+
+  if (isOnlinePayment && !isPaid && !isProgressing) {
     if (paymentStatus === "failed") return "cancelled"
+    // Never show 'placed' for an unpaid online order, even when returning from the gateway.
+    // It only becomes placed once the backend confirms payment (verifyPayment).
     return "payment_pending"
   }
 
@@ -546,6 +590,19 @@ export default function OrderTracking() {
 
   const [showConfirmation, setShowConfirmation] = useState(confirmed)
   const [orderStatus, setOrderStatus] = useState('placed')
+  // True while we confirm a Cashfree payment after the gateway redirects back.
+  // Prevents a "Payment Pending" flash before verification finishes.
+  // Once the payment is confirmed, never fall back to the "Payment Pending" screen
+  // (a slower, older poll response must not flip the UI back).
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false)
+  // Set when we're sending the customer back to the cart after a cancelled payment;
+  // stops late socket events / refreshes on this page from firing extra toasts.
+  const leavingPageRef = useRef(false)
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const q = window.location.search + window.location.hash
+    return q.includes('cashfree_return=true') || q.includes('confirmed=true')
+  })
   const [estimatedTime, setEstimatedTime] = useState(29)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [showCancelDialog, setShowCancelDialog] = useState(false)
@@ -859,53 +916,108 @@ export default function OrderTracking() {
     if (!targetOrderId || !isReturn || hasVerifiedReturnPaymentRef.current) return
     hasVerifiedReturnPaymentRef.current = true
 
-    let isMounted = true
-
     const verifyOnReturn = async () => {
-      const maxRetries = 3
+      setIsVerifyingPayment(true)
+      let leftPage = false
+      try {
+        leftPage = (await runVerify()) === 'left_page'
+      } finally {
+        // Keep the loader up if we're navigating back to the cart (no pending flash).
+        if (!leftPage) setIsVerifyingPayment(false)
+      }
+    }
+
+    const runVerify = async () => {
+      // Decide fast:
+      //  - paid                         -> Order Placed immediately
+      //  - no payment attempt / failed  -> a couple of quick re-checks (~2-3s), then show pending
+      //  - bank still processing        -> keep confirming for up to ~40s
+      const delays = [500, 800, 1000, 1500, 2000, 2000, 2500, 3000, 3000, 4000, 4000, 5000, 5000, 5000]
+      const maxRetries = delays.length + 1
+      const QUICK_CHECKS_WHEN_NOT_PAYING = 3
+      let notPayingChecks = 0
+      let notPaid = false
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
           const verifyRes = await orderAPI.verifyPayment({ orderId: targetOrderId })
-          if (!isMounted) return
+
+          const gwStatus = String(verifyRes.data?.data?.orderStatus || '').toUpperCase()
+          if (!verifyRes.data?.success && /FAILED|CANCELLED|USER_DROPPED|EXPIRED|TERMINATED/.test(gwStatus)) {
+            notPaid = true
+            break
+          }
+          if (!verifyRes.data?.success) {
+            const attemptStatus = String(verifyRes.data?.data?.attemptStatus || '').toUpperCase()
+            // Only an in-progress bank payment is worth waiting for.
+            if (attemptStatus && attemptStatus !== 'PENDING') {
+              notPayingChecks += 1
+              if (notPayingChecks >= QUICK_CHECKS_WHEN_NOT_PAYING) { notPaid = true; break }
+            }
+          }
 
           if (verifyRes.data?.success) {
-            toast.success("Payment verified! Your order is placed.")
+            setPaymentConfirmed(true)
+            toast.success("Payment successful! Your order is placed.")
             try {
               localStorage.removeItem('cart_items')
               window.dispatchEvent(new CustomEvent('cart-updated'))
             } catch {}
 
-            const refreshed = await fetchOrderDetailsWithFallback({ force: true })
-            if (refreshed?.data?.data?.order || refreshed?.data?.order) {
-              const freshDoc = refreshed.data.data?.order || refreshed.data.order
-              setOrder(prev => transformOrderForTracking(freshDoc, prev))
+            const verifiedDoc = verifyRes.data?.data?.order || verifyRes.data?.data || verifyRes.data?.order
+            if (verifiedDoc && (verifiedDoc._id || verifiedDoc.orderId || verifiedDoc.id)) {
+              try {
+                window.dispatchEvent(new CustomEvent('order-placed', { detail: { order: verifiedDoc } }))
+              } catch {}
+              const transformed = transformOrderForTracking(verifiedDoc, order)
+              setOrder(transformed)
+              setOrderStatus(mapOrderToTrackingUiStatus(transformed))
             }
+
+            fetchOrderDetailsWithFallback({ force: true }).then((refreshed) => {
+              const freshDoc = refreshed?.data?.data?.order || refreshed?.data?.order || refreshed?.data?.data
+              if (freshDoc && (freshDoc._id || freshDoc.orderId || freshDoc.id)) {
+                const refreshedTransformed = transformOrderForTracking(freshDoc, verifiedDoc)
+                setOrder(refreshedTransformed)
+                setOrderStatus(mapOrderToTrackingUiStatus(refreshedTransformed))
+              }
+            }).catch(() => {})
             return
           }
-        } catch {
-          // Allow next attempt
+        } catch (err) {
+          debugError(`verifyPayment attempt ${attempt} error:`, err)
         }
 
-        if (attempt < maxRetries && isMounted) {
-          await new Promise(r => setTimeout(r, 1500))
+        if (attempt < maxRetries) {
+          await new Promise(r => setTimeout(r, delays[attempt - 1] || 5000))
         }
       }
 
-      if (!isMounted) return
+      // Customer cancelled / abandoned / payment failed: like Swiggy/Zomato, drop the unpaid
+      // order and take them back to their cart (items are kept) instead of a pending screen.
+      if (notPaid) {
+        leavingPageRef.current = true
+        try {
+          await orderAPI.cancelOrder(targetOrderId, { reason: "Payment cancelled or not completed" })
+        } catch (err) {
+          debugError("Cancel unpaid order after gateway return failed:", err)
+        }
+        toast.info("Payment cancelled. No money was deducted and no order was placed.")
+        navigate("/food/user/cart", { replace: true })
+        return 'left_page'
+      }
+
       try {
         const refreshed = await fetchOrderDetailsWithFallback({ force: true })
-        if (refreshed?.data?.data?.order || refreshed?.data?.order) {
-          const freshDoc = refreshed.data.data?.order || refreshed.data.order
-          setOrder(prev => transformOrderForTracking(freshDoc, prev))
+        const freshDoc = refreshed?.data?.data?.order || refreshed?.data?.order || refreshed?.data?.data
+        if (freshDoc && (freshDoc._id || freshDoc.orderId || freshDoc.id)) {
+          const transformed = transformOrderForTracking(freshDoc, order)
+          setOrder(transformed)
+          setOrderStatus(mapOrderToTrackingUiStatus(transformed))
         }
       } catch {}
     }
 
     verifyOnReturn()
-
-    return () => {
-      isMounted = false
-    }
   }, [orderId, lookupIdFromQuery, searchParams, fetchOrderDetailsWithFallback])
 
   // Clear OTP when order is finalized.
@@ -999,14 +1111,20 @@ export default function OrderTracking() {
     ].includes(status)
   }, [order?.status])
 
-  // Single source of truth: backend order.status (+ deliveryState phase for live ride)
+  // Single source of truth: backend order.status, payment status, and deliveryState phase
   useEffect(() => {
     if (!order) return
     setOrderStatus(mapOrderToTrackingUiStatus(order))
   }, [
     order?.status,
+    order?.orderStatus,
+    order?.payment?.status,
+    order?.payment?.method,
+    order?.paymentMethod,
     order?.deliveryState?.currentPhase,
     order?.deliveryState?.status,
+    order?.dispatch?.status,
+    order?.assignmentInfo?.status,
   ])
 
   const acceptedAtMs = useMemo(() => {
@@ -1160,6 +1278,7 @@ export default function OrderTracking() {
           setOrder(prev => {
             const transformedOrder = transformOrderForTracking(finalOrderData, prev);
             const ui = mapOrderToTrackingUiStatus(transformedOrder);
+            setOrderStatus(ui);
             terminalPollStopRef.current = ui === 'delivered' || ui === 'cancelled';
             return transformedOrder;
           });
@@ -1256,6 +1375,7 @@ export default function OrderTracking() {
   // Listen for order status updates from socket (e.g., "Delivery partner on the way")
   useEffect(() => {
     const handleOrderStatusNotification = (event) => {
+      if (leavingPageRef.current) return
       const payload = event?.detail || {};
       const { message, status, estimatedDeliveryTime, orderId: evtOrderId, orderMongoId } = payload;
 
@@ -1461,24 +1581,47 @@ export default function OrderTracking() {
   };
 
   const handleRefresh = async () => {
+    if (leavingPageRef.current) return
     setIsRefreshing(true)
     try {
-      const targetOrderId = orderId || lookupIdFromQuery || order?._id
-      const isOnline = ["cashfree", "razorpay", "online"].includes(String(order?.payment?.method || "").toLowerCase())
-      const isUnpaid = !["paid", "authorized", "captured", "settled"].includes(String(order?.payment?.status || "").toLowerCase())
+      const targetOrderId = orderId || lookupIdFromQuery || order?._id || order?.id
+      const paymentMethod = String(order?.payment?.method || order?.paymentMethod || "").toLowerCase()
+      const paymentStatus = String(order?.payment?.status || "").toLowerCase()
+      const isOnline = ["cashfree", "razorpay", "online"].includes(paymentMethod) || !paymentMethod
+      const isUnpaid = !["paid", "authorized", "captured", "settled"].includes(paymentStatus)
 
-      if (targetOrderId && isOnline && isUnpaid) {
+      if (targetOrderId && (isOnline || isUnpaid)) {
         try {
           const verifyRes = await orderAPI.verifyPayment({ orderId: targetOrderId })
           if (verifyRes.data?.success) {
-            toast.success("Payment verified! Your order is placed.")
+            setPaymentConfirmed(true)
+            toast.success("Payment successful! Your order is placed.")
             try {
               localStorage.removeItem('cart_items')
               window.dispatchEvent(new CustomEvent('cart-updated'))
             } catch {}
+
+            const verifiedDoc = verifyRes.data?.data?.order || verifyRes.data?.data || verifyRes.data?.order
+            if (verifiedDoc && (verifiedDoc._id || verifiedDoc.orderId || verifiedDoc.id)) {
+              try {
+                window.dispatchEvent(new CustomEvent('order-placed', { detail: { order: verifiedDoc } }))
+              } catch {}
+              const transformed = transformOrderForTracking(verifiedDoc, order)
+              setOrder(transformed)
+              setOrderStatus(mapOrderToTrackingUiStatus(transformed))
+            }
+          } else {
+            // Never show raw gateway codes (ACTIVE / PENDING / USER_DROPPED...) to customers.
+            const gw = String(verifyRes.data?.data?.orderStatus || verifyRes.data?.orderStatus || verifyRes.data?.message || "").toUpperCase()
+            if (/FAILED|CANCELLED|USER_DROPPED|EXPIRED|TERMINATED/.test(gw)) {
+              toast.error("Payment was not successful. No money was deducted. Please try again.")
+            } else {
+              toast("We haven't received your payment yet. If money was deducted, it will update in a few minutes.", { icon: "⏳" })
+            }
           }
         } catch (vErr) {
           debugError("verifyPayment error on refresh:", vErr)
+          toast.error("Couldn't check payment status right now. Please try again in a moment.")
         }
       }
 
@@ -1534,7 +1677,9 @@ export default function OrderTracking() {
           }
         }
 
-        setOrder(transformOrderForTracking(apiOrder, order, restaurantCoords, restaurantAddress))
+        const transformed = transformOrderForTracking(apiOrder, order, restaurantCoords, restaurantAddress)
+        setOrder(transformed)
+        setOrderStatus(mapOrderToTrackingUiStatus(transformed))
       }
     } catch (err) {
       debugError('Error refreshing order:', err)
@@ -1546,6 +1691,43 @@ export default function OrderTracking() {
   // --------------------------------------------------------------------------
   // RENDER (Final JSX)
   // --------------------------------------------------------------------------
+
+  // Returning from Cashfree: show a clean "placing your order" screen (like Swiggy/Zomato)
+  // until the payment is confirmed — never the tracking page in a pending state.
+  if (isVerifyingPayment && !paymentConfirmed) {
+    // Rendered through a portal on <body>: the page-transition wrapper animates (transform +
+    // opacity), which would make this fixed overlay position itself against that small, moving
+    // wrapper — pushing the title off the top and showing just the subtitle for a moment.
+    // Layout is inline so it is centred from the very first frame.
+    return createPortal(
+      <div
+        className="dark:bg-[#1A0F09]"
+        style={{
+          position: "fixed", inset: 0, zIndex: 999, display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center", padding: "0 32px", textAlign: "center",
+          background: "#ffffff",
+        }}
+      >
+        <style>{"@keyframes fsPaySpin{to{transform:rotate(360deg)}}"}</style>
+        <div style={{ position: "relative", width: 80, height: 80, marginBottom: 24 }}>
+          <div style={{ position: "absolute", inset: 0, borderRadius: "9999px", border: "4px solid #dcfce7" }} />
+          <div
+            style={{
+              position: "absolute", inset: 0, borderRadius: "9999px", border: "4px solid #16a34a",
+              borderTopColor: "transparent", animation: "fsPaySpin 1s linear infinite",
+            }}
+          />
+        </div>
+        <p className="dark:text-gray-100" style={{ fontSize: 18, lineHeight: "28px", fontWeight: 700, color: "#111827", margin: 0 }}>
+          Placing your order…
+        </p>
+        <p className="dark:text-gray-400" style={{ fontSize: 14, lineHeight: "20px", color: "#6b7280", marginTop: 8 }}>
+          Confirming your payment. Please don't press back or close the app.
+        </p>
+      </div>,
+      document.body
+    )
+  }
 
   // Loading state (moved after hooks)
   if (loading) {
@@ -1575,6 +1757,12 @@ export default function OrderTracking() {
   }
 
   const statusConfig = {
+    verifying_payment: {
+      title: "Confirming Payment",
+      subtitle: "Please wait while we confirm your payment…",
+      color: "bg-amber-500",
+      iconType: 'food'
+    },
     payment_pending: {
       title: "Payment Pending",
       subtitle: "Payment was not completed. Order is not placed.",
@@ -1655,7 +1843,11 @@ export default function OrderTracking() {
     }
   }
 
-  const currentStatus = statusConfig[orderStatus] || statusConfig.placed
+  const displayStatus =
+    paymentConfirmed && (orderStatus === 'payment_pending' || orderStatus === 'payment_failed')
+      ? 'placed'
+      : orderStatus
+  const currentStatus = statusConfig[displayStatus] || statusConfig.placed
   const isScheduledOrder = Boolean(order?.scheduledAt) && !['delivered', 'cancelled'].includes(orderStatus)
   const scheduledDateFormatted = order?.scheduledAt
     ? new Date(order.scheduledAt).toLocaleString("en-IN", {
@@ -1822,7 +2014,7 @@ export default function OrderTracking() {
       </motion.div>
 
       {/* Map Section */}
-      {!isDeliveredOrder && orderStatus !== 'cancelled' && orderStatus !== 'dead' && orderStatus !== 'payment_failed' && orderStatus !== 'payment_pending' && !(isScheduledOrder && ['placed', 'confirmed'].includes(orderStatus)) && (
+      {!isDeliveredOrder && orderStatus !== 'cancelled' && orderStatus !== 'dead' && displayStatus !== 'payment_failed' && displayStatus !== 'payment_pending' && !(isScheduledOrder && ['placed', 'confirmed'].includes(orderStatus)) && (
         <MapErrorBoundary>
           <DeliveryMap
             orderId={orderId}
@@ -1932,7 +2124,7 @@ export default function OrderTracking() {
                     </Link>
                   </div>
                 )}
-                {orderStatus === 'payment_pending' && (
+                {displayStatus === 'payment_pending' && !isVerifyingPayment && (
                   <div className="mt-3 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-900/30">
                     <p className="text-sm text-amber-800 dark:text-amber-200 font-medium mb-3">
                       Payment confirmation is pending. If you just completed the payment, click below to verify status.

@@ -83,7 +83,11 @@ export const useUserNotifications = () => {
         statusKey === lastOrderStatusToastRef.current.key &&
         now - lastOrderStatusToastRef.current.at < ORDER_STATUS_DEDUPE_MS;
 
-      if (isImportant && !isOrderTrackingScreen && !isDuplicateStatusToast) {
+      // The customer's own cancellation (incl. a cancelled online payment) already shows its own
+      // message on the screen they're on; don't stack a second "has been cancelled" toast.
+      const isSelfCancellation = String(data.orderStatus || '') === 'cancelled_by_user';
+
+      if (isImportant && !isOrderTrackingScreen && !isDuplicateStatusToast && !isSelfCancellation) {
         lastOrderStatusToastRef.current = { key: statusKey, at: now };
         toast.dismiss(ORDER_STATUS_TOAST_ID);
         toast.message(title, {

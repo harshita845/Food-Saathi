@@ -384,7 +384,7 @@ export const NewOrderModal = ({ order, queuedOrders = [], onSelectOrder, onAccep
               key={orderKey}
               label="Slide to Accept" 
               onConfirm={() => onAccept(order)} 
-              color="bg-black"
+              color="bg-green-600"
               successLabel="Order Accepted ✓"
             />
 

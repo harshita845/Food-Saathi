@@ -325,11 +325,16 @@ export async function listOrdersAvailableDelivery(deliveryPartnerId, query) {
   const filter = {
     $or: [
       {
+        // Must mirror acceptOrderDelivery: a rider can only accept orders offered to them,
+        // so only list those (otherwise Accept fails with "no longer available").
         'dispatch.status': 'unassigned',
-        'dispatch.offeredTo': {
-          $elemMatch: { partnerId: new mongoose.Types.ObjectId(deliveryPartnerId), action: 'offered' },
-        },
         orderStatus: { $in: ['confirmed', 'preparing', 'ready_for_pickup'] },
+        'dispatch.offeredTo': {
+          $elemMatch: {
+            partnerId: new mongoose.Types.ObjectId(deliveryPartnerId),
+            action: 'offered',
+          },
+        },
       },
       activeOwnOrderFilter,
     ],

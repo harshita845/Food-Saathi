@@ -451,7 +451,9 @@ export async function createOrder(userId, dto) {
     const isAwaitingOnlinePayment =
       isOnlinePayment &&
       String(payment?.status || "").toLowerCase() !== "paid";
-    await notifyOwnersSafely([{ ownerType: "USER", ownerId: userId }], {
+    // The customer is on the payment page right now: don't push "Complete payment..." at them.
+    // They get "Payment Successful" once the payment is captured (afterOnlinePaymentCaptured).
+    if (!isAwaitingOnlinePayment) await notifyOwnersSafely([{ ownerType: "USER", ownerId: userId }], {
       title: isAwaitingOnlinePayment
         ? "Complete Payment to Confirm Order"
         : "Order Confirmed! 🍔",
@@ -548,25 +550,39 @@ export async function verifyPayment(userId, dto) {
     return { success: true, order: normalizeOrderForClient(order), payment: order.payment };
 
   const gatewayOrderId = String(
-    dto.gatewayOrderId ||
-    dto.orderId ||
-    dto.razorpayOrderId ||
     order.payment?.gateway?.orderId ||
     order.payment?.razorpay?.orderId ||
-    order._id
+    order._id ||
+    dto.gatewayOrderId ||
+    dto.razorpayOrderId ||
+    dto.orderId
   );
 
   // Server-side verification: fetch order directly from Cashfree (Never trust client)
   let cfPaymentId = dto.gatewayPaymentId || dto.razorpayPaymentId || gatewayOrderId;
   if (isCashfreeConfigured()) {
-    const cfOrder = await fetchCashfreeOrder(gatewayOrderId).catch(() => null);
+    let cfOrder = await fetchCashfreeOrder(gatewayOrderId).catch(() => null);
+    if (!cfOrder && String(order._id) !== gatewayOrderId) {
+      cfOrder = await fetchCashfreeOrder(String(order._id)).catch(() => null);
+    }
     let orderStatus = String(cfOrder?.order_status || '').toUpperCase();
     let isPaid = orderStatus === 'PAID';
+    // Latest payment attempt on the gateway: NONE (customer never paid), PENDING (bank still
+    // processing), SUCCESS, FAILED, USER_DROPPED, CANCELLED... Lets the app decide quickly
+    // instead of waiting when there is nothing to wait for.
+    let attemptStatus = 'NONE';
 
     // If order_status isn't marked PAID yet, inspect payment attempts
     if (!isPaid) {
-      const payments = await fetchCashfreePayments(gatewayOrderId);
-      const successfulPayment = payments.find(p => String(p?.payment_status || '').toUpperCase() === 'SUCCESS');
+      let payments = await fetchCashfreePayments(gatewayOrderId);
+      if ((!payments || payments.length === 0) && String(order._id) !== gatewayOrderId) {
+        payments = await fetchCashfreePayments(String(order._id));
+      }
+      const successfulPayment = (payments || []).find(p => String(p?.payment_status || '').toUpperCase() === 'SUCCESS');
+      const latestAttempt = [...(payments || [])].sort(
+        (a, b) => new Date(b?.payment_time || b?.payment_completion_time || 0) - new Date(a?.payment_time || a?.payment_completion_time || 0),
+      )[0];
+      if (latestAttempt) attemptStatus = String(latestAttempt.payment_status || 'PENDING').toUpperCase();
       if (successfulPayment) {
         isPaid = true;
         orderStatus = 'PAID';
@@ -590,8 +606,11 @@ export async function verifyPayment(userId, dto) {
         success: false,
         paid: false,
         orderStatus: orderStatus || 'PENDING',
+        attemptStatus,
         order: normalizeOrderForClient(order),
-        message: `Payment not completed. Status: ${orderStatus || 'PENDING'}`
+        message: ['FAILED', 'CANCELLED', 'USER_DROPPED', 'EXPIRED', 'TERMINATED'].includes(orderStatus)
+          ? 'Payment was not successful. No money was deducted. Please try again.'
+          : "We haven't received your payment yet. If money was deducted, it will update in a few minutes.",
       };
     }
     cfPaymentId = String(cfOrder?.cf_order_id || cfPaymentId);
@@ -607,7 +626,22 @@ export async function verifyPayment(userId, dto) {
     signature: dto.signature || dto.razorpaySignature || "",
   });
   if (!capture.applied && !String(capture.reason || "").startsWith("already_")) {
-    throw new ValidationError("Payment could not be applied to this order");
+    if (capture.reason === "gateway_order_mismatch") {
+      logger.warn(`[order.service] Retrying capturePayment without strict gatewayOrderId check for order ${order._id}`);
+      const retryCapture = await financeService.capturePayment(order._id, {
+        method: "cashfree",
+        source: "verify_api",
+        actor: { role: "USER", id: userId },
+        gatewayPaymentId: cfPaymentId,
+        gatewayOrderId: "",
+        signature: dto.signature || dto.razorpaySignature || "",
+      });
+      if (!retryCapture.applied && !String(retryCapture.reason || "").startsWith("already_")) {
+        throw new ValidationError("Payment could not be applied to this order");
+      }
+    } else {
+      throw new ValidationError("Payment could not be applied to this order");
+    }
   }
 
   const fresh = await FoodOrder.findById(order._id);
@@ -1104,7 +1138,14 @@ export async function cancelOrder(orderId, userId, reason, refundDestination = "
 
   const refundDetail = refundText;
 
-  await notifyOwnersSafely(
+  // Online order that was never paid = abandoned checkout. The customer already sees
+  // "Payment cancelled" in the app and the restaurant never saw the order, so send no
+  // "Order Cancelled" push to either of them.
+  const isAbandonedCheckout =
+    ["razorpay", "cashfree", "online"].includes(String(order.payment?.method || "").toLowerCase()) &&
+    ["", "created", "pending", "failed"].includes(String(order.payment?.status || "").toLowerCase());
+
+  if (!isAbandonedCheckout) await notifyOwnersSafely(
     [
       { ownerType: "USER", ownerId: userId },
       { ownerType: "RESTAURANT", ownerId: order.restaurantId },
@@ -1132,7 +1173,9 @@ export async function cancelOrder(orderId, userId, reason, refundDestination = "
         message: `Order #${order.order_id || order._id} has been cancelled by the customer. Reason: ${reason || "No reason provided"}.${refundDetail}`
       };
       io.to(rooms.user(userId)).emit("order_status_update", payload);
-      io.to(rooms.restaurant(order.restaurantId)).emit("order_status_update", payload);
+      if (!isAbandonedCheckout) {
+        io.to(rooms.restaurant(order.restaurantId)).emit("order_status_update", payload);
+      }
       
       const assignedRiderId = order.dispatch?.deliveryPartnerId;
       if (assignedRiderId) {
@@ -1494,20 +1537,22 @@ export async function updateOrderStatusRestaurant(
     console.error("[DEBUG] Error emitting status update to restaurant:", err);
   }
 
+  // On accept (created -> confirmed/preparing/ready) -> start the rider search.
+  // Must not depend on the socket server being available, or riders never get the order.
+  if (String(from) === "created" && ["confirmed", "preparing", "ready_for_pickup"].includes(String(orderStatus))) {
+    try {
+      await startDispatchForAcceptedOrder(order);
+      // Refresh local order state after assignment search
+      order = (await FoodOrder.findById(order._id)) || order;
+    } catch (err) {
+      logger.error(`Auto-assign after restaurant accept failed for ${order._id}: ${err?.message || err}`);
+    }
+  }
+
   // Real-time: delivery request / ready notifications.
   try {
     const io = getIO();
     if (io) {
-      // On accept (created -> confirmed/preparing/ready) -> start the rider search
-      if (String(from) === "created" && ["confirmed", "preparing", "ready_for_pickup"].includes(String(orderStatus))) {
-        try {
-            await startDispatchForAcceptedOrder(order);
-            // Refresh local order state after assignment search
-            order = await FoodOrder.findById(order._id); 
-        } catch (err) {
-            logger.error(`Auto-assign after restaurant accept failed for ${order._id}: ${err?.message || err}`);
-        }
-      }
 
             // When ready for pickup -> ping assigned delivery partner.
             if (String(orderStatus) === 'ready_for_pickup' && String(from) !== 'ready_for_pickup') {

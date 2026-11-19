@@ -719,8 +719,14 @@ function showForegroundNotification(payload = {}, options = {}) {
     }
   }
 
+  // Payment pushes: the checkout / order screens already show their own message
+  // ("Payment successful! Your order is placed.", "Payment cancelled..."), so a second
+  // toast on top is noise. System notifications (tab hidden / app closed) still show above.
+  const pushType = String(payload?.data?.type || "").toLowerCase();
+  const isPaymentFlowPush = ["payment_success", "order_created_pending_payment"].includes(pushType);
+
   // Show in-app toast if tab is visible.
-  if (typeof document !== "undefined" && document.visibilityState === "visible") {
+  if (!isPaymentFlowPush && typeof document !== "undefined" && document.visibilityState === "visible") {
     // Cross-tab deduplication using BroadcastChannel and LocalStorage
     const notificationId = payload?.data?.broadcastId || payload?.data?.orderId || payload?.data?.id || (title + body).replace(/\s+/g, '');
     const channelName = `notification_dedupe_${notificationId}`;
