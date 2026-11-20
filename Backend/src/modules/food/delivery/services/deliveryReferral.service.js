@@ -12,7 +12,7 @@ export const getDeliveryReferralStats = async (deliveryPartnerId) => {
     const oid = new mongoose.Types.ObjectId(id);
     const [partner, settingsDoc, bonusAgg] = await Promise.all([
         FoodDeliveryPartner.findById(oid).select('_id referralCount referralCode').lean(),
-        FoodReferralSettings.findOne({ isActive: true }).sort({ createdAt: -1 }).lean(),
+        FoodReferralSettings.findOne().sort({ createdAt: -1 }).lean(),
         DeliveryBonusTransaction.aggregate([
             { $match: { deliveryPartnerId: oid, reference: { $regex: /referral/i } } },
             { $group: { _id: null, total: { $sum: '$amount' } } }
@@ -20,11 +20,13 @@ export const getDeliveryReferralStats = async (deliveryPartnerId) => {
     ]);
 
     const totalReferralEarnings = bonusAgg?.[0] ? Number(bonusAgg[0].total) : 0;
+    const isReferralActive = settingsDoc?.isActive !== false;
+    const rewardAmount = isReferralActive ? Math.max(0, Number(settingsDoc?.referralRewardDelivery ?? 100)) : 0;
 
     return {
         referralCount: Number(partner?.referralCount) || 0,
         totalReferralEarnings,
-        rewardAmount: Math.max(0, Number(settingsDoc?.referralRewardDelivery) || 0)
+        rewardAmount
     };
 };
 

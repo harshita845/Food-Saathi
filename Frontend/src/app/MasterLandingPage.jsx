@@ -25,9 +25,11 @@ import {
 import FoodSaathiLogo, { SaathiWordmark, logoMark, BRAND_TAGLINE } from "@/shared/components/brand/FoodSaathiLogo"
 import { FloatingFoods, fadeUp, stagger, spring } from "@/shared/components/brand/Motion"
 
-const USER_APP_PLAYSTORE_URL = "https://play.google.com/store/apps/details?id=com.foodsaathi.user&hl=en_IN"
-const RESTAURANT_APP_PLAYSTORE_URL = "https://play.google.com/store/apps/details?id=com.foodsaathi.restaurent&hl=en_IN"
-const DELIVERY_APP_PLAYSTORE_URL = "https://play.google.com/store/apps/details?id=com.foodsaathi.delivery&hl=en_IN"
+import {
+  USER_APP_PLAYSTORE_URL,
+  RESTAURANT_APP_PLAYSTORE_URL,
+  DELIVERY_APP_PLAYSTORE_URL,
+} from "@/shared/config/appLinks.js"
 const ALL_APPS_PLAYSTORE_URL = "https://play.google.com/store/search?q=Food+Saathi&c=apps"
 
 const SLIDES = [

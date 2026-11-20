@@ -20,6 +20,8 @@ import { API_BASE_URL } from "@food/api/config"
 import { toast } from "sonner"
 import { clearModuleAuth } from "@food/utils/auth"
 import { registerWebPushForCurrentModule } from "@food/utils/firebaseMessaging"
+import { describeUndeliveredTestPush } from "@food/utils/pushTestMessage";
+import { getDeliveryReferralLink } from "@/shared/config/appLinks.js";
 
 /**
  * ProfileV2 - 1:1 EXACT Restoration of the Legacy Profile Hub.
@@ -88,19 +90,23 @@ export const ProfileV2 = () => {
   }, [])
 
   const refId = profile?._id || profile?.id || profile?.referralCode || ""
-  const referralLink = refId ? `${window.location.origin}/food/delivery/signup?ref=${encodeURIComponent(String(refId))}` : ""
+  const referralLink = getDeliveryReferralLink(refId)
 
   const handleShareReferral = async () => {
     if (!referralLink) return
     const rewardText = referralReward > 0 ? `₹${referralReward}` : "rewards"
-    const shareText = `Join as a delivery partner and earn ${rewardText}.`
+    const shareText = `Join the Food Saathi delivery fleet and earn ${rewardText}! Use referral code: ${refId}. Download the app now: ${referralLink}`
     try {
       if (navigator.share) {
-        await navigator.share({ title: "Delivery referral", text: shareText, url: referralLink })
-      } else {
-        const fallbackUrl = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${referralLink}`)}`
-        window.open(fallbackUrl, "_blank", "noopener,noreferrer")
+        await navigator.share({ title: "Food Saathi Delivery Referral", text: shareText, url: referralLink })
+        return
       }
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareText)
+        toast.success("Referral message & Play Store link copied!")
+      }
+      const fallbackUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`
+      window.open(fallbackUrl, "_blank", "noopener,noreferrer")
     } catch (e) {}
   }
 
@@ -219,7 +225,7 @@ export const ProfileV2 = () => {
       if (successCount > 0) {
         toast.success(`Test sent! Delivered: ${successCount}, Failed: ${failureCount}`)
       } else {
-        toast.error(`Test failed to deliver. Delivered: 0, Failed: ${failureCount}`)
+        toast.error(describeUndeliveredTestPush(), { duration: 7000 })
       }
     } catch (err) {
       toast.error(err?.response?.data?.message || "Failed to send test notification")

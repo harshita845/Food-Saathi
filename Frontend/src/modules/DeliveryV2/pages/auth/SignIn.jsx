@@ -30,6 +30,17 @@ export default function DeliverySignIn() {
   const [loading, setLoading] = useState(false)
   const submitting = useRef(false)
 
+  // Capture referral code if opened via share/deep link
+  useEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search)
+      const ref = sp.get("ref") || sp.get("referrer")
+      if (ref) {
+        localStorage.setItem("delivery_referral_code", ref.trim())
+      }
+    } catch (e) {}
+  }, [])
+
   // iOS Safari keyboard float fix
   useEffect(() => {
     const handleFocus = () => {

@@ -448,7 +448,28 @@ export async function enablePushNotificationSound() {
     return true;
   }
 }
+let runtimeVapidKeyPromise = null;
+/** Falls back to the backend when the build has no VITE_FIREBASE_VAPID_KEY (public key by design). */
+async function fetchRuntimeVapidKey() {
+  if (!runtimeVapidKeyPromise) {
+    runtimeVapidKeyPromise = (async () => {
+      try {
+        const { API_BASE_URL } = await import("@food/api/config");
+        const base = String(API_BASE_URL || "").replace(/\/+$/, "");
+        const res = await fetch(`${base}/food/public/env`, { credentials: "omit" });
+        const json = await res.json();
+        return sanitize(json?.data?.firebaseVapidKey);
+      } catch {
+        runtimeVapidKeyPromise = null; // retry next time
+        return "";
+      }
+    })();
+  }
+  return runtimeVapidKeyPromise;
+}
+
 async function getFirebasePublicEnv() {
+  const buildVapidKey = sanitize(import.meta.env.VITE_FIREBASE_VAPID_KEY);
   return {
     apiKey: sanitize(import.meta.env.VITE_FIREBASE_API_KEY),
     authDomain: sanitize(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN),
@@ -457,7 +478,7 @@ async function getFirebasePublicEnv() {
     messagingSenderId: sanitize(import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID),
     storageBucket: sanitize(import.meta.env.VITE_FIREBASE_STORAGE_BUCKET),
     measurementId: sanitize(import.meta.env.VITE_FIREBASE_MEASUREMENT_ID),
-    vapidKey: sanitize(import.meta.env.VITE_FIREBASE_VAPID_KEY),
+    vapidKey: buildVapidKey || (await fetchRuntimeVapidKey()),
   };
 }
 

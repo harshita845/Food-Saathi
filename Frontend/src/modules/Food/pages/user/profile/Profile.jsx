@@ -33,6 +33,7 @@ import { Card, CardContent } from "@food/components/ui/card";
 import { Button } from "@food/components/ui/button";
 import { useProfile } from "@food/context/ProfileContext";
 import { useLocationSelector } from "@food/components/user/UserLayout";
+import { getUserReferralLink } from "@/shared/config/appLinks.js";
 import {
   Avatar,
   AvatarFallback,
@@ -58,6 +59,7 @@ const USER_SESSION_PREFERENCE_KEYS = ["userVegMode", "food-under-250-filters"];
 
 import { registerWebPushForCurrentModule } from "@food/utils/firebaseMessaging";
 import { useTheme } from "@food/context/ThemeContext";
+import { describeUndeliveredTestPush } from "@food/utils/pushTestMessage";
 
 const profilePageCache = {
   referralReward: null,
@@ -279,23 +281,21 @@ export default function Profile() {
 
   const refId =
     userProfile?._id || userProfile?.id || userProfile?.referralCode || "";
-  const referralLink = refId
-    ? `${window.location.origin}/food/user/auth/login?ref=${encodeURIComponent(String(refId))}`
-    : "";
+  const referralLink = getUserReferralLink(refId);
 
   const handleShareReferral = async () => {
     if (!referralLink) return;
     const rewardText = referralReward > 0 ? `\u20B9${referralReward}` : "rewards";
-    const shareText = `Join ${companyName} and earn ${rewardText}.`;
+    const shareText = `Order delicious food on Food Saathi and earn ${rewardText}! Use my referral code: ${refId}. Download now: ${referralLink}`;
     try {
       if (navigator.share) {
         await navigator.share({
-          title: `${companyName} referral`,
+          title: `${companyName || "Food Saathi"} referral`,
           text: shareText,
           url: referralLink,
         });
       } else {
-        const fallbackUrl = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${referralLink}`)}`;
+        const fallbackUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
         window.open(fallbackUrl, "_blank", "noopener,noreferrer");
       }
     } catch (error) {
@@ -515,7 +515,7 @@ export default function Profile() {
       if (successCount > 0) {
         toast.success(`Test sent! Delivered: ${successCount}, Failed: ${failureCount}`)
       } else {
-        toast.error(`Test failed to deliver. Delivered: 0, Failed: ${failureCount}`)
+        toast.error(describeUndeliveredTestPush(), { duration: 7000 })
       }
     } catch (err) {
       toast.error(err?.response?.data?.message || "Failed to send test notification");

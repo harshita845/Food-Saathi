@@ -6,6 +6,7 @@ import { useCart } from "@food/context/CartContext"
 import { toast } from "sonner"
 import { getCompanyNameAsync } from "@food/utils/businessSettings"
 import { isModuleAuthenticated } from "@food/utils/auth"
+import { USER_APP_PLAYSTORE_URL } from "@/shared/config/appLinks.js"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -637,14 +638,11 @@ export default function Orders() {
     const location =
       order.restaurantLocation ||
       `${order.address?.city || ""}, ${order.address?.state || ""}`.trim()
-    const restaurantPath = order.restaurantSlug || order.restaurantId
-    const shareUrl = restaurantPath
-      ? `${window.location.origin}/food/user/restaurants/${restaurantPath}`
-      : `${window.location.origin}/food/user/orders/${order.id}`
+    const shareUrl = USER_APP_PLAYSTORE_URL
 
-    const shareText = `Check out ${order.restaurant} on ${companyName}.
+    const shareText = `Check out ${order.restaurant} on Food Saathi!
 Location: ${location || "Location not available"}
-Order again from this restaurant in the ${companyName} app.`
+Order again from this restaurant in the Food Saathi app: ${shareUrl}`
 
     const payload = {
       title: order.restaurant,

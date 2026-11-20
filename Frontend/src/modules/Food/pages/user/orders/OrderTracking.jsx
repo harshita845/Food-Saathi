@@ -2,6 +2,7 @@ import { useParams, Link, useSearchParams, useNavigate, useLocation } from "reac
 import React, { useState, useEffect, useMemo, useRef, useCallback, memo } from "react"
 import { createPortal } from "react-dom"
 import { safeVibrate } from "@food/utils/safeVibrate"
+import { USER_APP_PLAYSTORE_URL } from "@/shared/config/appLinks.js"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import {
@@ -1567,15 +1568,17 @@ export default function OrderTracking() {
 
   const handleShare = async () => {
     try {
+      const shareUrl = USER_APP_PLAYSTORE_URL;
+      const shareText = `Track my order from ${order?.restaurant || companyName} with ID #${order?.orderId || order?.id} on Food Saathi! Download the app: ${shareUrl}`;
       if (navigator.share) {
         await navigator.share({
           title: `Track my order from ${order?.restaurant || companyName}`,
-          text: `Hey! Track my order from ${order?.restaurant || companyName} with ID #${order?.orderId || order?.id}.`,
-          url: window.location.href,
+          text: shareText,
+          url: shareUrl,
         });
       } else {
-        await navigator.clipboard.writeText(window.location.href);
-        toast.success("Tracking link copied to clipboard!");
+        await navigator.clipboard.writeText(shareText);
+        toast.success("App link copied to clipboard!");
       }
     } catch (error) {
       if (error.name !== 'AbortError') {

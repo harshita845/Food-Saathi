@@ -14,11 +14,18 @@ export default function SignupStep1() {
   const goBack = useDeliveryBackNavigation()
   const [formData, setFormData] = useState(() => {
     const saved = localStorage.getItem("deliverySignupDetails")
+    let urlRef = ""
+    try {
+      const sp = new URLSearchParams(window.location.search)
+      urlRef = sp.get("ref") || sp.get("referrer") || ""
+    } catch (e) {}
+    const cachedRef = urlRef || localStorage.getItem("delivery_referral_code") || ""
+
     const base = {
       name: "",
       phone: "",
       countryCode: "+91",
-      ref: "",
+      ref: cachedRef,
       email: "",
       address: "",
       city: "",
@@ -32,7 +39,8 @@ export default function SignupStep1() {
     }
     if (saved) {
       try {
-        return { ...base, ...JSON.parse(saved) }
+        const parsed = JSON.parse(saved)
+        return { ...base, ...parsed, ref: parsed.ref || cachedRef }
       } catch (e) {
         debugError("Error parsing saved details:", e)
       }
@@ -437,6 +445,21 @@ export default function SignupStep1() {
               placeholder="123456789012"
             />
             {errors.aadharNumber && <p className="text-red-500 text-sm mt-1">{errors.aadharNumber}</p>}
+          </div>
+
+          {/* Referral Code (Optional) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Referral Code <span className="text-gray-400 font-normal">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              name="ref"
+              value={formData.ref || ""}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Enter referral code if you have one"
+            />
           </div>
 
           {/* Submit Button */}

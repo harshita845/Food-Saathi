@@ -13,6 +13,7 @@ const schema = z.object({
     .length(6, "OTP must be exactly 6 digits")
     .regex(/^\d{6}$/, "OTP must be numeric and exactly 6 digits"),
   ref: z.string().trim().max(64).optional().or(z.literal("")),
+  referralCode: z.string().trim().max(64).optional().or(z.literal("")),
   fcmToken: z.string().optional(),
   platform: z.enum(["web", "mobile"]).optional(),
   name: z.string().trim().min(2, "Name must be at least 2 characters").max(100).optional(),
@@ -23,5 +24,9 @@ export const validateUserOtpVerifyDto = (body) => {
   if (!result.success) {
     throw new ValidationError(result.error.errors[0].message);
   }
-  return result.data;
+  const data = result.data;
+  if (!data.ref && data.referralCode) {
+    data.ref = data.referralCode;
+  }
+  return data;
 };

@@ -30,7 +30,9 @@ import {
   MapPin,
   LogOut,
   Ticket,
+  Share2,
 } from "lucide-react"
+import { RESTAURANT_APP_PLAYSTORE_URL } from "@/shared/config/appLinks.js"
 import RestaurantBentoGrid from "@food/components/restaurant/RestaurantBentoGrid"
 import { Card, CardContent } from "@food/components/ui/card"
 import { DateRangeCalendar } from "@food/components/ui/date-range-calendar"
@@ -39,6 +41,7 @@ import { restaurantAPI, notificationAPI } from "@food/api"
 import { firebaseAuth, ensureFirebaseInitialized } from "@food/firebase"
 import { toast } from "sonner"
 import { registerWebPushForCurrentModule } from "@food/utils/firebaseMessaging"
+import { describeUndeliveredTestPush } from "@food/utils/pushTestMessage";
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -705,8 +708,14 @@ export default function ExploreMore() {
       })
 
       if (channel === "voip" && voipResult?.skipped) {
-        console.warn("[RestaurantVoIPTest] skipped", voipResult)
-        toast.error(voipResult.reason || "No VoIP token registered on this device")
+        console.info("[RestaurantVoIPTest] skipped", voipResult)
+        // VoIP calls use Apple PushKit: only the FoodSaathi iPhone app can receive them.
+        toast.info(
+          platform === "web"
+            ? "VoIP calls only work in the FoodSaathi iPhone app. In the browser, use Test FCM Notification instead."
+            : "No VoIP token on this device yet. Open the app on the iPhone, allow calls, then try again.",
+          { duration: 6000 },
+        )
         return
       }
 
@@ -726,7 +735,7 @@ export default function ExploreMore() {
         if (successCount > 0) {
           toast.success(`Test sent! Delivered: ${successCount}, Failed: ${failureCount}`)
         } else {
-          toast.error(`Test failed to deliver. Delivered: 0, Failed: ${failureCount}`)
+          toast.error(describeUndeliveredTestPush(), { duration: 7000 })
         }
       }
     } catch (err) {
@@ -866,9 +875,31 @@ export default function ExploreMore() {
     { id: 3, label: "Reviews", icon: MessageSquare, route: "/food/restaurant/feedback" },
   ]
 
+  const handleShareRestaurantApp = async () => {
+    const shareUrl = RESTAURANT_APP_PLAYSTORE_URL
+    const shareText = `Grow your restaurant business with Food Saathi! Manage orders, menus, and payouts on the Food Saathi Restaurant Partner app: ${shareUrl}`
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: "Food Saathi Restaurant Partner App",
+          text: shareText,
+          url: shareUrl,
+        })
+      } else {
+        await navigator.clipboard.writeText(shareText)
+        toast.success("Restaurant partner app link copied!")
+      }
+    } catch (e) {
+      if (e?.name !== "AbortError") {
+        toast.error("Failed to share link")
+      }
+    }
+  }
+
   const helpItems = [
     { id: 1, label: "Support", icon: LifeBuoy, route: "/food/restaurant/help-centre/support" },
     { id: 2, label: "Share your feedback", icon: Edit, route: "/food/restaurant/Share-Feedback" },
+    { id: 3, label: "Share Restaurant App", icon: Share2, action: "share-app" },
   ]
 
   const accountingItems = [
@@ -946,6 +977,8 @@ export default function ExploreMore() {
                   if (item.id === 5) {
                     // Schedule off card
                     handleScheduleOffClick()
+                  } else if (item.action === "share-app") {
+                    handleShareRestaurantApp()
                   } else if (item.route) {
                     navigate(item.route)
                   }
@@ -1288,6 +1321,8 @@ export default function ExploreMore() {
                                   onClick={() => {
                                     if (item.id === 5) {
                                       handleScheduleOffClick()
+                                    } else if (item.action === "share-app") {
+                                      handleShareRestaurantApp()
                                     } else if (item.route) {
                                       navigate(item.route)
                                     }

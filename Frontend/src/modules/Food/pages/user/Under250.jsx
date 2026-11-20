@@ -19,6 +19,7 @@ import { getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailabil
 import { readScopedValue, removeScopedValue, writeScopedValue } from "@food/utils/appStorage"
 import { getDiscountedItemPrice } from "@food/utils/itemDiscount"
 import { useDataVersion, DATA_CHANGED_EVENT } from "@food/utils/dataSync"
+import { USER_APP_PLAYSTORE_URL } from "@/shared/config/appLinks.js"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -1202,17 +1203,13 @@ export default function Under250() {
   const handleShareItem = async (item) => {
     if (!item) return
 
-    const itemId = item.id || item._id
-    const restaurantSlug = item.restaurantSlug || item.slug || ""
-    const shareUrl = restaurantSlug
-      ? `${window.location.origin}/user/restaurants/${restaurantSlug}${itemId ? `?dish=${encodeURIComponent(itemId)}` : ""}`
-      : window.location.href
+    const shareUrl = USER_APP_PLAYSTORE_URL
 
     try {
       if (navigator.share) {
         await navigator.share({
           title: item.name || "Dish",
-          text: `Check out ${item.name || "this dish"} from ${item.restaurant || "Under 250"}`,
+          text: `Check out ${item.name || "this dish"} from ${item.restaurant || "Food Saathi"}! Download the app: ${shareUrl}`,
           url: shareUrl,
         })
         return
@@ -1227,14 +1224,10 @@ export default function Under250() {
   const handleShareOption = async (type) => {
     if (!selectedItem) return
 
-    const itemId = selectedItem.id || selectedItem._id
-    const restaurantSlug = selectedItem.restaurantSlug || selectedItem.slug || ""
-    const shareUrl = selectedItem.restaurantSlug
-      ? `${window.location.origin}/user/restaurants/${restaurantSlug}${itemId ? `?dish=${encodeURIComponent(itemId)}` : ""}`
-      : window.location.href
-    const shareText = `Check out ${selectedItem.name || "this dish"} from ${selectedItem.restaurant || "Under 250"}`
+    const shareUrl = USER_APP_PLAYSTORE_URL
+    const shareText = `Check out ${selectedItem.name || "this dish"} from ${selectedItem.restaurant || "Food Saathi"}! Download the app: ${shareUrl}`
     const encodedUrl = encodeURIComponent(shareUrl)
-    const encodedText = encodeURIComponent(`${shareText} ${shareUrl}`)
+    const encodedText = encodeURIComponent(shareText)
 
     try {
       if (type === "copy") {

@@ -249,7 +249,17 @@ const parseFirebaseError = async (response) => {
 const shouldRemoveTokenFromError = (errorJson, response) => {
     const status = response?.status;
     const message = String(errorJson?.error?.message || '').toUpperCase();
-    return status === 404 || message.includes('UNREGISTERED') || message.includes('INVALID_ARGUMENT');
+    const errorCode = JSON.stringify(errorJson?.error?.details || []).toUpperCase();
+    // SENDER_ID_MISMATCH: token belongs to another Firebase project (e.g. created before the
+    // project was switched). It can never work again, so drop it like an unregistered token.
+    return (
+        status === 404 ||
+        message.includes('UNREGISTERED') ||
+        message.includes('INVALID_ARGUMENT') ||
+        message.includes('SENDERID MISMATCH') ||
+        message.includes('SENDER_ID_MISMATCH') ||
+        errorCode.includes('SENDER_ID_MISMATCH')
+    );
 };
 
 const getOwnerModel = (ownerType) => {

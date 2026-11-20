@@ -6,6 +6,7 @@ import { restaurantAPI, diningAPI, orderAPI } from "@food/api"
 import { API_BASE_URL } from "@food/api/config"
 import { toast } from "sonner"
 import { useAppLocation } from "@food/hooks/useAppLocation"
+import { USER_APP_PLAYSTORE_URL } from "@/shared/config/appLinks.js"
 import {
   ArrowLeft,
   Search,
@@ -1614,13 +1615,9 @@ function RestaurantDetailsContent() {
 
   // Handle share restaurant
   const handleShareRestaurant = async () => {
-    const companyName = await getCompanyNameAsync()
-    const restaurantSlug = restaurant?.slug || slug || ""
     const restaurantName = restaurant?.name || "this restaurant"
-
-    // Create share URL
-    const shareUrl = `${window.location.origin}/user/restaurants/${restaurantSlug}`
-    const shareText = `Check out ${restaurantName} on ${companyName}! ${shareUrl}`
+    const shareUrl = USER_APP_PLAYSTORE_URL
+    const shareText = `Check out ${restaurantName} on Food Saathi! Download the app: ${shareUrl}`
 
     const payload = {
       title: restaurantName,
@@ -1649,15 +1646,12 @@ function RestaurantDetailsContent() {
 
   // Handle share click
   const handleShareClick = async (item) => {
-    const dishId = item.id || item._id
-    const restaurantSlug = restaurant?.slug || slug || ""
-
-    // Create share URL
-    const shareUrl = `${window.location.origin}/user/restaurants/${restaurantSlug}?dish=${dishId}`
-    const shareText = `Check out ${item.name} from ${restaurant?.name || "this restaurant"}! ${shareUrl}`
+    const restaurantName = restaurant?.name || "this restaurant"
+    const shareUrl = USER_APP_PLAYSTORE_URL
+    const shareText = `Check out ${item.name} from ${restaurantName} on Food Saathi! Download the app: ${shareUrl}`
 
     const payload = {
-      title: `${item.name} - ${restaurant?.name || ""}`,
+      title: `${item.name} - ${restaurantName}`,
       text: shareText,
       url: shareUrl,
     }

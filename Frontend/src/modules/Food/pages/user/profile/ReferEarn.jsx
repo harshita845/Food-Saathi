@@ -8,6 +8,7 @@ import { useCompanyName } from "@food/hooks/useCompanyName";
 import { useProfile } from "@food/context/ProfileContext";
 import { toast } from "sonner";
 import { userAPI } from "@food/api";
+import { getUserReferralLink } from "@/shared/config/appLinks.js";
 
 const statusMeta = {
   credited: {
@@ -79,14 +80,12 @@ export default function ReferEarn() {
   }, []);
 
   const refId = userProfile?._id || userProfile?.id || userProfile?.referralCode || "";
-  const referralLink = refId
-    ? `${window.location.origin}/food/user/auth/login?ref=${encodeURIComponent(String(refId))}`
-    : "";
+  const referralLink = getUserReferralLink(refId);
 
   const shareText = useMemo(() => {
     const rewardText = stats.rewardAmount > 0 ? `\u20B9${stats.rewardAmount}` : "rewards";
-    return `Join ${companyName} and earn ${rewardText}.`;
-  }, [companyName, stats.rewardAmount]);
+    return `Order delicious food on Food Saathi and earn ${rewardText}! Use my referral code: ${refId}. Download now: ${referralLink}`;
+  }, [refId, referralLink, stats.rewardAmount]);
 
   const handleShare = async () => {
     if (!referralLink) {
@@ -96,7 +95,7 @@ export default function ReferEarn() {
     try {
       if (navigator.share) {
         await navigator.share({
-          title: `${companyName} referral`,
+          title: `${companyName || "Food Saathi"} referral`,
           text: shareText,
           url: referralLink,
         });
@@ -104,11 +103,11 @@ export default function ReferEarn() {
       }
 
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(`${shareText} ${referralLink}`);
+        await navigator.clipboard.writeText(shareText);
         toast.success("Referral link copied");
       }
 
-      const fallbackUrl = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${referralLink}`)}`;
+      const fallbackUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
       window.open(fallbackUrl, "_blank", "noopener,noreferrer");
     } catch (error) {
       if (error?.name !== "AbortError") {

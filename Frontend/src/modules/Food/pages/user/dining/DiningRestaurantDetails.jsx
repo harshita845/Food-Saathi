@@ -20,6 +20,7 @@ import {
 } from "lucide-react"
 import { Button } from "@food/components/ui/button"
 import { toast } from "sonner"
+import { USER_APP_PLAYSTORE_URL } from "@/shared/config/appLinks.js"
 
 const formatAddress = (restaurant) =>
   restaurant?.location?.formattedAddress ||
@@ -219,10 +220,11 @@ export default function DiningRestaurantDetails() {
   ]
 
   const handleShare = async () => {
+    const shareUrl = USER_APP_PLAYSTORE_URL
     const shareData = {
       title: restaurantName,
-      text: `Check out ${restaurantName} on Food Saathi!`,
-      url: window.location.href,
+      text: `Check out ${restaurantName} on Food Saathi! Download the app: ${shareUrl}`,
+      url: shareUrl,
     }
 
     try {
@@ -232,8 +234,8 @@ export default function DiningRestaurantDetails() {
       }
 
       // Fallback for desktop
-      await navigator.clipboard.writeText(window.location.href)
-      toast.success("Link copied to clipboard!")
+      await navigator.clipboard.writeText(shareData.text)
+      toast.success("App link copied to clipboard!")
     } catch (err) {
       if (err.name !== 'AbortError') {
         toast.error("Sharing failed. Please try again.")

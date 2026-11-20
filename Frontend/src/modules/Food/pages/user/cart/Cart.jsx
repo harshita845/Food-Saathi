@@ -23,6 +23,7 @@ import { getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailabil
 import useAppBackNavigation from "@food/hooks/useAppBackNavigation"
 import { persistDeliveryAddressMode, readDeliveryAddressMode, readStoredUserLocation } from "@food/utils/locationPersistence"
 import zoopSound from "@food/assets/audio/zomato_sms.mp3"
+import { USER_APP_PLAYSTORE_URL } from "@/shared/config/appLinks.js"
 import { useDataVersion } from "@food/utils/dataSync"
 const debugLog = (...args) => { }
 const debugWarn = (...args) => { }
@@ -1217,8 +1218,8 @@ export default function Cart() {
 
   const handleShare = async () => {
     const restaurantNameStr = restaurantName || companyName || "this restaurant"
-    const shareUrl = window.location.href
-    const shareText = `Check out what I'm ordering from ${restaurantNameStr}! ${shareUrl}`
+    const shareUrl = USER_APP_PLAYSTORE_URL
+    const shareText = `Check out what I'm ordering from ${restaurantNameStr} on Food Saathi! Download the app: ${shareUrl}`
 
     const payload = {
       title: `My Cart at ${restaurantNameStr}`,

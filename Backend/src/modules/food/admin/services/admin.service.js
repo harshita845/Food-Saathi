@@ -2088,12 +2088,21 @@ export async function upsertFeeSettings(body) {
 
 // ----- Referral Settings (admin) -----
 export async function getReferralSettings() {
-    const doc = await FoodReferralSettings.findOne({ isActive: true }).sort({ createdAt: -1 }).lean();
-    return { referralSettings: doc || null };
+    let doc = await FoodReferralSettings.findOne().sort({ createdAt: -1 }).lean();
+    if (!doc) {
+        doc = {
+            referralRewardUser: 50,
+            referralRewardDelivery: 100,
+            referralLimitUser: 10,
+            referralLimitDelivery: 10,
+            isActive: true
+        };
+    }
+    return { referralSettings: doc };
 }
 
 export async function upsertReferralSettings(body = {}) {
-    const existing = await FoodReferralSettings.findOne({ isActive: true }).sort({ createdAt: -1 });
+    const existing = await FoodReferralSettings.findOne().sort({ createdAt: -1 });
     if (existing) {
         const $set = {};
 
@@ -4880,12 +4889,16 @@ export async function approveDeliveryPartner(id) {
         if (referrerId && mongoose.Types.ObjectId.isValid(referrerId)) {
             const already = await FoodReferralLog.findOne({ refereeId: partner._id, role: 'DELIVERY_PARTNER' }).lean();
             if (!already) {
-                const settingsDoc = await FoodReferralSettings.findOne({ isActive: true }).sort({ createdAt: -1 }).lean();
-                const reward = Math.max(0, Number(settingsDoc?.referralRewardDelivery) || 0);
-                const limit = Math.max(0, Number(settingsDoc?.referralLimitDelivery) || 0);
+                const settingsDoc = await FoodReferralSettings.findOne().sort({ createdAt: -1 }).lean();
+                if (settingsDoc && settingsDoc.isActive === false) {
+                    return partner.toObject();
+                }
+                const reward = Math.max(0, Number(settingsDoc?.referralRewardDelivery ?? 100));
+                const limit = Number(settingsDoc?.referralLimitDelivery) || 0;
                 const referrer = await FoodDeliveryPartner.findById(referrerId).select('_id referralCount status').lean();
+                const isWithinLimit = limit <= 0 || Number(referrer?.referralCount || 0) < limit;
 
-                if (referrer && referrer.status === 'approved' && reward > 0 && limit > 0 && Number(referrer.referralCount || 0) < limit) {
+                if (referrer && reward > 0 && isWithinLimit) {
                     const log = await FoodReferralLog.create({
                         referrerId: referrer._id,
                         refereeId: partner._id,
@@ -4912,7 +4925,7 @@ export async function approveDeliveryPartner(id) {
                         role: 'DELIVERY_PARTNER',
                         rewardAmount: reward,
                         status: 'rejected',
-                        reason: !referrer ? 'referrer_not_found' : reward <= 0 ? 'reward_disabled' : limit <= 0 ? 'limit_disabled' : 'limit_reached'
+                        reason: !referrer ? 'referrer_not_found' : reward <= 0 ? 'reward_disabled' : 'limit_reached'
                     });
                 }
             }

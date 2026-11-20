@@ -262,10 +262,12 @@ export default function DeliveryOTP() {
         localStorage.removeItem("deliveryAuthData")
         localStorage.setItem("deliveryNeedsRegistration", "true")
         const digits = String(phone || "").replace(/\D/g, "")
+        const savedRef = localStorage.getItem("delivery_referral_code") || ""
         const details = {
           name: "",
           phone: digits.slice(-10),
           countryCode: "+91",
+          ref: savedRef
         }
         localStorage.setItem("deliverySignupDetails", JSON.stringify(details))
         setIsLoading(false)

@@ -16,7 +16,7 @@ export const registerDeliveryPartner = async (payload, files) => {
         vehicleType, vehicleName, vehicleNumber, drivingLicenseNumber, panNumber, aadharNumber,
         fcmToken, platform 
     } = payload;
-    const refRaw = typeof payload?.ref === 'string' ? String(payload.ref).trim() : '';
+    const refRaw = String(payload?.ref || payload?.referralCode || payload?.refCode || payload?.referrer || "").trim();
 
     const existing = await FoodDeliveryPartner.findOne({ phone });
     if (existing) {
@@ -110,8 +110,15 @@ export const registerDeliveryPartner = async (payload, files) => {
     }
 
     // Store referredBy (no credit here; credit happens on admin approval).
-    if (refRaw && mongoose.Types.ObjectId.isValid(refRaw) && String(refRaw) !== String(partner._id)) {
-        const referrer = await FoodDeliveryPartner.findById(refRaw).select('_id').lean();
+    if (refRaw && String(refRaw) !== String(partner._id)) {
+        const query = [{ referralCode: refRaw }];
+        if (mongoose.Types.ObjectId.isValid(refRaw)) {
+            query.unshift({ _id: new mongoose.Types.ObjectId(refRaw) });
+        }
+        const referrer = await FoodDeliveryPartner.findOne({
+            $or: query,
+            _id: { $ne: partner._id }
+        }).select('_id').lean();
         if (referrer) {
             partner.referredBy = referrer._id;
         }
