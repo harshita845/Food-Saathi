@@ -16,6 +16,7 @@ import { isValidSocketOrigin, resolveSocketOrigin } from '@food/utils/socketOrig
 import { DeliveryNotificationContext } from '../context/DeliveryNotificationContext';
 import { subscribeDeliveryPartnerOffers } from '@food/realtimeTracking';
 import { bindDataSync } from '@food/utils/dataSync';
+import { safeVibrate } from "@food/utils/safeVibrate";
 
 const shouldLogDeliverySocket = () => {
   if (typeof window === 'undefined') return import.meta.env.DEV;
@@ -67,6 +68,9 @@ const safeReadJson = (key) => {
     return null;
   }
 };
+
+/** Firebase offers older than this are ignored (dispatch re-offers live orders every ~60s). */
+const FIREBASE_OFFER_MAX_AGE_MS = 3 * 60 * 1000;
 
 const isRiderOnline = () => {
   try {
@@ -293,7 +297,7 @@ export const useDeliveryNotifications = () => {
       const usedNativeBridge = false;
 
       if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
-        navigator.vibrate([200, 100, 200, 100, 300]);
+        safeVibrate([200, 100, 200, 100, 300]);
       }
 
       if (usedNativeBridge) {
@@ -1237,6 +1241,9 @@ export const useDeliveryNotifications = () => {
           const offeredAt = Number(offerData.offeredAt || offerData.last_updated || 0);
           const lastSeen = lastFirebaseOfferAtByOrderRef.current.get(orderMongoId) || 0;
           if (!offeredAt || offeredAt <= lastSeen) return;
+          // Offers live ~60s; anything older is a leftover (e.g. its order was deleted) and must
+          // never pop up — accepting it would just fail with "Order not found".
+          if (Date.now() - offeredAt > FIREBASE_OFFER_MAX_AGE_MS) return;
 
           lastFirebaseOfferAtByOrderRef.current.set(orderMongoId, offeredAt);
 

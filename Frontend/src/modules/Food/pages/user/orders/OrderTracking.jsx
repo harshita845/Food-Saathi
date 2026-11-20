@@ -1,6 +1,7 @@
 import { useParams, Link, useSearchParams, useNavigate, useLocation } from "react-router-dom"
 import React, { useState, useEffect, useMemo, useRef, useCallback, memo } from "react"
 import { createPortal } from "react-dom"
+import { safeVibrate } from "@food/utils/safeVibrate"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import {
@@ -1443,7 +1444,7 @@ export default function OrderTracking() {
         // Optional: Vibrate device if supported and allowed
         try {
           if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
-            navigator.vibrate([200, 100, 200]);
+            safeVibrate([200, 100, 200]);
           }
         } catch {
           // Ignore intervention if user has not interacted with frame yet

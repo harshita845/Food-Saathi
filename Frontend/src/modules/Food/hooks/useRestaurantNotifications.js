@@ -8,6 +8,7 @@ import { dispatchNotificationInboxRefresh } from '@food/hooks/useNotificationInb
 import { RestaurantNotificationContext } from '../context/RestaurantNotificationContext';
 import { isModuleAuthenticated } from '@food/utils/auth';
 import { bindDataSync } from '@food/utils/dataSync';
+import { safeVibrate } from "@food/utils/safeVibrate";
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -978,7 +979,7 @@ export const useRestaurantNotifications = () => {
           if (navigator.userActivation && !navigator.userActivation.hasBeenActive) {
             // Skip vibration to avoid Chrome intervention warning if user hasn't interacted
           } else {
-            navigator.vibrate([200, 100, 200, 100, 300]);
+            safeVibrate([200, 100, 200, 100, 300]);
           }
         } catch (e) {
           // Ignore vibration errors

@@ -2075,6 +2075,14 @@ export async function deleteOrderAdmin(orderId, adminId) {
     throw new ValidationError("This order has a recorded payment and cannot be deleted. Cancel it instead.");
   }
 
+  // Stop the rider search and remove this order's new-order offers from every rider's app
+  // (Firebase + socket). Otherwise riders keep seeing a popup for an order that no longer exists.
+  try {
+    await dispatchService.releaseOrderDispatch(order, { reason: 'cancelled' });
+  } catch (err) {
+    logger.warn(`deleteOrderAdmin: releasing dispatch for ${order._id} failed: ${err?.message || err}`);
+  }
+
   // Keep support tickets but detach deleted order reference.
   await Promise.all([
     FoodSupportTicket.updateMany(

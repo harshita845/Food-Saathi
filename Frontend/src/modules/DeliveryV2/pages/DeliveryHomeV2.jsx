@@ -1851,8 +1851,11 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
                         await handleAcceptOffer(acceptTarget);
                       } catch (err) {
                         const msg = String(err?.response?.data?.message || err?.message || '');
-                        const isTaken = msg.toLowerCase().includes('already accepted') || 
+                        const isGone = err?.response?.status === 404 || msg.toLowerCase().includes('not found');
+                        const isTaken = isGone ||
+                                        msg.toLowerCase().includes('already accepted') || 
                                         msg.toLowerCase().includes('another partner') ||
+                                        msg.toLowerCase().includes('no longer available') ||
                                         (err?.response?.status === 403);
                         if (isTaken) {
                           removeClaimedOrderFromQueue(acceptTarget, { notify: false });

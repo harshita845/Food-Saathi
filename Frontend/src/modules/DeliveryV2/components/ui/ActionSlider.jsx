@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, useMotionValue, useTransform, animate, AnimatePresence } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
+import { safeVibrate } from "@food/utils/safeVibrate";
 
 const HANDLE = 56; // w-14
 const PAD = 6; // p-1.5
@@ -65,7 +66,7 @@ export const ActionSlider = ({
     isAcceptingRef.current = true;
     setIsSuccess(true);
     animate(x, maxX, { type: 'spring', stiffness: 600, damping: 40 });
-    try { navigator.vibrate?.(30); } catch {}
+    safeVibrate(30);
 
     if (onConfirm) {
       try {

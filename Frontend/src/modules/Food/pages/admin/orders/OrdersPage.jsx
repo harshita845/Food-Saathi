@@ -21,6 +21,7 @@ import { OrdersDashboardSkeleton } from "@food/components/ui/loading-skeletons"
 import { useDelayedLoading } from "@food/hooks/useDelayedLoading"
 import alertSound from "@food/assets/audio/zomato_sms.mp3"
 import originalSound from "@food/assets/audio/zomato_sms.mp3"
+import { safeVibrate } from "@food/utils/safeVibrate";
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -92,7 +93,7 @@ export default function OrdersPage({ statusKey = "all" }) {
       }
 
       if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
-        navigator.vibrate([200, 100, 200, 100, 300])
+        safeVibrate([200, 100, 200, 100, 300])
       }
 
       notificationAudioRef.current.muted = false

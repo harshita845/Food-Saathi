@@ -88,6 +88,8 @@ export const useOrderManager = () => {
       // If the backend says already accepted by another — show friendly message
       if (error?.response?.status === 403 || msg.toLowerCase().includes('already accepted')) {
         toast.error('This order was just taken by another delivery partner.', { duration: 4000 });
+      } else if (error?.response?.status === 404 || msg.toLowerCase().includes('not found')) {
+        toast.info('This order is no longer available.', { id: 'order-gone', duration: 4000 });
       } else {
         toast.error(msg);
       }

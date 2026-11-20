@@ -6,6 +6,7 @@ import { initializeApp, getApp, getApps } from "firebase/app";
 import fallbackNotificationSound from "@food/assets/audio/alert.mp3";
 import pushNotificationSoundPath from "@food/assets/audio/zomato_sms.mp3";
 import restaurantOrderSound from "@food/assets/audio/restaurant-order-ring.wav";
+import { safeVibrate } from "@food/utils/safeVibrate";
 
 const DEFAULT_FIREBASE_CONFIG = {
   apiKey: "",
@@ -342,7 +343,7 @@ async function playPushSound(payload = {}) {
       isPushSoundActive()
     ) {
       pushDebugLog(PUSH_DEBUG_PREFIX, "Triggering vibration");
-      navigator.vibrate([200, 100, 200, 100, 300]);
+      safeVibrate([200, 100, 200, 100, 300]);
     }
 
     if (usedNativeBridge) {
