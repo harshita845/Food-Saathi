@@ -672,7 +672,21 @@ export default function Home() {
   } = profileContext;
   const { addToCart, cart } = useCart();
   const dataVersion = useDataVersion();
-  const { location, loading: effectiveZoneLoading, requestLocation, zoneId: effectiveZoneId, zoneStatus: effectiveZoneStatus, isOutOfService: isEffectiveLocationOutOfService, isOutOfZone: isEffectiveLocationOutOfZone, isOutOfRadius: isEffectiveLocationOutOfRadius, serviceUnavailableMessage: effectiveServiceUnavailableMessage } = useAppLocation();
+  const { location, loading: rawZoneLoading, requestLocation, zoneId: effectiveZoneId, zoneStatus: effectiveZoneStatus, isOutOfService: isEffectiveLocationOutOfService, isOutOfZone: isEffectiveLocationOutOfZone, isOutOfRadius: isEffectiveLocationOutOfRadius, serviceUnavailableMessage: effectiveServiceUnavailableMessage } = useAppLocation();
+  // Treat "zone detection pending for this location" as loading too. Otherwise every home
+  // section (restaurants, categories, banners...) fires once without a zone and again with it,
+  // doubling the requests that compete for the browser's 6 connections on first load.
+  const hasLocationCoords = Number.isFinite(Number(location?.latitude ?? location?.lat)) && Number.isFinite(Number(location?.longitude ?? location?.lng));
+  const zonePendingRaw =
+    !effectiveZoneId && (effectiveZoneStatus === "loading" || (effectiveZoneStatus === "IDLE" && hasLocationCoords));
+  // Safety net: never hold the home page for more than ~1.5s waiting on zone detection.
+  const [zoneWaitExpired, setZoneWaitExpired] = useState(false);
+  useEffect(() => {
+    if (!zonePendingRaw) return undefined;
+    const t = setTimeout(() => setZoneWaitExpired(true), 1500);
+    return () => clearTimeout(t);
+  }, [zonePendingRaw]);
+  const effectiveZoneLoading = rawZoneLoading || (zonePendingRaw && !zoneWaitExpired);
   const [showToast, setShowToast] = useState(false);
   const [showManageCollections, setShowManageCollections] = useState(false);
   const [selectedRestaurantSlug, setSelectedRestaurantSlug] = useState(null);

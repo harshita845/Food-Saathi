@@ -202,18 +202,48 @@ export const supportAPI = {
     adminClient.patch(`/food/admin/support-tickets/${String(id)}`, body ?? {}),
 };
 
+// Share one request between components that ask for the same data at the same time
+// (e.g. several hooks reading the user's saved location on first paint), and reuse the
+// answer for a couple of seconds. Call .invalidate(key) after writes.
+const sharedGet = (() => {
+  const inFlight = new Map();
+  const cache = new Map();
+  const fn = (key, request, ttlMs = 2000) => {
+    const hit = cache.get(key);
+    if (hit && Date.now() - hit.at < ttlMs) return Promise.resolve(hit.res);
+    if (inFlight.has(key)) return inFlight.get(key);
+    const p = request()
+      .then((res) => { cache.set(key, { at: Date.now(), res }); return res; })
+      .finally(() => inFlight.delete(key));
+    inFlight.set(key, p);
+    return p;
+  };
+  fn.invalidate = (prefix = "") => {
+    for (const k of [...cache.keys()]) if (k.startsWith(prefix)) cache.delete(k);
+  };
+  return fn;
+})();
+
 export const notificationAPI = {
   getInbox: (params = {}, config = {}) =>
-    apiClient.get("/food/notifications/inbox", {
-      params,
-      ...config,
-    }),
-  markAsRead: (id, config = {}) =>
-    apiClient.patch(`/food/notifications/${String(id)}/read`, {}, config),
-  dismiss: (id, config = {}) =>
-    apiClient.delete(`/food/notifications/${String(id)}`, config),
-  dismissAll: (config = {}) =>
-    apiClient.delete("/food/notifications/inbox/all", config),
+    sharedGet(`inbox:${JSON.stringify(params || {})}`, () =>
+      apiClient.get("/food/notifications/inbox", {
+        params,
+        ...config,
+      }),
+    ),
+  markAsRead: (id, config = {}) => {
+    sharedGet.invalidate("inbox:");
+    return apiClient.patch(`/food/notifications/${String(id)}/read`, {}, config);
+  },
+  dismiss: (id, config = {}) => {
+    sharedGet.invalidate("inbox:");
+    return apiClient.delete(`/food/notifications/${String(id)}`, config);
+  },
+  dismissAll: (config = {}) => {
+    sharedGet.invalidate("inbox:");
+    return apiClient.delete("/food/notifications/inbox/all", config);
+  },
   sendTestNotification: (platform = "web", channel = "fcm", config = {}) => {
     let finalChannel = typeof channel === "string" ? channel : "fcm";
     let finalConfig = typeof channel === "object" && channel !== null ? channel : config;
@@ -1912,10 +1942,12 @@ export const userAPI = {
       params: params ?? {}
     }),
   /** GET /food/user/location (Bearer USER) */
-  getLocation: () => userClient.get("/food/user/location"),
+  getLocation: () => sharedGet("user-location", () => userClient.get("/food/user/location")),
   /** PUT /food/user/location (Bearer USER) */
-  updateLocation: (payload) =>
-    userClient.put("/food/user/location", payload ?? {}),
+  updateLocation: (payload) => {
+    sharedGet.invalidate("user-location");
+    return userClient.put("/food/user/location", payload ?? {});
+  },
   saveFcmToken: (token, options = {}) => {
     const platform = options?.platform === "mobile" ? "mobile" : "web";
     return saveUserFcmTokenOnce(token, platform);

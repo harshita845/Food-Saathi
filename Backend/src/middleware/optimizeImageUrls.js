@@ -5,7 +5,8 @@
  * GIFs are left as they are.
  */
 const CLOUDINARY_IMAGE_URL = /https:\/\/res\.cloudinary\.com\/[^/"\s]+\/image\/upload\/[^"\s\\]+/g;
-const TRANSFORM = 'f_auto,q_auto,c_limit,w_1200';
+// 800px covers phone screens at 2x density (cards are ~360px wide) and is ~40% lighter than 1200px.
+const TRANSFORM = 'f_auto,q_auto,c_limit,w_800';
 const SKIP_EXTENSIONS = /\.(pdf|svg|gif)(\?|$)/i;
 
 export function optimizeCloudinaryUrl(url) {

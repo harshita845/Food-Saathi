@@ -151,13 +151,17 @@ export function useZone(location) {
       }
     }
 
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current)
-        debounceTimerRef.current = null
-      }
-    }
+    // NOTE: no cleanup here. GPS updates re-run this effect every few hundred ms with tiny
+    // (<~11 m) moves; clearing the timer on each re-run cancelled the pending detection and,
+    // because small moves don't schedule a new one, the zone was never detected.
   }, [location?.latitude, location?.longitude, detectZone])
+
+  useEffect(() => () => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+      debounceTimerRef.current = null
+    }
+  }, [])
 
   const refreshZone = useCallback(() => {
     const lat = location?.latitude
