@@ -294,7 +294,8 @@ export async function createOrder(userId, dto) {
   let riderEarning = await getRiderEarning(distanceKm);
   
   // Apply delivery bonus from fee settings
-  const feeSettings = await FoodFeeSettings.findOne({ isActive: true }).lean();
+  // Same record every other part of the app reads (newest active fee settings).
+  const feeSettings = await FoodFeeSettings.findOne({ isActive: true }).sort({ createdAt: -1 }).lean();
   const deliveryBonusAmount = Number(feeSettings?.deliveryBonusAmount || 0);
   if (deliveryBonusAmount > 0) {
     riderEarning += deliveryBonusAmount;

@@ -948,8 +948,12 @@ export default function OrderTracking() {
           }
           if (!verifyRes.data?.success) {
             const attemptStatus = String(verifyRes.data?.data?.attemptStatus || '').toUpperCase()
-            // Only an in-progress bank payment is worth waiting for.
-            if (attemptStatus && attemptStatus !== 'PENDING') {
+            // Stop early ONLY when the customer never started a payment, or the attempt definitely
+            // failed/was cancelled. An attempt still in progress (e.g. a UPI request waiting for
+            // approval shows NOT_ATTEMPTED, or PENDING at the bank) must get the full wait —
+            // cancelling it would cancel the order of a customer who is about to pay.
+            const definitelyNotPaying = ['NONE', 'FAILED', 'USER_DROPPED', 'CANCELLED', 'VOID'].includes(attemptStatus)
+            if (definitelyNotPaying) {
               notPayingChecks += 1
               if (notPayingChecks >= QUICK_CHECKS_WHEN_NOT_PAYING) { notPaid = true; break }
             }
