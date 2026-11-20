@@ -21,14 +21,19 @@ export const getPublicHeroBannersController = async (req, res, next) => {
             })
             .lean();
 
-        if (zoneId && mongoose.Types.ObjectId.isValid(zoneId)) {
-            const targetZone = String(zoneId);
-            docs = (docs || []).filter(banner => {
-                const linked = banner.linkedRestaurantIds || [];
-                if (linked.length === 0) return true;
-                return linked.some(r => String(r.zoneId || '') === targetZone);
-            });
-        }
+        // Strict zone: a banner may only link to restaurants of the customer's zone.
+        const targetZone = zoneId && mongoose.Types.ObjectId.isValid(zoneId) ? String(zoneId) : '';
+        docs = (docs || [])
+            .map(banner => ({
+                ...banner,
+                linkedRestaurantIds: (banner.linkedRestaurantIds || []).filter(
+                    r => targetZone && String(r?.zoneId || '') === targetZone,
+                ),
+                _hadLinks: (banner.linkedRestaurantIds || []).length > 0,
+            }))
+            // Banners promoting only other-zone restaurants are hidden; generic banners stay.
+            .filter(banner => !banner._hadLinks || banner.linkedRestaurantIds.length > 0)
+            .map(({ _hadLinks, ...banner }) => banner);
 
         const banners = (docs || []).map((b) => {
             const { linkedRestaurantIds, ...rest } = b;
@@ -104,9 +109,10 @@ export const getPublicGourmetController = async (req, res, next) => {
                 restaurant: d.restaurant
             }));
         
-        if (zoneId && mongoose.Types.ObjectId.isValid(zoneId)) {
-            restaurants = restaurants.filter(r => String(r.zoneId?._id || r.zoneId || '') === String(zoneId));
-        }
+        // Strict zone: only restaurants of the customer's zone; no zone -> none.
+        restaurants = zoneId && mongoose.Types.ObjectId.isValid(zoneId)
+            ? restaurants.filter(r => String(r.zoneId?._id || r.zoneId || '') === String(zoneId))
+            : [];
         
         return sendResponse(res, 200, 'Gourmet restaurants fetched', { restaurants });
     } catch (error) {

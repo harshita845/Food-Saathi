@@ -222,6 +222,10 @@ function getOrdersOnTrip(activeOrder, acceptedOrders) {
   return out;
 }
 
+/** Fixes less accurate than this (metres) are treated as unreliable and never used or saved. */
+// (Relaxed in local dev, where laptops only have Wi-Fi positioning.)
+const MAX_GPS_ACCURACY_M = import.meta.env.DEV ? 1000 : 150;
+
 export default function DeliveryHomeV2({ tab = 'feed' }) {
   const navigate = useNavigate();
   const { isOnline, toggleOnline, setOnline, riderLocation, activeOrder, acceptedOrders, orderCapacity, tripStatus, setRiderLocation, setActiveOrder, setAcceptedOrders, removeAcceptedOrder, setOrderCapacity, updateTripStatus, clearActiveOrder } = useDeliveryStore();
@@ -713,6 +717,16 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
       
       const { latitude: lat, longitude: lng, heading, speed } = pos.coords;
       const now = Date.now();
+
+      // Ignore coarse fixes (cell tower / Wi-Fi / IP based, often 1km+ off). They would move the
+      // rider on the map and get saved as their real position. Wait for a precise GPS fix.
+      const fixAccuracy = pos.coords.accuracy;
+      if (!Number.isFinite(lat) || !Number.isFinite(lng) || (Number.isFinite(fixAccuracy) && fixAccuracy > MAX_GPS_ACCURACY_M)) {
+        if (!lastRealGpsPosRef.current) {
+          setLocationError('Waiting for an accurate GPS signal… Move to an open area and keep precise location on.');
+        }
+        return;
+      }
       
       let resolvedHeading = Number.isFinite(heading) && heading > 0 ? heading : 0;
       if (!resolvedHeading && lastRealGpsPosRef.current) {
@@ -853,7 +867,8 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
       if (document.hidden) return;
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          const { latitude: lat, longitude: lng, heading } = pos.coords;
+          const { latitude: lat, longitude: lng, heading, accuracy } = pos.coords;
+          if (Number.isFinite(accuracy) && accuracy > MAX_GPS_ACCURACY_M) return;
           setRiderLocation({ lat, lng, heading: heading || 0 });
         },
         () => {},
@@ -1649,8 +1664,10 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
             
             // Sync location immediately
             navigator.geolocation.getCurrentPosition((pos) => {
-               deliveryAPI.updateLocation(pos.coords.latitude, pos.coords.longitude, true).catch(() => {});
-            }, () => {}, { enableHighAccuracy: true });
+               const acc = pos.coords.accuracy;
+               if (Number.isFinite(acc) && acc > MAX_GPS_ACCURACY_M) return; // the live watcher will send the first precise fix
+               deliveryAPI.updateLocation(pos.coords.latitude, pos.coords.longitude, true, { accuracy: acc }).catch(() => {});
+            }, () => {}, { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
             
             toast.success("Shift started successfully!");
           } catch (error) {

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Camera, MapPin, X, AlertTriangle, Loader2, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { locationAPI } from '@food/api';
 
 export function PhotoUploadModal({ isOpen, onClose, onUpload }) {
   const [photoPreview, setPhotoPreview] = useState(null);
@@ -122,6 +123,20 @@ export function PhotoUploadModal({ isOpen, onClose, onUpload }) {
   };
 
   const getAddressFromCoords = async (lat, lng) => {
+    // Same server-side Google lookup the user app uses (street-level, e.g. "Corporate House,
+    // 169, RNT Marg..."). The browser-side lookups below are only fallbacks: when they fail this
+    // used to drop to OpenStreetMap, which shows a vague district-level address.
+    try {
+      const res = await locationAPI.reverseGeocode(lat, lng);
+      const loc = res?.data?.data?.location;
+      const text = String(loc?.formattedAddress || loc?.address || '').trim();
+      if (text && loc?.source !== 'coords_only' && !/^-?\d+\.\d+,\s*-?\d+\.\d+$/.test(text)) {
+        return text;
+      }
+    } catch (err) {
+      console.warn('Backend reverse geocode failed, trying browser lookup:', err?.message || err);
+    }
+
     try {
       if (window.google && window.google.maps && window.google.maps.Geocoder) {
         const geocoder = new window.google.maps.Geocoder();

@@ -1486,19 +1486,28 @@ export const listApprovedRestaurants = async (query = {}) => {
         }
     }
 
-    // Optional zone polygon filter
-    const zoneIdRaw = String(query.zoneId || '').trim();
-    let zoneFilterMatch = null;
-    if (zoneIdRaw && mongoose.Types.ObjectId.isValid(zoneIdRaw)) {
-        const zoneDoc = await FoodZone.findOne({ _id: zoneIdRaw, isActive: true }).lean();
-        zoneFilterMatch = buildZoneRestaurantMatch(zoneDoc, zoneIdRaw);
-        console.log(
-            `[DEBUG] listApprovedRestaurants: Applied zone filter for zoneId=${zoneIdRaw}, ` +
-            `radiusEnabled=${Boolean(zoneDoc?.isRadiusEnabled)}, hasPolygon=${Array.isArray(zoneDoc?.coordinates) && zoneDoc.coordinates.length >= 3}`
-        );
-    } else {
-        console.log(`[DEBUG] listApprovedRestaurants: NO zone filter applied. zoneIdRaw=${zoneIdRaw}`);
+    // Strict zone filter: customers only ever see restaurants of the delivery zone they are in.
+    // When the customer's coordinates are known, the zone is resolved from them on the server
+    // (a stale/foreign zoneId from the client is not trusted). No zone -> no restaurants.
+    const requestedZoneId = String(query.zoneId || '').trim();
+    const custLat = toFiniteNumber(query.lat);
+    const custLng = toFiniteNumber(query.lng);
+    let zoneIdRaw = '';
+    if (custLat !== null && custLng !== null) {
+        const { doesZoneServePoint } = await import('../../landing/controllers/zonePublic.controller.js');
+        const activeZones = await FoodZone.find({ isActive: true }).lean();
+        const served = activeZones.filter((z) => doesZoneServePoint(custLat, custLng, z));
+        const preferred = served.find((z) => String(z._id) === requestedZoneId) || served[0];
+        zoneIdRaw = preferred ? String(preferred._id) : '';
+    } else if (requestedZoneId && mongoose.Types.ObjectId.isValid(requestedZoneId)) {
+        const active = await FoodZone.exists({ _id: requestedZoneId, isActive: true });
+        zoneIdRaw = active ? requestedZoneId : '';
     }
+    if (!zoneIdRaw) {
+        return { restaurants: [], total: 0, page, limit, outOfZone: true };
+    }
+    const zoneDoc = await FoodZone.findOne({ _id: zoneIdRaw, isActive: true }).lean();
+    const zoneFilterMatch = buildZoneRestaurantMatch(zoneDoc, zoneIdRaw);
 
     const lat = toFiniteNumber(query.lat);
     const lng = toFiniteNumber(query.lng);

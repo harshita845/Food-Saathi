@@ -1,0 +1,45 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "delivery_boys": {
+      ".read": true,
+      "$partnerId": {
+        ".write": true,
+        "lat": { ".validate": "newData.isNumber() && newData.val() >= -90 && newData.val() <= 90" },
+        "lng": { ".validate": "newData.isNumber() && newData.val() >= -180 && newData.val() <= 180" },
+        "heading": { ".validate": "newData.isNumber()" },
+        "speed": { ".validate": "newData.isNumber()" },
+        "accuracy": { ".validate": "newData.isNumber()" }
+      }
+    },
+
+    "active_orders": {
+      "$orderId": {
+        ".read": true,
+        ".write": true,
+        "lat": { ".validate": "newData.isNumber() && newData.val() >= -90 && newData.val() <= 90" },
+        "lng": { ".validate": "newData.isNumber() && newData.val() >= -180 && newData.val() <= 180" },
+        "heading": { ".validate": "newData.isNumber()" }
+      }
+    },
+
+    "delivery_partner_offers": {
+      "$partnerId": {
+        ".read": true
+      }
+    },
+
+    "restaurant": {
+      "$restaurantId": {
+        "location": {
+          ".read": true,
+          ".write": true,
+          "lat": { ".validate": "newData.isNumber() && newData.val() >= -90 && newData.val() <= 90" },
+          "lng": { ".validate": "newData.isNumber() && newData.val() >= -180 && newData.val() <= 180" }
+        }
+      }
+    }
+  }
+}

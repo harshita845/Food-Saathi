@@ -142,6 +142,8 @@ export default function Cart() {
     try { localStorage.setItem("cart_payment_method", selectedPaymentMethod) } catch {}
   }, [selectedPaymentMethod])
   const [showPaymentSheet, setShowPaymentSheet] = useState(false)
+  // Set when the server says this restaurant doesn't deliver to the chosen address (other zone).
+  const [deliveryBlockedReason, setDeliveryBlockedReason] = useState("")
   const [walletBalance, setWalletBalance] = useState(0)
   const [isLoadingWallet, setIsLoadingWallet] = useState(false)
   const [onlinePaymentOnly, setOnlinePaymentOnly] = useState(false)
@@ -951,6 +953,7 @@ export default function Cart() {
         if (response?.data?.success && response?.data?.data?.pricing) {
           const newPricing = response.data.data.pricing
           setPricing(newPricing)
+          setDeliveryBlockedReason("")
 
           if (newPricing.couponError && appliedCoupon) {
             toast.error(newPricing.couponError)
@@ -977,7 +980,12 @@ export default function Cart() {
         // tell the customer why instead of showing a bill the server will refuse at checkout.
         if (error.response?.status === 400) {
           const reason = error.response?.data?.error || error.response?.data?.message
-          if (reason) toast.error(reason, { id: 'cart-pricing-error' })
+          if (error.response?.data?.code === "OUT_OF_DELIVERY_ZONE") {
+            setDeliveryBlockedReason(reason || "This restaurant doesn't deliver to your selected address.")
+          } else {
+            setDeliveryBlockedReason("")
+            if (reason) toast.error(reason, { id: 'cart-pricing-error' })
+          }
         }
         // Fallback to frontend calculation if backend fails
         setPricing(null)
@@ -1578,7 +1586,10 @@ export default function Cart() {
 
 
   const handlePlaceOrder = async () => {
-
+    if (deliveryBlockedReason) {
+      toast.error(deliveryBlockedReason, { id: "cart-out-of-zone" })
+      return
+    }
 
     if (!hasSavedAddress) {
       toast.error("Please choose a delivery location to continue")
@@ -2624,9 +2635,18 @@ export default function Cart() {
                     <Zap className="h-5 w-5 text-green-600 fill-green-600/20" />
                   </div>
                   <div className="flex-1">
+                    {deliveryBlockedReason ? (
+                      <p className="text-base font-semibold text-red-600">
+                        Not deliverable to this address
+                        <span className="mt-1 block text-sm font-normal text-gray-600 dark:text-gray-400">
+                          {deliveryBlockedReason} Change the delivery address or pick a restaurant in your area.
+                        </span>
+                      </p>
+                    ) : (
                     <p className="text-base text-gray-800 dark:text-gray-200">
                       Delivery in <span className="text-green-600 font-bold">{restaurantData?.estimatedDeliveryTime || "15-20 mins"}</span>
                     </p>
+                    )}
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-1">
                       Want this later?
                       <button onClick={() => {
@@ -3054,7 +3074,7 @@ export default function Cart() {
             {/* Place Order Button */}
             <button
               onClick={handlePlaceOrder}
-              disabled={isPlacingOrder || (selectedPaymentMethod === "wallet" && walletBalance < total)}
+              disabled={isPlacingOrder || Boolean(deliveryBlockedReason) || (selectedPaymentMethod === "wallet" && walletBalance < total)}
               className="w-full bg-orange-500 hover:bg-orange-600 text-white px-6 h-12 md:h-14 rounded-2xl font-bold shadow-lg shadow-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between transition-transform active:scale-[0.98]"
             >
               {(selectedPaymentMethod === "razorpay" || selectedPaymentMethod === "wallet" || selectedPaymentMethod === "cash") && (
@@ -3066,6 +3086,8 @@ export default function Cart() {
               <div className="flex items-center gap-1 mx-auto text-sm md:text-lg tracking-wide">
                 {isPlacingOrder
                   ? "Processing..."
+                  : deliveryBlockedReason
+                    ? "Not deliverable here"
                   : !hasSavedAddress
                     ? "Select Address"
                     : "Place Order"}

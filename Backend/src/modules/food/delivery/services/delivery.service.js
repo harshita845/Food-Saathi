@@ -353,7 +353,11 @@ export const updateDeliveryAvailability = async (userId, payload) => {
         }
     }
 
-    if (typeof latitude === 'number' && typeof longitude === 'number') {
+    const hasValidCoords =
+        Number.isFinite(latitude) && Number.isFinite(longitude) &&
+        Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180 &&
+        !(latitude === 0 && longitude === 0);
+    if (hasValidCoords) {
         partner.lastLocation = {
             type: 'Point',
             coordinates: [longitude, latitude]
@@ -365,7 +369,7 @@ export const updateDeliveryAvailability = async (userId, payload) => {
     await partner.save();
 
     // Keep every order this rider is carrying in step, so tracking pages that poll still see movement.
-    if (typeof latitude === 'number' && typeof longitude === 'number') {
+    if (hasValidCoords) {
         await FoodOrder.updateMany(
             {
                 'dispatch.deliveryPartnerId': partner._id,

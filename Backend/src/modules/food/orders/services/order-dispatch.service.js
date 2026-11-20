@@ -128,6 +128,14 @@ async function filterPartnersByCashLimit(partners = [], options = {}) {
   return eligible;
 }
 
+/** A saved rider location older than this can't be trusted (app closed / phone off / GPS lost). */
+const RIDER_LOCATION_MAX_AGE_MS = 20 * 60 * 1000;
+const isRiderLocationFresh = (lastLocationAt) => {
+  if (!lastLocationAt) return false;
+  const t = new Date(lastLocationAt).getTime();
+  return Number.isFinite(t) && Date.now() - t <= RIDER_LOCATION_MAX_AGE_MS;
+};
+
 async function listNearbyOnlineDeliveryPartners(
   restaurantId,
   {
@@ -147,8 +155,16 @@ async function listNearbyOnlineDeliveryPartners(
     return { restaurant: null, partners: [] };
   }
 
+  // Rider selection (original behaviour + distance guards):
+  //  - Search widens 2 -> 4 -> 6 -> 8 -> 10 -> 15 km around the restaurant (maxKm per attempt).
+  //  - Riders inside the restaurant's zone are preferred; if none, riders within maxKm just
+  //    outside the zone get it (original fallback).
+  //  - Guard 1: rider must have a known GPS position within maxKm (no "unknown location gets
+  //    every order" — that let riders get far-away orders, e.g. Indore rider -> Bihar Sharif).
+  //  - Guard 2: a rider assigned to a zone in the admin panel only works that zone.
+  const restaurantZoneId = restaurant.zoneId ? String(restaurant.zoneId) : '';
   let zonePolygon = null;
-  if (zoneOnly && restaurant.zoneId) {
+  if (zoneOnly && restaurantZoneId) {
     const zoneDoc = await FoodZone.findById(restaurant.zoneId)
       .select('coordinates isActive')
       .lean();
@@ -167,54 +183,56 @@ async function listNearbyOnlineDeliveryPartners(
     availabilityStatus: 'online',
     status: 'approved',
   })
-    .select('_id status lastLat lastLng lastLocationAt name')
+    .select('_id status lastLat lastLng lastLocationAt name zoneId')
     .lean();
 
   const radiusEligible = [];
   const zoneEligible = [];
+  let noLocation = 0;
+  let otherZone = 0;
 
   for (const p of allOnline) {
     if (capacityFullIds.has(String(p._id))) continue;
 
-    const hasCoords = p.lastLat != null && p.lastLng != null;
-
-    if (hasCoords) {
-      const d = haversineKm(rLat, rLng, p.lastLat, p.lastLng);
-      if (!Number.isFinite(d) || d > maxKm) continue;
-
-      const entry = {
-        partnerId: p._id,
-        distanceKm: d,
-        status: p.status,
-        locationUnknown: false,
-      };
-      radiusEligible.push(entry);
-
-      if (!zonePolygon || isPointInPolygon(p.lastLat, p.lastLng, zonePolygon)) {
-        zoneEligible.push(entry);
-      }
+    if (p.zoneId && restaurantZoneId && String(p.zoneId) !== restaurantZoneId) {
+      otherZone += 1;
       continue;
     }
 
-    // Riders without saved GPS still receive offers — location is tracked live in Firebase.
+    const hasCoords = p.lastLat != null && p.lastLng != null && isRiderLocationFresh(p.lastLocationAt);
+    if (!hasCoords) {
+      noLocation += 1; // unknown OR stale (>20 min) location
+      continue;
+    }
+
+    const d = haversineKm(rLat, rLng, p.lastLat, p.lastLng);
+    if (!Number.isFinite(d) || d > maxKm) continue;
+
     const entry = {
       partnerId: p._id,
-      distanceKm: null,
+      distanceKm: d,
       status: p.status,
-      locationUnknown: true,
+      locationUnknown: false,
     };
     radiusEligible.push(entry);
-    zoneEligible.push(entry);
+    if (!zonePolygon || isPointInPolygon(p.lastLat, p.lastLng, zonePolygon)) {
+      zoneEligible.push(entry);
+    }
   }
 
   let scored = radiusEligible;
-  if (zoneOnly && zonePolygon) {
+  if (zonePolygon) {
     scored = zoneEligible.length > 0 ? zoneEligible : radiusEligible;
     if (zoneEligible.length === 0 && radiusEligible.length > 0) {
       logger.info(
-        `[Dispatch] Zone polygon matched 0 riders for restaurant ${rId}; falling back to ${radiusEligible.length} radius-eligible riders`,
+        `[Dispatch] Zone polygon matched 0 riders for restaurant ${rId}; using ${radiusEligible.length} rider(s) within ${maxKm}km`,
       );
     }
+  }
+  if (noLocation || otherZone) {
+    logger.info(
+      `[Dispatch] Restaurant ${rId}: skipped ${noLocation} rider(s) without location, ${otherZone} assigned to another zone`,
+    );
   }
 
   scored.sort((a, b) => {
@@ -230,7 +248,7 @@ async function listNearbyOnlineDeliveryPartners(
 
   if (picked.length === 0) {
     logger.warn(
-      `[Dispatch] No eligible riders for restaurant ${rId}: online=${allOnline.length}, busy=${capacityFullIds.size}, radiusKm=${maxKm}, zoneFilter=${Boolean(zonePolygon && zoneOnly)}`,
+      `[Dispatch] No eligible riders for restaurant ${rId}: online=${allOnline.length}, busy=${capacityFullIds.size}, radiusKm=${maxKm}, zoneFilter=${Boolean(zoneOnly)}`,
     );
     return { partners: [] };
   }
@@ -717,7 +735,7 @@ export async function checkRidersAvailabilityInZone({ restaurantId, zoneId, requ
     availabilityStatus: 'online',
     status: 'approved',
   })
-    .select('_id status lastLat lastLng lastLocation')
+    .select('_id status lastLat lastLng lastLocation lastLocationAt zoneId')
     .lean();
 
   if (!allOnline || allOnline.length === 0) {
@@ -749,23 +767,21 @@ export async function checkRidersAvailabilityInZone({ restaurantId, zoneId, requ
   const rLng = hasRestCoords ? restCoords[0] : null;
   const rLat = hasRestCoords ? restCoords[1] : null;
 
+  // Same rule as dispatch: known location, inside the zone OR within the max dispatch radius
+  // of the restaurant, and riders assigned to a zone only count for that zone.
+  const zoneIdStr = effectiveZoneId ? String(effectiveZoneId) : '';
   const eligibleRiders = nonBusyRiders.filter((p) => {
+    if (p.zoneId && zoneIdStr && String(p.zoneId) !== zoneIdStr) return false;
     const lat = p.lastLat ?? (Array.isArray(p.lastLocation?.coordinates) ? p.lastLocation.coordinates[1] : null);
     const lng = p.lastLng ?? (Array.isArray(p.lastLocation?.coordinates) ? p.lastLocation.coordinates[0] : null);
-
-    if (lat != null && lng != null && Number.isFinite(lat) && Number.isFinite(lng)) {
-      if (zonePolygon) {
-        return isPointInPolygon(lat, lng, zonePolygon);
-      }
-      if (rLat != null && rLng != null) {
-        const d = haversineKm(rLat, rLng, lat, lng);
-        return Number.isFinite(d) && d <= maxDispatchKm;
-      }
-      return true;
+    if (lat == null || lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) return false;
+    if (!isRiderLocationFresh(p.lastLocationAt)) return false;
+    if (zonePolygon && isPointInPolygon(lat, lng, zonePolygon)) return true;
+    if (rLat != null && rLng != null) {
+      const d = haversineKm(rLat, rLng, lat, lng);
+      return Number.isFinite(d) && d <= maxDispatchKm;
     }
-
-    // Rider is online without recorded GPS (newly online or live-tracked)
-    return true;
+    return false;
   });
 
   if (eligibleRiders.length === 0) {

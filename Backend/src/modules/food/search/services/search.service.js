@@ -52,8 +52,14 @@ export const searchUnified = async (query = {}, options = {}) => {
     
     console.log(`[Search-Service] Querying with term: "${term}", categoryId: "${categoryId}", zoneId: "${zoneId}"`);
 
+    // Strict zone: search only ever returns restaurants of the customer's delivery zone.
     if (zoneId && mongoose.Types.ObjectId.isValid(zoneId)) {
         restaurantFilter.zoneId = new mongoose.Types.ObjectId(zoneId);
+    } else {
+        return {
+            success: true,
+            data: { restaurants: [], total: 0, page: parseInt(page), limit: parseInt(limit), zoneFiltered: true, outOfZone: true },
+        };
     }
 
     if (isVeg === 'true') {
@@ -375,14 +381,8 @@ export const searchUnified = async (query = {}, options = {}) => {
 
     // FALLBACK: If results are empty and a zoneId was provided, try one more time without zoneId 
     // to ensure user sees SOMETHING if their current zone has no matches.
-    if (results.length === 0 && zoneId && mongoose.Types.ObjectId.isValid(zoneId)) {
-        console.log(`[Search-Service] No results in zone ${zoneId}. Trying global fallback...`);
-        const fallbackResults = await searchUnified({ ...query, zoneId: null }, options);
-        if (fallbackResults.data.total > 0) {
-            fallbackResults.data.wasFallback = true;
-            return fallbackResults;
-        }
-    }
+    // (Global "other zones" fallback removed: restaurants outside the customer's zone can't
+    // deliver to them, so they must not be shown.)
 
     return finalResult;
 };

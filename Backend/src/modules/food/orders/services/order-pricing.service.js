@@ -58,13 +58,23 @@ export async function assertOrderingOpen(restaurant) {
  * @param {[number, number]} [coordinates] - delivery address as [lng, lat]
  */
 async function assertRestaurantServesAddress(restaurant, coordinates) {
-  if (!restaurant?.zoneId || !Array.isArray(coordinates) || coordinates.length !== 2) return;
+  // No delivery address picked yet (cart preview) -> nothing to check yet; createOrder
+  // separately requires a mapped address before an order can be placed.
+  if (!Array.isArray(coordinates) || coordinates.length !== 2) return;
   const [lng, lat] = coordinates.map(Number);
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+  // Strict: a restaurant only delivers inside its own active, mapped delivery zone.
+  const notServed = () => {
+    const err = new ValidationError("This restaurant doesn't deliver to your selected address. Please choose a restaurant near you.");
+    err.code = "OUT_OF_DELIVERY_ZONE";
+    return err;
+  };
+  if (!restaurant?.zoneId) throw notServed();
   const zone = await FoodZone.findById(restaurant.zoneId).lean();
-  if (!zone || zone.isActive === false) return;
+  if (!zone || zone.isActive === false) throw notServed();
   const hasGeometry = zone.isRadiusEnabled || (Array.isArray(zone.coordinates) && zone.coordinates.length >= 3);
-  if (!hasGeometry) return;
+  if (!hasGeometry) throw notServed();
   if (!doesZoneServePoint(lat, lng, zone)) {
     const err = new ValidationError("This restaurant doesn't deliver to your selected address. Please choose a restaurant near you.");
     err.code = "OUT_OF_DELIVERY_ZONE";
