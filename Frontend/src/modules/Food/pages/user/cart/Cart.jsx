@@ -1982,7 +1982,6 @@ export default function Cart() {
       await initCashfreePayment({
         paymentSessionId,
         orderId: gatewayOrderId,
-        mode: "sandbox",
         redirectTarget: "_self",
         handler: async (response) => {
           paymentHandled = true

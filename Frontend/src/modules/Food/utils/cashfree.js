@@ -11,7 +11,9 @@ let currentMode = null;
  * Load and get Cashfree instance
  * @param {'sandbox'|'production'} mode 
  */
-export const getCashfreeInstance = async (mode = 'sandbox') => {
+const DEFAULT_MODE = (import.meta.env.VITE_CASHFREE_MODE || 'production').toLowerCase().trim();
+
+export const getCashfreeInstance = async (mode = DEFAULT_MODE) => {
   const selectedMode = mode === 'production' ? 'production' : 'sandbox';
   if (!cashfreeInstance || currentMode !== selectedMode) {
     cashfreeInstance = await load({ mode: selectedMode });
@@ -38,7 +40,7 @@ export const initCashfreePayment = async (options = {}) => {
   const {
     paymentSessionId,
     orderId,
-    mode = 'sandbox',
+    mode = DEFAULT_MODE,
     redirectTarget = '_self',
     handler,
     onCompleted,

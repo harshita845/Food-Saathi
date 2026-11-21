@@ -86,7 +86,13 @@ export async function createCashfreeOrder({
 
     const custId = String(customerId || cleanPhone || orderId).replace(/[^a-zA-Z0-9_-]/g, '').slice(-40) || `cust_${Date.now()}`;
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const computedReturnUrl = returnUrl || `${frontendUrl}/food/user/orders/{order_id}?cashfree_return=true`;
+    let computedReturnUrl = returnUrl || `${frontendUrl}/food/user/orders/{order_id}?cashfree_return=true`;
+    // Cashfree production rejects non-https return URLs (e.g. http://localhost during local testing).
+    // Omit it instead of failing the order; set FRONTEND_URL to an https URL in production.
+    if (isProduction && !/^https:\/\//i.test(computedReturnUrl)) {
+        logger.warn(`[Cashfree] Skipping non-https return_url in production mode: ${computedReturnUrl}`);
+        computedReturnUrl = null;
+    }
 
     const orderRequest = {
         order_id: String(orderId),
@@ -99,7 +105,7 @@ export async function createCashfreeOrder({
             customer_email: customerEmail || 'customer@foodsaathi.in'
         },
         order_meta: {
-            return_url: computedReturnUrl,
+            ...(computedReturnUrl ? { return_url: computedReturnUrl } : {}),
             ...(notifyUrl ? { notify_url: notifyUrl } : {})
         },
         ...(note ? { order_note: String(note).slice(0, 200) } : {})

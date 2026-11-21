@@ -15,7 +15,7 @@ export const initRazorpayPayment = async (options = {}) => {
   return initCashfreePayment({
     paymentSessionId,
     orderId: options.order_id || options.orderId,
-    mode: options.mode || 'sandbox',
+    mode: options.mode,
     handler: options.handler,
     onError: options.onError,
     onClose: options.onClose
