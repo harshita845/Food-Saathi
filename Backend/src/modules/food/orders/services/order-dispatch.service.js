@@ -128,13 +128,6 @@ async function filterPartnersByCashLimit(partners = [], options = {}) {
   return eligible;
 }
 
-/** A saved rider location older than this can't be trusted (app closed / phone off / GPS lost). */
-const RIDER_LOCATION_MAX_AGE_MS = 20 * 60 * 1000;
-const isRiderLocationFresh = (lastLocationAt) => {
-  if (!lastLocationAt) return false;
-  const t = new Date(lastLocationAt).getTime();
-  return Number.isFinite(t) && Date.now() - t <= RIDER_LOCATION_MAX_AGE_MS;
-};
 
 async function listNearbyOnlineDeliveryPartners(
   restaurantId,
@@ -199,9 +192,11 @@ async function listNearbyOnlineDeliveryPartners(
       continue;
     }
 
-    const hasCoords = p.lastLat != null && p.lastLng != null && isRiderLocationFresh(p.lastLocationAt);
+    // Last known location is used however old it is (pre-20-Nov behaviour), so riders who are
+    // marked online but have the app in the background still get offers (via push notification).
+    const hasCoords = p.lastLat != null && p.lastLng != null;
     if (!hasCoords) {
-      noLocation += 1; // unknown OR stale (>20 min) location
+      noLocation += 1; // rider has never shared a location
       continue;
     }
 
@@ -775,7 +770,8 @@ export async function checkRidersAvailabilityInZone({ restaurantId, zoneId, requ
     const lat = p.lastLat ?? (Array.isArray(p.lastLocation?.coordinates) ? p.lastLocation.coordinates[1] : null);
     const lng = p.lastLng ?? (Array.isArray(p.lastLocation?.coordinates) ? p.lastLocation.coordinates[0] : null);
     if (lat == null || lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) return false;
-    if (!isRiderLocationFresh(p.lastLocationAt)) return false;
+    // Any rider marked online counts, using their last known location however old it is
+    // (pre-20-Nov behaviour; riders often go "online" and then close the app).
     if (zonePolygon && isPointInPolygon(lat, lng, zonePolygon)) return true;
     if (rLat != null && rLng != null) {
       const d = haversineKm(rLat, rLng, lat, lng);
