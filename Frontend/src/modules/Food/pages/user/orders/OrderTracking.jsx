@@ -602,8 +602,10 @@ export default function OrderTracking() {
   const leavingPageRef = useRef(false)
   const [isVerifyingPayment, setIsVerifyingPayment] = useState(() => {
     if (typeof window === 'undefined') return false
+    // Only a return from the Cashfree checkout needs payment confirmation. `?confirmed=true` is
+    // also used after COD / wallet orders, which have no gateway payment to verify.
     const q = window.location.search + window.location.hash
-    return q.includes('cashfree_return=true') || q.includes('confirmed=true')
+    return q.includes('cashfree_return=true')
   })
   const [estimatedTime, setEstimatedTime] = useState(29)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -911,9 +913,11 @@ export default function OrderTracking() {
   const resolveOrderFromList = useCallback((id) => stableOpsRef.current.resolveOrderFromList(id), [])
   const fetchOrderDetailsWithFallback = useCallback((opts) => stableOpsRef.current.fetchOrderDetailsWithFallback(opts), [])
 
-  // Auto-verify payment on mount when returning from Cashfree (e.g. ?cashfree_return=true or ?confirmed=true)
+  // Auto-verify payment on mount when returning from Cashfree (?cashfree_return=true).
+  // Must NOT run for ?confirmed=true: COD/wallet orders land here with that flag, have no gateway
+  // payment, and the "not paid" branch below would cancel them.
   useEffect(() => {
-    const isReturn = searchParams.get("cashfree_return") === "true" || searchParams.get("confirmed") === "true"
+    const isReturn = searchParams.get("cashfree_return") === "true"
     const targetOrderId = orderId || lookupIdFromQuery
     if (!targetOrderId || !isReturn || hasVerifiedReturnPaymentRef.current) return
     hasVerifiedReturnPaymentRef.current = true
