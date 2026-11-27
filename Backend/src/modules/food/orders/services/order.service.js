@@ -572,6 +572,9 @@ export async function verifyPayment(userId, dto) {
     // processing), SUCCESS, FAILED, USER_DROPPED, CANCELLED... Lets the app decide quickly
     // instead of waiting when there is nothing to wait for.
     let attemptStatus = 'NONE';
+    // Seconds since the latest attempt started; lets the app tell a UPI request still awaiting
+    // approval (seconds old) from one the customer abandoned (minutes old).
+    let attemptAgeSec = null;
 
     // If order_status isn't marked PAID yet, inspect payment attempts
     if (!isPaid) {
@@ -583,7 +586,13 @@ export async function verifyPayment(userId, dto) {
       const latestAttempt = [...(payments || [])].sort(
         (a, b) => new Date(b?.payment_time || b?.payment_completion_time || 0) - new Date(a?.payment_time || a?.payment_completion_time || 0),
       )[0];
-      if (latestAttempt) attemptStatus = String(latestAttempt.payment_status || 'PENDING').toUpperCase();
+      if (latestAttempt) {
+        attemptStatus = String(latestAttempt.payment_status || 'PENDING').toUpperCase();
+        const startedAt = new Date(latestAttempt.payment_time || latestAttempt.payment_completion_time || 0).getTime();
+        if (Number.isFinite(startedAt) && startedAt > 0) {
+          attemptAgeSec = Math.max(0, Math.round((Date.now() - startedAt) / 1000));
+        }
+      }
       if (successfulPayment) {
         isPaid = true;
         orderStatus = 'PAID';
@@ -608,6 +617,7 @@ export async function verifyPayment(userId, dto) {
         paid: false,
         orderStatus: orderStatus || 'PENDING',
         attemptStatus,
+        attemptAgeSec,
         order: normalizeOrderForClient(order),
         message: ['FAILED', 'CANCELLED', 'USER_DROPPED', 'EXPIRED', 'TERMINATED'].includes(orderStatus)
           ? 'Payment was not successful. No money was deducted. Please try again.'

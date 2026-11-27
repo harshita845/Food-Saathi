@@ -958,7 +958,11 @@ export default function OrderTracking() {
             // failed/was cancelled. An attempt still in progress (e.g. a UPI request waiting for
             // approval shows NOT_ATTEMPTED, or PENDING at the bank) must get the full wait —
             // cancelling it would cancel the order of a customer who is about to pay.
-            const definitelyNotPaying = ['NONE', 'FAILED', 'USER_DROPPED', 'CANCELLED', 'VOID'].includes(attemptStatus)
+            // A UPI attempt still NOT_ATTEMPTED minutes after it started was abandoned (the customer
+            // closed the QR / UPI screen) — no need to make them wait ~40s for it.
+            const attemptAgeSec = Number(verifyRes.data?.data?.attemptAgeSec)
+            const abandonedAttempt = attemptStatus === 'NOT_ATTEMPTED' && Number.isFinite(attemptAgeSec) && attemptAgeSec > 180
+            const definitelyNotPaying = abandonedAttempt || ['NONE', 'FAILED', 'USER_DROPPED', 'CANCELLED', 'VOID'].includes(attemptStatus)
             if (definitelyNotPaying) {
               notPayingChecks += 1
               if (notPayingChecks >= QUICK_CHECKS_WHEN_NOT_PAYING) { notPaid = true; break }
